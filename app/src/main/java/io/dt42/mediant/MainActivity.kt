@@ -2,20 +2,30 @@ package io.dt42.mediant
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
+import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
 import io.dt42.mediant.ui.main.model.Post
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_personal_thread.*
-import kotlinx.android.synthetic.main.fragment_public_thread.*
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 private const val CAMERA_REQUEST_CODE = 0
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var currentPhotoPath: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,8 +35,9 @@ class MainActivity : AppCompatActivity() {
         viewPager.adapter = adapter
         tabs.setupWithViewPager(viewPager)
 
+        // TODO: remove this debugging button
         tempButton.setOnClickListener {
-            adapter.personalThreadFragment?.posts?.add(0, Post("yo", "hello"))
+            adapter.personalThreadFragment.posts.add(0, Post("yo", "hello"))
             personalRecyclerView.adapter?.notifyItemInserted(0)
             personalRecyclerView.layoutManager?.scrollToPosition(0)
         }
@@ -57,16 +68,33 @@ class MainActivity : AppCompatActivity() {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     viewPager.currentItem = 1
-                    // imageView.setImageBitmap(data?.extras?.get("data") as Bitmap)
+                    imageView.setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
                 }
             }
         }
     }
 
     private fun openCamera() {
-        Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
-            resolveActivity(packageManager)?.also {
-                startActivityForResult(this, CAMERA_REQUEST_CODE)
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
+            // Ensure that there's a camera activity to handle the intent
+            takePictureIntent.resolveActivity(packageManager)?.also {
+                // Create the File where the photo should go
+                val photoFile: File? = try {
+                    createImageFile()
+                } catch (ex: IOException) {
+                    Log.i("main", "Error occurred while creating the File")
+                    null
+                }
+                // Continue only if the File was successfully created
+                photoFile?.also {
+                    val photoURI: Uri = FileProvider.getUriForFile(
+                        this,
+                        "$packageName.provider",
+                        it
+                    )
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                    startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE)
+                }
             }
         }
     }
@@ -74,6 +102,20 @@ class MainActivity : AppCompatActivity() {
     private fun openSettings() {
         Intent(this, SettingsActivity::class.java).also {
             startActivity(it)
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun createImageFile(): File {
+        // Create an image file name
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.TAIWAN).format(Date())
+        return File.createTempFile(
+            "JPEG_${timeStamp}_",
+            ".jpg",
+            filesDir
+        ).apply {
+            // Save a file: path for use with ACTION_VIEW intents
+            currentPhotoPath = absolutePath
         }
     }
 }

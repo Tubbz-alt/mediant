@@ -16,8 +16,8 @@ private val TABS = listOf(
 
 class SectionsPagerAdapter(private val context: Context, fm: FragmentManager) : FragmentPagerAdapter(fm) {
 
-    var publicThreadFragment: PublicThreadFragment? = null
-    var personalThreadFragment: PersonalThreadFragment? = null
+    lateinit var publicThreadFragment: PublicThreadFragment
+    lateinit var personalThreadFragment: PersonalThreadFragment
 
     override fun getItem(position: Int): Fragment {
         return TABS[position].instance
