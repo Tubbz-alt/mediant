@@ -2,10 +2,8 @@ package io.dt42.mediant
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
@@ -26,21 +24,14 @@ private const val CAMERA_REQUEST_CODE = 0
 class MainActivity : AppCompatActivity() {
 
     private lateinit var currentPhotoPath: String
+    private var adapter = SectionsPagerAdapter(this, supportFragmentManager)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        val adapter = SectionsPagerAdapter(this, supportFragmentManager)
         viewPager.adapter = adapter
         tabs.setupWithViewPager(viewPager)
-
-        // TODO: remove this debugging button
-        tempButton.setOnClickListener {
-            adapter.personalThreadFragment.posts.add(0, Post("yo", "hello"))
-            personalRecyclerView.adapter?.notifyItemInserted(0)
-            personalRecyclerView.layoutManager?.scrollToPosition(0)
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -51,11 +42,11 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return when (item?.itemId) {
             android.R.id.home -> {
-                openCamera()
+                dispatchTakePictureIntent()
                 true
             }
             R.id.actionSettings -> {
-                openSettings()
+                dispatchSettingsActivityIntent()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -68,13 +59,18 @@ class MainActivity : AppCompatActivity() {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     viewPager.currentItem = 1
-                    imageView.setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
+                    adapter.personalThreadFragment.posts.add(
+                        0,
+                        Post("username", currentPhotoPath, "description")
+                    )
+                    personalRecyclerView.adapter?.notifyItemInserted(0)
+                    personalRecyclerView.layoutManager?.scrollToPosition(0)
                 }
             }
         }
     }
 
-    private fun openCamera() {
+    private fun dispatchTakePictureIntent() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             // Ensure that there's a camera activity to handle the intent
             takePictureIntent.resolveActivity(packageManager)?.also {
@@ -87,11 +83,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 // Continue only if the File was successfully created
                 photoFile?.also {
-                    val photoURI: Uri = FileProvider.getUriForFile(
-                        this,
-                        "$packageName.provider",
-                        it
-                    )
+                    val photoURI: Uri = FileProvider.getUriForFile(this, "$packageName.provider", it)
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                     startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE)
                 }
@@ -99,7 +91,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun openSettings() {
+    private fun dispatchSettingsActivityIntent() {
         Intent(this, SettingsActivity::class.java).also {
             startActivity(it)
         }
@@ -109,11 +101,7 @@ class MainActivity : AppCompatActivity() {
     private fun createImageFile(): File {
         // Create an image file name
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.TAIWAN).format(Date())
-        return File.createTempFile(
-            "JPEG_${timeStamp}_",
-            ".jpg",
-            filesDir
-        ).apply {
+        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", filesDir).apply {
             // Save a file: path for use with ACTION_VIEW intents
             currentPhotoPath = absolutePath
         }
