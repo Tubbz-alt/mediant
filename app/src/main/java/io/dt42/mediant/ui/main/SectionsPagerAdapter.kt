@@ -7,9 +7,11 @@ import android.support.v4.app.FragmentPagerAdapter
 import android.view.ViewGroup
 import io.dt42.mediant.R
 
-private val TAB_TITLES = arrayOf(
-    R.string.tab_text_1,
-    R.string.tab_text_2
+data class Tab(val title: Int, val instance: Fragment)
+
+private val TABS = listOf(
+    Tab(R.string.tab_text_1, PublicThreadFragment.newInstance()),
+    Tab(R.string.tab_text_2, PersonalThreadFragment.newInstance())
 )
 
 class SectionsPagerAdapter(private val context: Context, fm: FragmentManager) : FragmentPagerAdapter(fm) {
@@ -18,19 +20,15 @@ class SectionsPagerAdapter(private val context: Context, fm: FragmentManager) : 
     var personalThreadFragment: PersonalThreadFragment? = null
 
     override fun getItem(position: Int): Fragment {
-        return when (position) {
-            0 -> PublicThreadFragment.newInstance()
-            else -> PersonalThreadFragment.newInstance()
-        }
+        return TABS[position].instance
     }
 
     override fun getPageTitle(position: Int): CharSequence? {
-        return context.resources.getString(TAB_TITLES[position])
+        return context.resources.getString(TABS[position].title)
     }
 
     override fun getCount(): Int {
-        // Show 2 total pages.
-        return 2
+        return TABS.size
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {

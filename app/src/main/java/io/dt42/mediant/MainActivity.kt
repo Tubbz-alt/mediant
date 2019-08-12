@@ -10,6 +10,7 @@ import android.view.MenuItem
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
 import io.dt42.mediant.ui.main.model.Post
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_personal_thread.*
 import kotlinx.android.synthetic.main.fragment_public_thread.*
 
 private const val CAMERA_REQUEST_CODE = 0
@@ -25,9 +26,9 @@ class MainActivity : AppCompatActivity() {
         tabs.setupWithViewPager(viewPager)
 
         tempButton.setOnClickListener {
-            adapter.publicThreadFragment?.posts?.add(0, Post("yo", "hello"))
-            publicRecyclerView.adapter?.notifyItemInserted(0)
-            publicRecyclerView.layoutManager?.scrollToPosition(0)
+            adapter.personalThreadFragment?.posts?.add(0, Post("yo", "hello"))
+            personalRecyclerView.adapter?.notifyItemInserted(0)
+            personalRecyclerView.layoutManager?.scrollToPosition(0)
         }
     }
 
@@ -55,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
+                    viewPager.currentItem = 1
                     // imageView.setImageBitmap(data?.extras?.get("data") as Bitmap)
                 }
             }

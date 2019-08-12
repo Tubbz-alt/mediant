@@ -13,10 +13,15 @@ import kotlinx.android.synthetic.main.fragment_public_thread.*
 
 class PublicThreadFragment : Fragment() {
 
+    // TODO: The posts list should be get from server.
     val posts = mutableListOf<Post>()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        retainInstance = true
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_public_thread, container, false)
     }
 
