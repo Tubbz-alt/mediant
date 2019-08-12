@@ -4,6 +4,7 @@ import android.content.Context
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
+import android.view.ViewGroup
 import io.dt42.mediant.R
 
 private val TAB_TITLES = arrayOf(
@@ -12,6 +13,9 @@ private val TAB_TITLES = arrayOf(
 )
 
 class SectionsPagerAdapter(private val context: Context, fm: FragmentManager) : FragmentPagerAdapter(fm) {
+
+    var publicThreadFragment: PublicThreadFragment? = null
+    var personalThreadFragment: PersonalThreadFragment? = null
 
     override fun getItem(position: Int): Fragment {
         return when (position) {
@@ -27,5 +31,14 @@ class SectionsPagerAdapter(private val context: Context, fm: FragmentManager) : 
     override fun getCount(): Int {
         // Show 2 total pages.
         return 2
+    }
+
+    override fun instantiateItem(container: ViewGroup, position: Int): Any {
+        val createdFragment = super.instantiateItem(container, position)
+        when (position) {
+            0 -> publicThreadFragment = createdFragment as PublicThreadFragment
+            else -> personalThreadFragment = createdFragment as PersonalThreadFragment
+        }
+        return createdFragment
     }
 }

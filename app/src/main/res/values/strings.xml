@@ -2,9 +2,9 @@
     <string name="app_name">Mediant</string>
     <string name="tab_text_1">Public Thread</string>
     <string name="tab_text_2">Personal Thread</string>
-    <string name="menu_toolbar_1">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="string_placeholder">Sample String Here</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_settings">Settings</string>
 </resources>

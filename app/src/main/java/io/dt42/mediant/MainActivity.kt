@@ -2,14 +2,15 @@ package io.dt42.mediant
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
+import io.dt42.mediant.ui.main.model.Post
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_public_thread.*
 
 private const val CAMERA_REQUEST_CODE = 0
 
@@ -19,8 +20,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        viewPager.adapter = SectionsPagerAdapter(this, supportFragmentManager)
+        val adapter = SectionsPagerAdapter(this, supportFragmentManager)
+        viewPager.adapter = adapter
         tabs.setupWithViewPager(viewPager)
+
+        tempButton.setOnClickListener {
+            adapter.publicThreadFragment?.posts?.add(0, Post("yo", "hello"))
+            publicRecyclerView.adapter?.notifyItemInserted(0)
+            publicRecyclerView.layoutManager?.scrollToPosition(0)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -47,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    imageView.setImageBitmap(data?.extras?.get("data") as Bitmap)
+                    // imageView.setImageBitmap(data?.extras?.get("data") as Bitmap)
                 }
             }
         }
