@@ -24,6 +24,8 @@ private const val CAMERA_REQUEST_CODE = 0
 class MainActivity : AppCompatActivity() {
 
     private lateinit var currentPhotoPath: String
+
+    // TODO: after Textile server is built up, change [adapter] as local variable
     private var adapter = SectionsPagerAdapter(this, supportFragmentManager)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,10 +61,17 @@ class MainActivity : AppCompatActivity() {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     viewPager.currentItem = 1
+
+                    /**
+                     * TODO
+                     * after we can get photos from Textile server, we do not need to use [adapter] to reference
+                     * the fragments.
+                     */
                     adapter.personalThreadFragment.posts.add(
                         0,
                         Post("username", currentPhotoPath, "description")
                     )
+
                     personalRecyclerView.adapter?.notifyItemInserted(0)
                     personalRecyclerView.layoutManager?.scrollToPosition(0)
                 }

@@ -1,9 +1,12 @@
 <resources>
     <string name="app_name">Mediant</string>
-    <string name="tab_text_1">Public Thread</string>
-    <string name="tab_text_2">Personal Thread</string>
+    <string name="tab_text_0">Public Thread</string>
+    <string name="tab_text_1">Personal Thread</string>
     <string name="title_activity_settings">Settings</string>
     <string name="string_placeholder">Sample String Here</string>
+    <string name="card_publish_description">Publish to public thread</string>
+    <string name="card_proof_description">Show proof</string>
+    <string name="card_delete_description">Delete photo</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
