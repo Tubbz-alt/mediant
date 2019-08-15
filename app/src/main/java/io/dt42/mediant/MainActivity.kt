@@ -21,6 +21,8 @@ import java.util.*
 
 private const val CAMERA_REQUEST_CODE = 0
 
+const val MAIN_TAG = "main"
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var currentPhotoPath: String
@@ -65,7 +67,8 @@ class MainActivity : AppCompatActivity() {
                     /**
                      * TODO
                      * after we can get photos from Textile server, we do not need to use [adapter] to reference
-                     * the fragments.
+                     * the fragments. Moreover, we need to delete the temp JPEG image after the image has been upload to
+                     * Textile server.
                      */
                     adapter.personalThreadFragment.posts.add(
                         0,
@@ -81,19 +84,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun dispatchTakePictureIntent() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
-            // Ensure that there's a camera activity to handle the intent
+            // Ensure that there's a camera activity to handle the intent.
+            // TODO: we should show message to the user when there's no camera activity to handle the intent.
             takePictureIntent.resolveActivity(packageManager)?.also {
-                // Create the File where the photo should go
+                // Create the empty File where the photo should go
                 val photoFile: File? = try {
                     createImageFile()
                 } catch (ex: IOException) {
-                    Log.i("main", "Error occurred while creating the File")
+                    Log.e(MAIN_TAG, "Error occurred while creating the File")
                     null
                 }
                 // Continue only if the File was successfully created
                 photoFile?.also {
-                    val photoURI: Uri = FileProvider.getUriForFile(this, "$packageName.provider", it)
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                    val photoUri: Uri = FileProvider.getUriForFile(this, "$packageName.provider", it)
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
                     startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE)
                 }
             }
