@@ -1,4 +1,4 @@
-package io.textile.textileexample;
+package io.dt42.mediant;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -171,6 +171,14 @@ public class TextileWrapper {
      * Files
      *------------------------------------------------------------------------*/
 
+    public static void addImage(String filePath) {
+        addThreadFileByFilepath(
+                filePath,
+                getThreadIdByName("nbsdev"),
+                getTimestamp()
+        );
+    }
+
     public static void addImageDev() {
         // changed thread name from Meimei to nbsdev
         addThreadFileByFilepath(
@@ -244,11 +252,10 @@ public class TextileWrapper {
     /* Invitation was sent by Textile Photo, and the invitation link is
      * https://www.textile.photos/invites/new#id=QmVrUmZ7cd75GjkK4iivdcqnM4F6DrmsPqgEYqH4zSzjeV&key=ow88n7AskjX86pBGw6sxQDs22EBx5Lb8uc1kumTSmp1k5952EoqoZdnVzzpQ&inviter=P411Po6YYU4Kduu29mZBThGwks9kzBRv9xzs2nsgGBsVgNDm&name=nbsdev&referral=MSCES
      */
-    public static void acceptExternalInvitation() {
+    public static void acceptExternalInvitation(String inviteId, String key) {
         try {
             String threadId = Textile.instance().invites.acceptExternal(
-                    "QmVrUmZ7cd75GjkK4iivdcqnM4F6DrmsPqgEYqH4zSzjeV",
-                    "ow88n7AskjX86pBGw6sxQDs22EBx5Lb8uc1kumTSmp1k5952EoqoZdnVzzpQ"
+                    inviteId, key
             );
             Log.i(TAG, "Accept invitation of thread " + threadId);
         } catch (Exception e) {
