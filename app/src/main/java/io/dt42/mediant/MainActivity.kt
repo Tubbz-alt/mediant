@@ -7,8 +7,6 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
-import android.util.Base64
-import android.util.Base64OutputStream
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -16,9 +14,7 @@ import io.dt42.mediant.ui.main.SectionsPagerAdapter
 import io.dt42.mediant.ui.main.model.Post
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_personal_thread.*
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileInputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -28,6 +24,7 @@ private const val CAMERA_REQUEST_CODE = 0
 class MainActivity : AppCompatActivity() {
 
     private lateinit var currentPhotoPath: String
+    private val zion = ZionUtility()
 
     // TODO: after Textile server is built up, change [adapter] as local variable
     private var adapter = SectionsPagerAdapter(this, supportFragmentManager)
@@ -38,7 +35,6 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         viewPager.adapter = adapter
         tabs.setupWithViewPager(viewPager)
-        val zion = ZionUtility()
         zion.initZion(this@MainActivity, applicationContext)
     }
 
@@ -80,6 +76,8 @@ class MainActivity : AppCompatActivity() {
 
                     personalRecyclerView.adapter?.notifyItemInserted(0)
                     personalRecyclerView.layoutManager?.scrollToPosition(0)
+
+                    zion.signMessage(currentPhotoPath.toByteArray().joinToString("") { "%02x".format(it) })
                 }
             }
         }

@@ -9,10 +9,12 @@ import android.util.Log
 import com.htc.htcwalletsdk.Export.HtcWalletSdkManager
 import com.htc.htcwalletsdk.Export.RESULT
 import com.htc.htcwalletsdk.Native.Type.ByteArrayHolder
-import com.htc.htcwalletsdk.Security.Key.PublicKeyHolder
+import org.json.JSONObject
 import java.security.MessageDigest
 import java.util.*
 import kotlin.concurrent.thread
+
+const val TAG = "ZION"
 
 class ZionUtility {
     private val ethereumType = 60
@@ -23,24 +25,24 @@ class ZionUtility {
         val bytes = str.toByteArray()
         val md = MessageDigest.getInstance("SHA-256")
         val digest = md.digest(bytes)
-        return digest.fold("", { str, it -> str + "%02x".format(it) })
+        return digest.fold("", { s, it -> s + "%02x".format(it) })
     }
 
-    fun createWalletSeed(walletName: String) {
+    private fun createWalletSeed(walletName: String) {
         val sha256 = createSha256Hash(walletName)
-        Log.w("Wallet Name", walletName)
-        Log.w("sha256", sha256)
+        Log.i(TAG, "Wallet Name: $walletName")
+        Log.i(TAG, "sha256: $sha256")
         this.uniqueId = this.htcWalletSdkManager.register(walletName, sha256)
         val createSeedResult = this.htcWalletSdkManager.createSeed(this.uniqueId)
-        Log.w("createSeedResult", createSeedResult.toString())
+        Log.i(TAG, "createSeedResult: $createSeedResult")
 
         val sendPublicKeyHolderEthereum =
             this.htcWalletSdkManager.getSendPublicKey(this.uniqueId, this.ethereumType)
         val receivePublicKeyHolderEthereum =
             this.htcWalletSdkManager.getReceivePublicKey(this.uniqueId, this.ethereumType)
 
-        Log.w("Eth sendPublicKey", sendPublicKeyHolderEthereum.key)
-        Log.w("Eth receivePublicKey", receivePublicKeyHolderEthereum.key)
+        Log.i(TAG, "Eth sendPublicKey: ${sendPublicKeyHolderEthereum.key}")
+        Log.i(TAG, "Eth receivePublicKey ${receivePublicKeyHolderEthereum.key}")
     }
 
     fun initZion(activity: MainActivity, applicationContext: Context) {
@@ -53,8 +55,8 @@ class ZionUtility {
                 RESULT.SUCCESS -> {
                     val sdkVersion: String = mHtcWalletSdkManager.moduleVersion
                     val apiVersion: String = mHtcWalletSdkManager.apiVersion
-                    println("Zion SDK Version: $sdkVersion")
-                    println("Zion API Version: $apiVersion")
+                    Log.i(TAG, "Zion SDK Version: $sdkVersion")
+                    Log.i(TAG, "Zion API Version: $apiVersion")
                     message.what = 0
                     message.sendToTarget()
                     createWalletSeed("Foobar")
@@ -81,30 +83,34 @@ class ZionUtility {
         }
     }
 
-    fun getUniqueId(): Long {
-        return this.uniqueId
-    }
+    fun signMessage(hexData: String) {
+        val message = JSONObject()
+        message.put("version", "45")
+        message.put("data", hexData)
 
-    fun signMessage(jsonStr: String) {
+        val json = JSONObject()
+        json.put("path", "m/44'/60'/0'/0/0")
+        json.put("message", message)
+
         thread {
             val signature = ByteArrayHolder()
             val msgResult =
-                this.htcWalletSdkManager.signMessage(this.uniqueId, this.ethereumType, jsonStr, signature)
-            Log.w("msgResult", "" + msgResult)
-            Log.w("signature", Arrays.toString(signature.byteArray))
+                this.htcWalletSdkManager.signMessage(this.uniqueId, this.ethereumType, json.toString(), signature)
+            Log.i(TAG, "message result: $msgResult")
+            Log.i(TAG, "signature: ${Arrays.toString(signature.byteArray)}")
         }
+        Log.d(TAG, "signMessage return")
     }
 
     private fun createZionInitResultDialogHandler(activity: MainActivity): Handler {
-        val mMessageHandler = object : Handler(Looper.getMainLooper()) {
+        return object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(message: Message) {
                 val builder = AlertDialog.Builder(activity)
-                val msg: String
-                when (message.what) {
-                    0 -> msg = "Zion Initialization success."
-                    1 -> msg = "Please update your system in order to use Zion."
-                    2 -> msg = "Zion SDK can't support rooted device."
-                    else -> msg = "Zion initialization failed. Error code: ${message.arg1}"
+                val msg: String = when (message.what) {
+                    0 -> "Zion Initialization success."
+                    1 -> "Please update your system in order to use Zion."
+                    2 -> "Zion SDK can't support rooted device."
+                    else -> "Zion initialization failed. Error code: ${message.arg1}"
                 }
                 builder.setMessage(msg)
                     .setNeutralButton("ok") { _, _ -> }
@@ -112,6 +118,5 @@ class ZionUtility {
                 dialog.show()
             }
         }
-        return mMessageHandler
     }
 }
