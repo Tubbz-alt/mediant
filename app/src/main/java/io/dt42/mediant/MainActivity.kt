@@ -19,6 +19,7 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
+private const val TAG = "MEDIANT_MAIN"
 private const val CAMERA_REQUEST_CODE = 0
 
 class MainActivity : AppCompatActivity() {
@@ -36,6 +37,9 @@ class MainActivity : AppCompatActivity() {
         viewPager.adapter = adapter
         tabs.setupWithViewPager(viewPager)
         zion.initZion(this@MainActivity, applicationContext)
+
+        TextileWrapper.initTextile(applicationContext)
+        Log.i(TAG, TextileWrapper.getTimestamp())
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

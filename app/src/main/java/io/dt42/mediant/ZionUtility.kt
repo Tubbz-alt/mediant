@@ -14,7 +14,7 @@ import java.security.MessageDigest
 import java.util.*
 import kotlin.concurrent.thread
 
-const val TAG = "ZION"
+private const val TAG = "ZION"
 
 class ZionUtility {
     private val ethereumType = 60
