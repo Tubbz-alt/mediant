@@ -18,14 +18,16 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.concurrent.thread
 
 private const val TAG = "MEDIANT_MAIN"
 private const val CAMERA_REQUEST_CODE = 0
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var currentPhotoPath: String
     private val zion = ZionUtility()
+
+    private lateinit var currentPhotoPath: String
 
     // TODO: after Textile server is built up, change [adapter] as local variable
     private var adapter = SectionsPagerAdapter(this, supportFragmentManager)
@@ -57,6 +59,26 @@ class MainActivity : AppCompatActivity() {
                 dispatchSettingsActivityIntent()
                 true
             }
+            R.id.actionAcceptExternalInvitation -> {
+                thread {
+                    Log.d(TAG, "actionAcceptExternalInvitation started!")
+                    // the following id and key are used in the Exodus
+                    TextileWrapper.acceptExternalInvitation(
+                        "QmY399pXbrFCkminbh5oYu9wypBYkaM5UM34H3AfJt2vbP",
+                        "2BphD5Yy8gS6wd1hKrWeY2yvaKBvGyJKeBe8itasqqJ72hQ5noKJjxW1H1mdg"
+                    )
+                    Log.d(TAG, "actionAcceptExternalInvitation finished!")
+                }
+                true
+            }
+            R.id.actionListThread -> {
+                TextileWrapper.listThread()
+                true
+            }
+            R.id.actionListImages -> {
+                TextileWrapper.listImages()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -81,7 +103,11 @@ class MainActivity : AppCompatActivity() {
                     personalRecyclerView.adapter?.notifyItemInserted(0)
                     personalRecyclerView.layoutManager?.scrollToPosition(0)
 
-                    zion.signMessage(currentPhotoPath.toByteArray().joinToString("") { "%02x".format(it) })
+                    TextileWrapper.addImage(currentPhotoPath)
+
+                    zion.signMessage(
+                        TextileWrapper.getTimestamp().toByteArray().joinToString("") { "%02x".format(it) }
+                    ) { TextileWrapper.addImage(currentPhotoPath, it) }
 
                     // TODO: fix error caused by "E/ZKMALog: data field length=1256963 in JSON is too long."
                     // zion.signMessage(File(currentPhotoPath).readBytes().joinToString("") { "%02x".format(it) })

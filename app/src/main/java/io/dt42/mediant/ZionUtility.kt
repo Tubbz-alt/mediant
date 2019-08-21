@@ -83,7 +83,7 @@ class ZionUtility {
         }
     }
 
-    fun signMessage(hexData: String) {
+    fun signMessage(hexData: String, callback: ((String) -> Unit)? = null) {
         Log.d(TAG, hexData)
         val message = JSONObject()
         message.put("version", "45")
@@ -99,6 +99,7 @@ class ZionUtility {
                 this.htcWalletSdkManager.signMessage(this.uniqueId, this.ethereumType, json.toString(), signature)
             Log.i(TAG, "message result: $msgResult")
             Log.i(TAG, "signature: ${Arrays.toString(signature.byteArray)}")
+            callback?.invoke(Arrays.toString(signature.byteArray))
         }
     }
 

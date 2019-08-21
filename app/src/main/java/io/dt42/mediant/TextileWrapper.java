@@ -115,7 +115,7 @@ public class TextileWrapper {
             ThreadList tlist = Textile.instance().threads.list();
             Log.i(TAG, tlist.toString());
 
-            Log.i(TAG, "Meimei thread ID: " + getThreadIdByName("Meimei"));
+            // Log.i(TAG, "Meimei thread ID: " + getThreadIdByName("Meimei"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -176,6 +176,15 @@ public class TextileWrapper {
                 filePath,
                 getThreadIdByName("nbsdev"),
                 getTimestamp()
+        );
+    }
+
+    public static void addImage(String filePath, String caption) {
+        Log.d(TAG, "Image caption: " + caption);
+        addThreadFileByFilepath(
+                filePath,
+                getThreadIdByName("nbsdev"),
+                caption
         );
     }
 
