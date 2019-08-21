@@ -1,6 +1,7 @@
 package io.dt42.mediant
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -22,8 +23,20 @@ import java.util.*
 private const val CAMERA_REQUEST_CODE = 0
 
 class MainActivity : AppCompatActivity() {
-
+    private var tag: String = "mediant"
     private lateinit var currentPhotoPath: String
+
+    init {
+        instance = this
+    }
+
+    companion object {
+        private var instance: MainActivity? = null
+
+        fun applicationContext() : Context {
+            return instance!!.applicationContext
+        }
+    }
 
     // TODO: after Textile server is built up, change [adapter] as local variable
     private var adapter = SectionsPagerAdapter(this, supportFragmentManager)
@@ -34,6 +47,11 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         viewPager.adapter = adapter
         tabs.setupWithViewPager(viewPager)
+
+
+        val context: Context = applicationContext()
+        TextileWrapper.initTextile(context)
+        Log.i(tag, TextileWrapper.getTimestamp())
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
