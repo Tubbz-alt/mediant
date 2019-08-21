@@ -84,6 +84,7 @@ class ZionUtility {
     }
 
     fun signMessage(hexData: String) {
+        Log.d(TAG, hexData)
         val message = JSONObject()
         message.put("version", "45")
         message.put("data", hexData)
@@ -99,7 +100,6 @@ class ZionUtility {
             Log.i(TAG, "message result: $msgResult")
             Log.i(TAG, "signature: ${Arrays.toString(signature.byteArray)}")
         }
-        Log.d(TAG, "signMessage return")
     }
 
     private fun createZionInitResultDialogHandler(activity: MainActivity): Handler {

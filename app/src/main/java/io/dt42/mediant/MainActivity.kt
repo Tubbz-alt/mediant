@@ -78,6 +78,9 @@ class MainActivity : AppCompatActivity() {
                     personalRecyclerView.layoutManager?.scrollToPosition(0)
 
                     zion.signMessage(currentPhotoPath.toByteArray().joinToString("") { "%02x".format(it) })
+
+                    // TODO: fix error caused by "E/ZKMALog: data field length=1256963 in JSON is too long."
+                    // zion.signMessage(File(currentPhotoPath).readBytes().joinToString("") { "%02x".format(it) })
                 }
             }
         }
