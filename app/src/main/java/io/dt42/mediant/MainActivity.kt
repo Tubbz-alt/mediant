@@ -25,8 +25,9 @@ private const val CAMERA_REQUEST_CODE = 0
 
 class MainActivity : AppCompatActivity() {
 
-    private val zion = ZionUtility()
+    //private val zion = ZionUtility()
 
+    private var tag: String = "mediant"
     private lateinit var currentPhotoPath: String
 
     // TODO: after Textile server is built up, change [adapter] as local variable
@@ -38,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         viewPager.adapter = adapter
         tabs.setupWithViewPager(viewPager)
-        zion.initZion(this@MainActivity, applicationContext)
+        //zion.initZion(this@MainActivity, applicationContext)
 
         TextileWrapper.initTextile(applicationContext)
         Log.i(TAG, TextileWrapper.getTimestamp())
@@ -79,6 +80,14 @@ class MainActivity : AppCompatActivity() {
                 TextileWrapper.listImages()
                 true
             }
+            R.id.actionGetProfile -> {
+                TextileWrapper.getProfile()
+                true
+            }
+            R.id.actionAddImage -> {
+                TextileWrapper.addImageDev()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -103,11 +112,15 @@ class MainActivity : AppCompatActivity() {
                     personalRecyclerView.adapter?.notifyItemInserted(0)
                     personalRecyclerView.layoutManager?.scrollToPosition(0)
 
-                    TextileWrapper.addImage(currentPhotoPath)
+                    Log.i(tag, "========== Upload image start ==========")
+                    TextileWrapper.addImage(currentPhotoPath, "SWENC" + TextileWrapper.getTimestamp() + "SWENC")
+                    Log.i(tag, "========== Upload image completed ==========")
 
+                    /*
                     zion.signMessage(
                         TextileWrapper.getTimestamp().toByteArray().joinToString("") { "%02x".format(it) }
                     ) { TextileWrapper.addImage(currentPhotoPath, it) }
+                    */
 
                     // TODO: fix error caused by "E/ZKMALog: data field length=1256963 in JSON is too long."
                     // zion.signMessage(File(currentPhotoPath).readBytes().joinToString("") { "%02x".format(it) })

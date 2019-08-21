@@ -15,4 +15,10 @@
     <item
         android:id="@+id/actionListImages"
         android:title="list images" />
+    <item
+        android:id="@+id/actionGetProfile"
+        android:title="get profile" />
+    <item
+        android:id="@+id/actionAddImage"
+        android:title="add image" />
 </menu>
