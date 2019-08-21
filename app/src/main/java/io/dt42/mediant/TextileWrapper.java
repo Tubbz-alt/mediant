@@ -58,6 +58,33 @@ public class TextileWrapper {
     */
 
     /*-------------------------------------------------------------------------
+     * Construction and Destruction
+     *------------------------------------------------------------------------*/
+
+    public static void initTextile(Context ctx) {
+        try {
+            final File filesDir = ctx.getFilesDir();
+            final String path = new File(filesDir, "textile-go").getAbsolutePath();
+
+            if (!Textile.isInitialized(path)) {
+                String phrase = Textile.initializeCreatingNewWalletAndAccount(path, true, false);
+                System.out.println(phrase);
+            }
+
+            Textile.launch(ctx, path, true);
+
+            Textile.instance().addEventListener(new TextileLoggingListener());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void destroyTextile() {
+        Textile.instance().destroy();
+    }
+
+
+    /*-------------------------------------------------------------------------
      * Thread
      *------------------------------------------------------------------------*/
 
