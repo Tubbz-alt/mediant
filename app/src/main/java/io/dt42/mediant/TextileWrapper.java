@@ -31,32 +31,6 @@ import mobile.SearchHandle;
 public class TextileWrapper {
     private static final String TAG = "mediant";
 
-    /*
-    private void initTextile() {
-        try {
-            Context ctx = getApplicationContext();
-
-            final File filesDir = ctx.getFilesDir();
-            final String path = new File(filesDir, "textile-go").getAbsolutePath();
-
-            if (!Textile.isInitialized(path)) {
-                String phrase = Textile.initializeCreatingNewWalletAndAccount(path, true, false);
-                System.out.println(phrase);
-            }
-
-            Textile.launch(ctx, path, true);
-
-            Textile.instance().addEventListener(new TextileLoggingListener());
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private void destroyTextile() {
-        Textile.instance().destroy();
-    }
-    */
-
     /*-------------------------------------------------------------------------
      * Construction and Destruction
      *------------------------------------------------------------------------*/
