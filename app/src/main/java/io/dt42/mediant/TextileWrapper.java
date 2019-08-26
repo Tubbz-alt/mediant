@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import io.textile.pb.Model.Block;
 import io.textile.pb.Model.Peer;
@@ -42,14 +43,14 @@ public class TextileWrapper {
 
             if (!Textile.isInitialized(path)) {
                 String phrase = Textile.initializeCreatingNewWalletAndAccount(path, true, false);
-                System.out.println(phrase);
+                Log.d(TAG, phrase);
             }
 
             Textile.launch(ctx, path, true);
 
             Textile.instance().addEventListener(new TextileLoggingListener());
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            Log.e(TAG, e.getMessage());
         }
     }
 
@@ -106,9 +107,10 @@ public class TextileWrapper {
             tlist = Textile.instance().threads.list();
         } catch (Exception e) {
             e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
         Log.d(TAG, "Targeting thread name: " + threadName);
-        for (int i = 0; i < tlist.getItemsCount(); i++) {
+        for (int i = 0; i < Objects.requireNonNull(tlist).getItemsCount(); i++) {
             Thread t = tlist.getItems(i);
             Log.d(TAG, "Thread name: " + t.getName());
             Log.d(TAG, "Thread ID: " + t.getId());

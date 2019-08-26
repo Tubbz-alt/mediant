@@ -19,10 +19,11 @@ import java.util.*
 import kotlin.concurrent.thread
 
 private const val CAMERA_REQUEST_CODE = 0
+private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
 private const val TAG = "MAIN_ACTIVITY"
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var currentPhotoPath: String
+    private var currentPhotoPath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,7 +33,16 @@ class MainActivity : AppCompatActivity() {
         tabs.setupWithViewPager(viewPager)
 
         TextileWrapper.initTextile(applicationContext)
-        Log.i(TAG, TextileWrapper.getTimestamp())
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        outState?.putString(CURRENT_PHOTO_PATH, currentPhotoPath)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        currentPhotoPath = savedInstanceState.getString(CURRENT_PHOTO_PATH)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -79,10 +89,10 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    TextileWrapper.addImage(currentPhotoPath)
-
-                    viewPager.currentItem = 1
-
+                    currentPhotoPath?.apply {
+                        TextileWrapper.addImage(this)
+                        viewPager.currentItem = 1
+                    }
                 }
             }
         }
@@ -96,7 +106,7 @@ class MainActivity : AppCompatActivity() {
                 val photoFile: File? = try {
                     createImageFile()
                 } catch (ex: IOException) {
-                    Log.i("main", "Error occurred while creating the File")
+                    Log.e(TAG, "Error occurred while creating the File")
                     null
                 }
                 // Continue only if the File was successfully created
