@@ -12,9 +12,7 @@ import kotlinx.android.synthetic.main.fragment_public_thread.*
 
 
 class PublicThreadFragment : Fragment() {
-
-    // TODO: The posts list should be get from server.
-    val posts = mutableListOf<Post>()
+    private val posts = mutableListOf<Post>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -1,35 +1,35 @@
 package io.dt42.mediant;
 
 import android.content.Context;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import io.textile.pb.Model.Block;
-import io.textile.pb.Model.Contact;
 import io.textile.pb.Model.Peer;
-import io.textile.pb.QueryOuterClass.ContactQuery;
-import io.textile.pb.QueryOuterClass.QueryOptions;
 import io.textile.pb.Model.Thread;
 import io.textile.pb.Model.ThreadList;
+import io.textile.pb.QueryOuterClass.ContactQuery;
+import io.textile.pb.QueryOuterClass.QueryOptions;
 import io.textile.pb.View.AddThreadConfig;
-import io.textile.pb.View.FilesList;
 import io.textile.pb.View.Files;
+import io.textile.pb.View.FilesList;
 import io.textile.pb.View.InviteViewList;
+import io.textile.textile.Handlers;
 import io.textile.textile.Handlers.BlockHandler;
-import io.textile.textile.Profile;
 import io.textile.textile.Textile;
 import io.textile.textile.TextileLoggingListener;
 import mobile.SearchHandle;
 
 public class TextileWrapper {
-    private static final String TAG = "mediant";
+    private static final String TAG = "TEXTILE_WRAPPER";
 
     /*-------------------------------------------------------------------------
      * Construction and Destruction
@@ -123,7 +123,7 @@ public class TextileWrapper {
                         threadName, threadName.length()));
             }
         }
-        Log.d(TAG, "Should NOT be here!!!!!");
+        Log.e(TAG, "Should NOT be here!!!!!");
         return null;
     }
 
@@ -156,26 +156,46 @@ public class TextileWrapper {
     public static void addImageDev() {
         // changed thread name from Meimei to nbsdev
         addThreadFileByFilepath(
-            "/storage/emulated/0/DCIM/100MEDIA/IMAG0976.jpg",
-            getThreadIdByName("nbsdev"),
-            getTimestamp()
+                "/storage/emulated/0/DCIM/100MEDIA/IMAG0976.jpg",
+                getThreadIdByName("nbsdev"),
+                getTimestamp()
         );
     }
 
     public static void listImages() {
-        FilesList flist = null;
+        FilesList filesList;
         try {
-            flist = Textile.instance().files.list(
+            filesList = Textile.instance().files.list(
                     getThreadIdByName("nbsdev"),
                     null,
                     5);
-            for (int i = 0; i < flist.getItemsCount(); i++) {
-                Files f = flist.getItems(i);
+            for (int i = 0; i < filesList.getItemsCount(); i++) {
+                Files f = filesList.getItems(i);
                 Log.d(TAG, "File string: " + f.toString());
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Nullable
+    public static List<Files> getImageList() {
+        FilesList filesList;
+        try {
+            filesList = Textile.instance().files.list(
+                    getThreadIdByName("nbsdev"),
+                    null,
+                    5
+            );
+            return filesList.getItemsList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void fetchImageContent(String hash, Handlers.DataHandler dataHandler) {
+        Textile.instance().files.content(hash, dataHandler);
     }
 
     /*-------------------------------------------------------------------------
@@ -223,8 +243,7 @@ public class TextileWrapper {
         }
     }
 
-    /* Invitation was sent by Textile Photo, and the invitation link is
-     * https://www.textile.photos/invites/new#id=QmVrUmZ7cd75GjkK4iivdcqnM4F6DrmsPqgEYqH4zSzjeV&key=ow88n7AskjX86pBGw6sxQDs22EBx5Lb8uc1kumTSmp1k5952EoqoZdnVzzpQ&inviter=P411Po6YYU4Kduu29mZBThGwks9kzBRv9xzs2nsgGBsVgNDm&name=nbsdev&referral=MSCES
+    /* Invitation was sent by Textile Photo
      */
     public static void acceptExternalInvitation(String inviteId, String key) {
         try {
@@ -290,7 +309,7 @@ public class TextileWrapper {
      * Utilities
      *------------------------------------------------------------------------*/
     public static String getTimestamp() {
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.TAIWAN);
         return df.format(new Date());
     }
 }

@@ -6,4 +6,13 @@
         android:icon="@drawable/ic_settings_black_24dp"
         android:title="@string/title_activity_settings"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/actionAcceptExternalInvitation"
+        android:title="accept external invitation" />
+    <item
+        android:id="@+id/actionListThread"
+        android:title="list thread" />
+    <item
+        android:id="@+id/actionListImages"
+        android:title="list images" />
 </menu>

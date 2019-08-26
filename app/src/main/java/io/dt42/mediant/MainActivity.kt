@@ -1,7 +1,6 @@
 package io.dt42.mediant
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,46 +11,28 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
-import io.dt42.mediant.ui.main.model.Post
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_personal_thread.*
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.concurrent.thread
 
 private const val CAMERA_REQUEST_CODE = 0
+private const val TAG = "MAIN_ACTIVITY"
 
 class MainActivity : AppCompatActivity() {
-    private var tag: String = "mediant"
     private lateinit var currentPhotoPath: String
-
-    init {
-        instance = this
-    }
-
-    companion object {
-        private var instance: MainActivity? = null
-
-        fun applicationContext() : Context {
-            return instance!!.applicationContext
-        }
-    }
-
-    // TODO: after Textile server is built up, change [adapter] as local variable
-    private var adapter = SectionsPagerAdapter(this, supportFragmentManager)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        viewPager.adapter = adapter
+        viewPager.adapter = SectionsPagerAdapter(this, supportFragmentManager)
         tabs.setupWithViewPager(viewPager)
 
-
-        val context: Context = applicationContext()
-        TextileWrapper.initTextile(context)
-        Log.i(tag, TextileWrapper.getTimestamp())
+        TextileWrapper.initTextile(applicationContext)
+        Log.i(TAG, TextileWrapper.getTimestamp())
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -69,6 +50,26 @@ class MainActivity : AppCompatActivity() {
                 dispatchSettingsActivityIntent()
                 true
             }
+            R.id.actionAcceptExternalInvitation -> {
+                // https://www.textile.photos/invites/new#id=QmTnxH2U5CXZ2NT1JZQFdU5n8capSXTDiXm5evYrBMZMXe&key=9X6obPAc4Gm3HqBRJXqFW6ayyxudSYC2fpTGmgKGQhfh71TQHgoSN1MTSjH9&inviter=P4ibDYs2oa2mz9unQaPrJRtuso83NUSAebxVtQuniUjUqe4K&name=nbsdev&referral=MSCES
+                thread {
+                    Log.d(TAG, "========== accepting external invitation started ===========")
+                    TextileWrapper.acceptExternalInvitation(
+                        "QmTnxH2U5CXZ2NT1JZQFdU5n8capSXTDiXm5evYrBMZMXe",
+                        "9X6obPAc4Gm3HqBRJXqFW6ayyxudSYC2fpTGmgKGQhfh71TQHgoSN1MTSjH9"
+                    )
+                    Log.d(TAG, "========= accepting external invitation finished ===========")
+                }
+                true
+            }
+            R.id.actionListThread -> {
+                TextileWrapper.listThread()
+                true
+            }
+            R.id.actionListImages -> {
+                TextileWrapper.listImages()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -78,20 +79,10 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
+                    TextileWrapper.addImage(currentPhotoPath)
+
                     viewPager.currentItem = 1
 
-                    /**
-                     * TODO
-                     * after we can get photos from Textile server, we do not need to use [adapter] to reference
-                     * the fragments.
-                     */
-                    adapter.personalThreadFragment.posts.add(
-                        0,
-                        Post("username", currentPhotoPath, "description")
-                    )
-
-                    personalRecyclerView.adapter?.notifyItemInserted(0)
-                    personalRecyclerView.layoutManager?.scrollToPosition(0)
                 }
             }
         }
@@ -110,7 +101,8 @@ class MainActivity : AppCompatActivity() {
                 }
                 // Continue only if the File was successfully created
                 photoFile?.also {
-                    val photoURI: Uri = FileProvider.getUriForFile(this, "$packageName.provider", it)
+                    val photoURI: Uri =
+                        FileProvider.getUriForFile(this, "$packageName.provider", it)
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                     startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE)
                 }
