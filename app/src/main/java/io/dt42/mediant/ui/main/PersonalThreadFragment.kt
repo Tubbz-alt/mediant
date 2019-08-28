@@ -3,6 +3,7 @@ package io.dt42.mediant.ui.main
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,8 +41,10 @@ class PersonalThreadFragment : Fragment() {
         }
     }
 
-    public fun refreshPosts() {
+    private fun refreshPosts() {
         thread {
+            posts.clear()
+            personalRecyclerView.adapter?.notifyDataSetChanged()
             val newPostsCount = fetchPosts()
             activity?.runOnUiThread {
                 personalSwipeRefreshLayout.isRefreshing = false
@@ -53,27 +56,22 @@ class PersonalThreadFragment : Fragment() {
 
     private fun fetchPosts(): Int {
         var counter = 0
-        posts.clear()
-        personalRecyclerView.adapter?.notifyDataSetChanged()
-        TextileWrapper.getImageList()?.apply {
-            forEach { files ->
-                files.filesList.forEach {
-                    TextileWrapper.fetchImageContent(
-                        it.linksMap["large"]?.hash,
-                        object : Handlers.DataHandler {
-                            override fun onComplete(data: ByteArray, media: String) {
-                                if (media == "image/jpeg") {
-                                    counter++
-                                    posts.add(Post(files.user.address, data, files.caption))
-                                }
-                            }
-
-                            override fun onError(e: Exception) {
-                                e.printStackTrace()
+        TextileWrapper.getImageList()?.forEach { files ->
+            files.filesList.forEach {
+                TextileWrapper.fetchImageContent(
+                    it.linksMap["large"]?.hash,
+                    object : Handlers.DataHandler {
+                        override fun onComplete(data: ByteArray?, media: String?) {
+                            if (media == "image/jpeg") {
+                                posts.add(Post(files.user.address, data, files.caption))
+                                counter++
                             }
                         }
-                    )
-                }
+
+                        override fun onError(e: Exception?) {
+                            Log.getStackTraceString(e)
+                        }
+                    })
             }
         }
         return counter

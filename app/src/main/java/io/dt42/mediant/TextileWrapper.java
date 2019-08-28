@@ -11,8 +11,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
+import io.textile.pb.Model;
 import io.textile.pb.Model.Block;
 import io.textile.pb.Model.Peer;
 import io.textile.pb.Model.Thread;
@@ -176,7 +178,7 @@ public class TextileWrapper {
                 Log.d(TAG, "File string: " + f.toString());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.getStackTraceString(e);
         }
     }
 
@@ -191,13 +193,46 @@ public class TextileWrapper {
             );
             return filesList.getItemsList();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.getStackTraceString(e);
             return null;
         }
     }
 
+    /**
+     * Fetch only one image content with given hash for simple demo.
+     * TODO: use [fetchImageContents] instead in the future to encapsulate parsing process of file list.
+     * @param hash The hash to return image for
+     * @param dataHandler The callback object to handle the result
+     */
     public static void fetchImageContent(String hash, Handlers.DataHandler dataHandler) {
         Textile.instance().files.content(hash, dataHandler);
+    }
+
+    public static void fetchImageContents(Handlers.DataHandler dataHandler) {
+        /* TODO: use [imageContentForMinWidth] to fetch images (currently, this method only gets null
+         *   data, and I don't know why
+         */
+//      List<Files> imageList = getImageList();
+//      if (imageList != null) {
+//          imageList.forEach(file -> {
+//              Log.d(TAG, file.toString());
+//              Log.d(TAG, file.getData());
+//              Log.d(TAG, file.getBlock());
+//              Textile.instance().files.imageContentForMinWidth(file.getData(), 10, dataHandler);
+//          });
+//      }
+
+        List<Files> imageList = getImageList();
+        if (imageList != null) {
+            imageList.forEach(files -> files.getFilesList().forEach(file -> {
+                        Map<String, Model.FileIndex> linksMap = file.getLinksMap();
+                        Model.FileIndex largeImage = linksMap.get("large");
+                        if (largeImage != null) {
+                            Textile.instance().files.content(largeImage.getHash(), dataHandler);
+                        }
+                    }
+            ));
+        }
     }
 
     /*-------------------------------------------------------------------------
