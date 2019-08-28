@@ -7,7 +7,4 @@
     <string name="card_publish_description">Publish to public thread</string>
     <string name="card_proof_description">Show proof</string>
     <string name="card_delete_description">Delete photo</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
