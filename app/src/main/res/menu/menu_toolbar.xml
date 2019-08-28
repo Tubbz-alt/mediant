@@ -11,8 +11,11 @@
         android:title="accept external invitation" />
     <item
         android:id="@+id/actionListThread"
-        android:title="list thread" />
+        android:title="log thread" />
     <item
         android:id="@+id/actionListImages"
-        android:title="list images" />
+        android:title="log images" />
+    <item
+        android:id="@+id/actionLogFilesDir"
+        android:title="log files dir" />
 </menu>

@@ -1,0 +1,14 @@
+<android.support.v7.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <EditTextPreference
+        app:key="key"
+        app:title="edit text example" />
+
+    <Preference
+        app:key="feedback"
+        app:summary="example"
+        app:title="Example" />
+
+    <SwitchPreferenceCompat
+        app:key="notifications"
+        app:title="Example" />
+</android.support.v7.preference.PreferenceScreen>

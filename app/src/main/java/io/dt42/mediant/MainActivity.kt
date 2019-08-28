@@ -80,6 +80,10 @@ class MainActivity : AppCompatActivity() {
                 TextileWrapper.listImages()
                 true
             }
+            R.id.actionLogFilesDir -> {
+                applicationContext.filesDir.walkTopDown().forEach { Log.d(TAG, it.toString()) }
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
