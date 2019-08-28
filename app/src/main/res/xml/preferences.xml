@@ -1,14 +1,15 @@
-<android.support.v7.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <EditTextPreference
-        app:key="key"
-        app:title="edit text example" />
+        app:key="signature"
+        app:title="Your signature" />
 
     <Preference
         app:key="feedback"
-        app:summary="example"
-        app:title="Example" />
+        app:summary="Report technical issues or suggest new features"
+        app:title="Send feedback" />
 
     <SwitchPreferenceCompat
         app:key="notifications"
-        app:title="Example" />
-</android.support.v7.preference.PreferenceScreen>
+        app:title="Enable message notifications" />
+</PreferenceScreen>

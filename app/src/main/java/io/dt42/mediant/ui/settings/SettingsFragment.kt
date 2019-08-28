@@ -1,7 +1,7 @@
 package io.dt42.mediant.ui.settings
 
 import android.os.Bundle
-import android.support.v7.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceFragmentCompat
 import io.dt42.mediant.R
 
 class SettingsFragment : PreferenceFragmentCompat() {
