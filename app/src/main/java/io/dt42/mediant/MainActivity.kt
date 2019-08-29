@@ -35,9 +35,9 @@ class MainActivity : AppCompatActivity() {
         TextileWrapper.initTextile(applicationContext)
     }
 
-    override fun onSaveInstanceState(outState: Bundle?) {
+    override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState?.putString(CURRENT_PHOTO_PATH, currentPhotoPath)
+        outState.putString(CURRENT_PHOTO_PATH, currentPhotoPath)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -50,8 +50,8 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        return when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
             android.R.id.home -> {
                 dispatchTakePictureIntent()
                 true
