@@ -1,14 +1,20 @@
 package io.dt42.mediant
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
@@ -17,6 +23,8 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
+
+private enum class PermissionCode(val value: Int) { WRITE_EXTERNAL_STORAGE(0) }
 
 private const val CAMERA_REQUEST_CODE = 0
 private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
@@ -53,7 +61,9 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                dispatchTakePictureIntent()
+                if (hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    dispatchTakePictureIntent()
+                }
                 true
             }
             R.id.actionSettings -> {
@@ -81,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.actionLogFilesDir -> {
-                applicationContext.filesDir.walkTopDown().forEach { Log.d(TAG, it.toString()) }
+                filesDir.walkTopDown().forEach { Log.d(TAG, it.toString()) }
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -94,9 +104,26 @@ class MainActivity : AppCompatActivity() {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     currentPhotoPath?.apply {
-                        TextileWrapper.addImage(this)
+                        // TextileWrapper.addImage(this)
                         viewPager.currentItem = 1
                     }
+                }
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            PermissionCode.WRITE_EXTERNAL_STORAGE.value -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    dispatchTakePictureIntent()
+                } else {
+                    showPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
             }
         }
@@ -137,6 +164,43 @@ class MainActivity : AppCompatActivity() {
         return File.createTempFile("JPEG_${timeStamp}_", ".jpg", filesDir).apply {
             // Save a file: path for use with ACTION_VIEW intents
             currentPhotoPath = absolutePath
+        }
+    }
+
+    private fun hasPermission(permission: String): Boolean {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                permission
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            askPermission(permission)
+            return false
+        }
+        return true
+    }
+
+    private fun askPermission(permission: String) {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+            showPermissionRationale(permission)
+        } else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(permission),
+                PermissionCode.WRITE_EXTERNAL_STORAGE.value
+            )
+        }
+    }
+
+    private fun showPermissionRationale(permission: String) {
+        when (permission) {
+            Manifest.permission.WRITE_EXTERNAL_STORAGE -> Toast.makeText(
+                this,
+                R.string.permission_rationale_write_external_storage,
+                Toast.LENGTH_LONG
+            ).apply {
+                setGravity(Gravity.CENTER, 0, 0)
+                show()
+            }
         }
     }
 }

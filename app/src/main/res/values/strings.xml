@@ -7,4 +7,5 @@
     <string name="card_publish_description">Publish to public thread</string>
     <string name="card_proof_description">Show proof</string>
     <string name="card_delete_description">Delete photo</string>
+    <string name="permission_rationale_write_external_storage">Mediant requires permission to save the proof and signature of the pictures you take into device\'s storage. Go to settings to turn on the permissions of this APP.</string>
 </resources>
