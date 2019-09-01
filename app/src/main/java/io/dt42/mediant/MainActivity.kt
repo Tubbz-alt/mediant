@@ -16,8 +16,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.preference.PreferenceManager
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
+import org.witness.proofmode.ProofMode
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -90,8 +92,13 @@ class MainActivity : AppCompatActivity() {
                 TextileWrapper.listImages()
                 true
             }
-            R.id.actionLogFilesDir -> {
-                filesDir.walkTopDown().forEach { Log.d(TAG, it.toString()) }
+            R.id.actionShowTestingInfo -> {
+                PreferenceManager.getDefaultSharedPreferences(this).apply {
+                    Log.d(TAG, "autoNotarize ${getBoolean("autoNotarize", false)}")
+                    Log.d(TAG, "trackLocation ${getBoolean("trackLocation", false)}")
+                    Log.d(TAG, "trackDeviceId ${getBoolean("trackDeviceId", false)}")
+                    Log.d(TAG, "trackMobileNetwork ${getBoolean("trackMobileNetwork", false)}")
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -103,8 +110,11 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    currentPhotoPath?.apply {
+                    currentPhotoPath?.also {
                         // TextileWrapper.addImage(this)
+                        ProofMode.generateProof(this, Uri.fromFile(File(it))).also {
+                            Log.d(TAG, "=============== SUCCESSFUL $it")
+                        }
                         viewPager.currentItem = 1
                     }
                 }

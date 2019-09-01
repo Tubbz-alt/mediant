@@ -16,6 +16,6 @@
         android:id="@+id/actionListImages"
         android:title="log images" />
     <item
-        android:id="@+id/actionLogFilesDir"
-        android:title="log files dir" />
+        android:id="@+id/actionShowTestingInfo"
+        android:title="show testing info" />
 </menu>
