@@ -116,8 +116,10 @@ class MainActivity : AppCompatActivity() {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     currentPhotoPath?.also { photoPath ->
-                        generateProof(photoPath)?.also {
+                        generateProof(photoPath).also {
                             Log.d(TAG, "proof bundle: $it")
+                            Toast.makeText(this, "Uploading via Textile...", Toast.LENGTH_SHORT)
+                                .show()
                             TextileWrapper.addImage(
                                 photoPath,
                                 "nbsdev",
@@ -176,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun generateProof(filePath: String): ProofBundle? {
+    private fun generateProof(filePath: String): ProofBundle {
         var imageSignature: String? = null
         var proof: String? = null
         var proofSignature: String? = null
@@ -197,15 +199,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        return if (imageSignature == null || proof == null || proofSignature == null) {
-            Log.e(TAG, "proof components missing: ")
-            Log.e(TAG, "[imageSignature] $imageSignature")
-            Log.e(TAG, "[proof] $proof")
-            Log.e(TAG, "[proofSignature] $proofSignature")
-            null
-        } else {
-            ProofBundle(imageSignature!!, proof!!, proofSignature!!)
-        }
+        return ProofBundle(imageSignature!!, proof!!, proofSignature!!)
     }
 
     @Throws(IOException::class)
