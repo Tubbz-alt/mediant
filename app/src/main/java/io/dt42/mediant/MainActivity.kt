@@ -14,7 +14,6 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.preference.PreferenceManager
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
@@ -26,7 +25,12 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
 
-private enum class PermissionCode(val value: Int) { WRITE_EXTERNAL_STORAGE(0) }
+private enum class PermissionCode(val value: Int) { DEFAULT(0) }
+
+private val DEFAULT_PERMISSIONS = listOf(
+    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    Manifest.permission.ACCESS_FINE_LOCATION
+)
 
 private const val CAMERA_REQUEST_CODE = 0
 private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
@@ -63,7 +67,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                if (hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                if (hasPermissions(DEFAULT_PERMISSIONS)) {
                     dispatchTakePictureIntent()
                 }
                 true
@@ -110,10 +114,10 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    currentPhotoPath?.also {
+                    currentPhotoPath?.also { photoPath ->
                         // TextileWrapper.addImage(this)
-                        ProofMode.generateProof(this, Uri.fromFile(File(it))).also {
-                            Log.d(TAG, "=============== SUCCESSFUL $it")
+                        ProofMode.generateProof(this, Uri.fromFile(File(photoPath))).also {
+                            Toast.makeText(this, "Proofs Generated! $it", Toast.LENGTH_LONG).show()
                         }
                         viewPager.currentItem = 1
                     }
@@ -129,7 +133,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
-            PermissionCode.WRITE_EXTERNAL_STORAGE.value -> {
+            PermissionCode.DEFAULT.value -> {
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     dispatchTakePictureIntent()
                 } else {
@@ -177,40 +181,45 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun hasPermission(permission: String): Boolean {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                permission
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            askPermission(permission)
-            return false
+    private fun hasPermissions(permissions: List<String>): Boolean {
+        return if (permissions.all {
+                ActivityCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
+            }) {
+            true
+        } else {
+            askPermissions(permissions)
+            false
         }
-        return true
     }
 
-    private fun askPermission(permission: String) {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
-            showPermissionRationale(permission)
-        } else {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(permission),
-                PermissionCode.WRITE_EXTERNAL_STORAGE.value
-            )
+    private fun askPermissions(permissions: List<String>) {
+        permissions.forEach {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, it)) {
+                showPermissionRationale(it)
+            }
         }
+        ActivityCompat.requestPermissions(
+            this,
+            permissions.toTypedArray(),
+            PermissionCode.DEFAULT.value
+        )
     }
 
     private fun showPermissionRationale(permission: String) {
         when (permission) {
-            Manifest.permission.WRITE_EXTERNAL_STORAGE -> Toast.makeText(
-                this,
-                R.string.permission_rationale_write_external_storage,
-                Toast.LENGTH_LONG
-            ).apply {
-                setGravity(Gravity.CENTER, 0, 0)
-                show()
-            }
+            Manifest.permission.WRITE_EXTERNAL_STORAGE -> showDefaultPermissionsRationale()
+            Manifest.permission.ACCESS_FINE_LOCATION -> showDefaultPermissionsRationale()
+        }
+    }
+
+    private fun showDefaultPermissionsRationale() {
+        Toast.makeText(
+            this,
+            R.string.permission_rationale_default,
+            Toast.LENGTH_LONG
+        ).apply {
+            setGravity(Gravity.CENTER, 0, 0)
+            show()
         }
     }
 }
