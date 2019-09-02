@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.preference.PreferenceManager
+import io.dt42.mediant.model.ProofBundle
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 import org.witness.proofmode.ProofMode
@@ -115,9 +116,13 @@ class MainActivity : AppCompatActivity() {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     currentPhotoPath?.also { photoPath ->
-                        // TextileWrapper.addImage(this)
-                        ProofMode.generateProof(this, Uri.fromFile(File(photoPath))).also {
-                            Toast.makeText(this, "Proofs Generated! $it", Toast.LENGTH_LONG).show()
+                        generateProof(photoPath)?.also {
+                            Log.d(TAG, "proof bundle: $it")
+                            TextileWrapper.addImage(
+                                photoPath,
+                                "nbsdev",
+                                "${it.proof}\n${it.imageSignature}\n${it.proofSignature}"
+                            )
                         }
                         viewPager.currentItem = 1
                     }
@@ -168,6 +173,38 @@ class MainActivity : AppCompatActivity() {
     private fun dispatchSettingsActivityIntent() {
         Intent(this, SettingsActivity::class.java).also {
             startActivity(it)
+        }
+    }
+
+    private fun generateProof(filePath: String): ProofBundle? {
+        var imageSignature: String? = null
+        var proof: String? = null
+        var proofSignature: String? = null
+        ProofMode.generateProof(this, Uri.fromFile(File(filePath)))?.also { fileHash ->
+            Toast.makeText(this, "Proofs Generated! $fileHash", Toast.LENGTH_LONG).show()
+            ProofMode.getProofDir(fileHash)?.apply {
+                if (exists()) {
+                    listFiles()?.forEach {
+                        when {
+                            it.name.endsWith(".jpg${ProofMode.OPENPGP_FILE_TAG}") -> // photo signature file
+                                imageSignature = it.readText()
+                            it.name.endsWith(".jpg${ProofMode.PROOF_FILE_TAG}") -> // proof file
+                                proof = it.readText()
+                            it.name.endsWith(".jpg${ProofMode.PROOF_FILE_TAG}${ProofMode.OPENPGP_FILE_TAG}") -> // proof signature file
+                                proofSignature = it.readText()
+                        }
+                    }
+                }
+            }
+        }
+        return if (imageSignature == null || proof == null || proofSignature == null) {
+            Log.e(TAG, "proof components missing: ")
+            Log.e(TAG, "[imageSignature] $imageSignature")
+            Log.e(TAG, "[proof] $proof")
+            Log.e(TAG, "[proofSignature] $proofSignature")
+            null
+        } else {
+            ProofBundle(imageSignature!!, proof!!, proofSignature!!)
         }
     }
 

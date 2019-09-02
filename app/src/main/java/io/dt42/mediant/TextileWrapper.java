@@ -150,11 +150,11 @@ public class TextileWrapper {
      *------------------------------------------------------------------------*/
 
     public static void addImage(String filePath) {
-        addThreadFileByFilepath(
-                filePath,
-                getThreadIdByName("nbsdev"),
-                getTimestamp()
-        );
+        addImage(filePath, "nbsdev", getTimestamp());
+    }
+
+    public static void addImage(String filePath, String threadName, String caption) {
+        addThreadFileByFilepath(filePath, getThreadIdByName(threadName), caption);
     }
 
     public static void addImageDev() {
