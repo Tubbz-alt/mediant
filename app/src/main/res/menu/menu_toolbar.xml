@@ -18,4 +18,7 @@
     <item
         android:id="@+id/actionShowTestingInfo"
         android:title="show testing info" />
+    <item
+        android:id="@+id/actionInitPrivateThread"
+        android:title="init Storage" />
 </menu>
