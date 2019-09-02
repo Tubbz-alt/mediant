@@ -106,6 +106,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 true
             }
+            R.id.actionInitPrivateThread -> {
+                TextileWrapper.initPrivateThread()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
