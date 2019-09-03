@@ -18,6 +18,8 @@ import io.textile.pb.Model;
 import io.textile.pb.Model.Block;
 import io.textile.pb.Model.Peer;
 import io.textile.pb.Model.Thread;
+import io.textile.pb.Model.Thread.Sharing;
+import io.textile.pb.Model.Thread.Type;
 import io.textile.pb.Model.ThreadList;
 import io.textile.pb.QueryOuterClass.ContactQuery;
 import io.textile.pb.QueryOuterClass.QueryOptions;
@@ -60,28 +62,57 @@ public class TextileWrapper {
         Textile.instance().destroy();
     }
 
-
     /*-------------------------------------------------------------------------
      * Thread
      *------------------------------------------------------------------------*/
 
-    public static void createThread() {
-        Log.i(TAG, "Create a thread");
+    public static void createThread(String name, Type type, Sharing sharing) {
+        Log.i(TAG, "Create a thread " + name);
 
         AddThreadConfig.Schema schema = AddThreadConfig.Schema.newBuilder()
                 .setPreset(AddThreadConfig.Schema.Preset.BLOB)
                 .build();
         AddThreadConfig config = AddThreadConfig.newBuilder()
                 .setKey("your.bundle.id.version.Basic")
-                .setName("Meimei")
-                .setType(Thread.Type.READ_ONLY)
-                .setSharing(Thread.Sharing.SHARED)
+                .setName(name)
+                .setType(type)
+                .setSharing(sharing)
                 .setSchema(schema)
                 .build();
         try {
             Textile.instance().threads.add(config);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void createPrivateThread() {
+        String address = getProfileAddress();
+        Log.i(TAG, "Create a private thread " + address);
+        createThread(address, Type.PRIVATE, Sharing.NOT_SHARED);
+    }
+
+    public static void createPublicThread() {
+        createThread("nbsdev", Type.READ_ONLY, Sharing.SHARED);
+    }
+
+    /* Create the private thread by using profile address as name
+     * if the private thread does not exist.
+     */
+    public static void initPrivateThread() {
+        String address = getProfileAddress();
+        String threadId = getThreadIdByName(address);
+
+        Log.i(TAG, String.format("initPrivateThread, addr: %s, tid: %s",
+                                 address, threadId));
+
+        if (threadId == null) {
+            Log.i(TAG, String.format("Create private thread %s",
+                    address));
+            createPrivateThread();
+        } else {
+            Log.i(TAG, String.format("Private thread %s has been created",
+                                     address));
         }
     }
 
@@ -100,8 +131,8 @@ public class TextileWrapper {
 
     /* Get the ID of a thread by its name.
      *
-     * param threadName: The targeting thread name.
-     * return: The ID of the thread whose name matches the given thread name.
+     * @param threadName: The targeting thread name.
+     * @return: The ID of the thread whose name matches the given thread name.
      */
     private static String getThreadIdByName(String threadName) {
         ThreadList tlist = null;
@@ -127,7 +158,7 @@ public class TextileWrapper {
                         threadName, threadName.length()));
             }
         }
-        Log.e(TAG, "Should NOT be here!!!!!");
+        Log.e(TAG, String.format("Can not find thread %s", threadName));
         return null;
     }
 
@@ -150,11 +181,11 @@ public class TextileWrapper {
      *------------------------------------------------------------------------*/
 
     public static void addImage(String filePath) {
-        addThreadFileByFilepath(
-                filePath,
-                getThreadIdByName("nbsdev"),
-                getTimestamp()
-        );
+        addImage(filePath, "nbsdev", getTimestamp());
+    }
+
+    public static void addImage(String filePath, String threadName, String caption) {
+        addThreadFileByFilepath(filePath, getThreadIdByName(threadName), caption);
     }
 
     public static void addImageDev() {
@@ -330,9 +361,11 @@ public class TextileWrapper {
      * Others
      *------------------------------------------------------------------------*/
 
-    public static void getProfile() {
+    /* Get account address (public key)
+     */
+    public static String getProfileAddress() {
         /* Get local profile. */
-        Log.i(TAG, "Get profile");
+        Log.i(TAG, "Get profile address (public key)");
 
         Peer peer = null;
         try {
@@ -341,6 +374,7 @@ public class TextileWrapper {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return peer.getAddress();
     }
 
     /*-------------------------------------------------------------------------
