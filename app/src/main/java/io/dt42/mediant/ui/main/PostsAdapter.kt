@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import io.dt42.mediant.R
-import io.dt42.mediant.ui.main.model.Post
+import io.dt42.mediant.model.Post
 
 class PostsAdapter(private val posts: List<Post>) : RecyclerView.Adapter<PostsAdapter.ViewHolder>() {
 

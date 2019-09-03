@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.dt42.mediant.R
-import io.dt42.mediant.ui.main.model.Post
+import io.dt42.mediant.model.Post
 import kotlinx.android.synthetic.main.fragment_public_thread.*
 
 

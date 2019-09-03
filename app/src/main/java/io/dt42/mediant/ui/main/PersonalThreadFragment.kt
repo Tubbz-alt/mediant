@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.dt42.mediant.R
 import io.dt42.mediant.TextileWrapper
-import io.dt42.mediant.ui.main.model.Post
+import io.dt42.mediant.model.Post
 import io.textile.textile.Handlers
 import kotlinx.android.synthetic.main.fragment_personal_thread.*
 import kotlin.concurrent.thread
