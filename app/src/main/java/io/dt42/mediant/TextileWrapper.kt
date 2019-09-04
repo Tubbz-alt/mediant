@@ -8,6 +8,7 @@ import io.textile.pb.Model.Thread.Sharing
 import io.textile.pb.Model.Thread.Type
 import io.textile.pb.QueryOuterClass
 import io.textile.pb.View
+import io.textile.textile.BaseTextileEventListener
 import io.textile.textile.Handlers
 import io.textile.textile.Textile
 import io.textile.textile.TextileLoggingListener
@@ -19,7 +20,7 @@ import kotlin.coroutines.suspendCoroutine
 private const val TAG = "TEXTILE_WRAPPER"
 
 object TextileWrapper {
-    private val profileAddress: String
+    val profileAddress: String
         get() = Textile.instance().profile.get().address
 
     fun init(context: Context, debug: Boolean) {
@@ -30,6 +31,7 @@ object TextileWrapper {
         }
         Textile.launch(context, path, debug)
         Textile.instance().addEventListener(TextileLoggingListener())
+        // invokeAfterNodeOnline { initPersonalThread() }
     }
 
     fun destroy() = Textile.instance().destroy()
@@ -58,7 +60,7 @@ object TextileWrapper {
             .setPreset(View.AddThreadConfig.Schema.Preset.BLOB)
             .build()
         val config = View.AddThreadConfig.newBuilder()
-            .setKey("your.bundle.id.version.Basic")
+            .setKey("${BuildConfig.APPLICATION_ID}.${BuildConfig.VERSION_NAME}.$name")
             .setName(name)
             .setType(type)
             .setSharing(sharing)
@@ -109,6 +111,7 @@ object TextileWrapper {
             val hasResumed = AtomicBoolean(false)
             val filesList =
                 Textile.instance().files.list(getThreadIdByName(threadName), null, limit)
+            Log.d(TAG, "filesList size: ${filesList.itemsCount}")
             for (i in 0 until filesList.itemsCount) {
                 val files = filesList.getItems(i)
                 val handler = object : Handlers.DataHandler {
@@ -211,4 +214,17 @@ object TextileWrapper {
         }
     }
      */
+
+    /*-------------------------------------------
+     * Utils
+     *-----------------------------------------*/
+
+    fun invokeAfterNodeOnline(callback: () -> Unit) {
+        Textile.instance().addEventListener(object : BaseTextileEventListener() {
+            override fun nodeOnline() {
+                super.nodeOnline()
+                callback.invoke()
+            }
+        })
+    }
 }

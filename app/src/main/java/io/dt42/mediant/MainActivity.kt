@@ -128,8 +128,9 @@ class MainActivity : AppCompatActivity() {
                             }
                             TextileWrapper.addImage(
                                 it,
-                                "nbsdev",
-                                "${proofBundle.proof}\n${proofBundle.imageSignature}\n${proofBundle.proofSignature}"
+                                TextileWrapper.profileAddress,
+                                //"${proofBundle.proof}\n${proofBundle.imageSignature}\n${proofBundle.proofSignature}"
+                                proofBundle.proof
                             )
                         }
                         viewPager.currentItem = 1

@@ -37,10 +37,12 @@ class PersonalThreadFragment : Fragment() {
             layoutManager = LinearLayoutManager(activity)
             adapter = PostsAdapter(posts)
         }
+        TextileWrapper.invokeAfterNodeOnline { refreshPosts() }
     }
 
     private fun refreshPosts() = GlobalScope.launch {
-        val deferred = async { TextileWrapper.fetchPosts("nbsdev", limit = 20) }
+        val deferred =
+            async { TextileWrapper.fetchPosts(TextileWrapper.profileAddress, limit = 20) }
         val newPosts = deferred.await()
         val comparator =
             compareByDescending<Post> { it.date.seconds }.thenByDescending { it.date.nanos }
