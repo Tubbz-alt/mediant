@@ -33,7 +33,7 @@ import io.textile.textile.Textile;
 import io.textile.textile.TextileLoggingListener;
 import mobile.SearchHandle;
 
-public class TextileWrapper {
+public class TextileWrapperOld {
     private static final String TAG = "TEXTILE_WRAPPER";
 
     /*-------------------------------------------------------------------------
@@ -104,7 +104,7 @@ public class TextileWrapper {
         String threadId = getThreadIdByName(address);
 
         Log.i(TAG, String.format("initPrivateThread, addr: %s, tid: %s",
-                                 address, threadId));
+                address, threadId));
 
         if (threadId == null) {
             Log.i(TAG, String.format("Create private thread %s",
@@ -112,7 +112,7 @@ public class TextileWrapper {
             createPrivateThread();
         } else {
             Log.i(TAG, String.format("Private thread %s has been created",
-                                     address));
+                    address));
         }
     }
 

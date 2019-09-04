@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         viewPager.adapter = SectionsPagerAdapter(this, supportFragmentManager)
         tabs.setupWithViewPager(viewPager)
 
-        TextileWrapper.initTextile(applicationContext)
+        TextileWrapper.init(applicationContext, true)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -90,11 +90,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.actionListThread -> {
-                TextileWrapper.listThread()
-                true
-            }
-            R.id.actionListImages -> {
-                TextileWrapper.listImages()
+                TextileWrapper.logThreads()
                 true
             }
             R.id.actionShowTestingInfo -> {
@@ -107,7 +103,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.actionInitPrivateThread -> {
-                TextileWrapper.initPrivateThread()
+                TextileWrapper.initPersonalThread()
                 true
             }
             else -> super.onOptionsItemSelected(item)
