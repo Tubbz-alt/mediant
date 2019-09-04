@@ -20,6 +20,8 @@ import kotlin.coroutines.suspendCoroutine
 private const val TAG = "TEXTILE_WRAPPER"
 
 object TextileWrapper {
+    val isOnline: Boolean
+        get() = Textile.instance().online()
     val profileAddress: String
         get() = Textile.instance().profile.get().address
 
@@ -105,7 +107,7 @@ object TextileWrapper {
     fun addImage(filePath: String, threadName: String, caption: String) =
         addThreadFileByFilePath(filePath, getThreadIdByName(threadName), caption)
 
-    suspend fun fetchPosts(threadName: String, limit: Long = 10): MutableList<Post> =
+    suspend fun fetchPosts(threadName: String, limit: Long = 20): MutableList<Post> =
         suspendCoroutine { continuation ->
             val posts = java.util.Collections.synchronizedList(mutableListOf<Post>())
             val hasResumed = AtomicBoolean(false)
