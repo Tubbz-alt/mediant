@@ -1,7 +1,6 @@
 package io.dt42.mediant.ui.main
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,14 +9,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import io.dt42.mediant.R
 import io.dt42.mediant.TextileWrapper
 import io.dt42.mediant.model.Post
-import io.textile.textile.Handlers
 import kotlinx.android.synthetic.main.fragment_personal_thread.*
-import kotlin.concurrent.thread
-
-private const val TAG = "PERSONAL_THREAD"
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 class PersonalThreadFragment : Fragment() {
-    private val posts = mutableListOf<Post>()
+    private val posts = java.util.Collections.synchronizedList(mutableListOf<Post>())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,40 +39,19 @@ class PersonalThreadFragment : Fragment() {
         }
     }
 
-    private fun refreshPosts() {
-        thread {
-            posts.clear()
+    private fun refreshPosts() = GlobalScope.launch {
+        val deferred = async { TextileWrapper.fetchPosts("nbsdev", limit = 20) }
+        val newPosts = deferred.await()
+        val comparator =
+            compareByDescending<Post> { it.date.seconds }.thenByDescending { it.date.nanos }
+        posts.clear()
+        posts.addAll(newPosts.sortedWith(comparator))
+        activity?.runOnUiThread {
             personalRecyclerView.adapter?.notifyDataSetChanged()
-            val newPostsCount = fetchPosts()
-            activity?.runOnUiThread {
-                personalSwipeRefreshLayout.isRefreshing = false
-                personalRecyclerView.adapter?.notifyItemRangeInserted(0, newPostsCount)
-                personalRecyclerView.layoutManager?.scrollToPosition(0)
-            }
+            personalSwipeRefreshLayout.isRefreshing = false
+            personalRecyclerView.adapter?.notifyItemRangeInserted(0, posts.size)
+            personalRecyclerView.layoutManager?.scrollToPosition(0)
         }
-    }
-
-    private fun fetchPosts(): Int {
-        var counter = 0
-        TextileWrapper.getImageList()?.forEach { files ->
-            files.filesList.forEach {
-                TextileWrapper.fetchImageContent(
-                    it.linksMap["large"]?.hash,
-                    object : Handlers.DataHandler {
-                        override fun onComplete(data: ByteArray?, media: String?) {
-                            if (media == "image/jpeg") {
-                                posts.add(Post(files.user.address, data, files.caption))
-                                counter++
-                            }
-                        }
-
-                        override fun onError(e: Exception?) {
-                            Log.getStackTraceString(e)
-                        }
-                    })
-            }
-        }
-        return counter
     }
 
     companion object {
