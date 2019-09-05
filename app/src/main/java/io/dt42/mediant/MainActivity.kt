@@ -21,10 +21,7 @@ import com.google.android.material.tabs.TabLayout
 import io.dt42.mediant.model.ProofBundle
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.witness.proofmode.ProofMode
 import java.io.File
 import java.io.IOException
@@ -126,7 +123,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 if (resultCode == Activity.RESULT_OK) {
                     currentPhotoPath?.also {
                         launch {
-                            val proofBundle = generateProof(it)
+                            val proofBundle = withContext(Dispatchers.IO) { generateProof(it) }
                             Log.d(TAG, "proof bundle: $proofBundle")
                             Toast.makeText(
                                 this@MainActivity,
