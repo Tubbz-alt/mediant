@@ -96,10 +96,10 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.actionShowTestingInfo -> {
                 PreferenceManager.getDefaultSharedPreferences(this).apply {
-                    Log.d(TAG, "autoNotarize ${getBoolean("autoNotarize", false)}")
-                    Log.d(TAG, "trackLocation ${getBoolean("trackLocation", false)}")
-                    Log.d(TAG, "trackDeviceId ${getBoolean("trackDeviceId", false)}")
-                    Log.d(TAG, "trackMobileNetwork ${getBoolean("trackMobileNetwork", false)}")
+                    Log.i(TAG, "autoNotarize ${getBoolean("autoNotarize", false)}")
+                    Log.i(TAG, "trackLocation ${getBoolean("trackLocation", false)}")
+                    Log.i(TAG, "trackDeviceId ${getBoolean("trackDeviceId", false)}")
+                    Log.i(TAG, "trackMobileNetwork ${getBoolean("trackMobileNetwork", false)}")
                 }
                 true
             }
@@ -185,8 +185,8 @@ class MainActivity : AppCompatActivity() {
                 // Create the File where the photo should go
                 val photoFile = try {
                     createImageFile()
-                } catch (ex: IOException) {
-                    Log.e(TAG, "Error occurred while creating the File")
+                } catch (e: IOException) {
+                    Log.e(TAG, Log.getStackTraceString(e))
                     null
                 }
                 // Continue only if the File was successfully created

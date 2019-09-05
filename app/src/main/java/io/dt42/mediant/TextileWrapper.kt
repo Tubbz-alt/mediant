@@ -55,7 +55,11 @@ object TextileWrapper {
 
     fun createPublicThread(name: String) = createThread(name, Type.READ_ONLY, Sharing.SHARED)
 
-    fun logThreads() = Log.i(TAG, Textile.instance().threads.list().toString())
+    fun logThreads() {
+        for (i in 0 until Textile.instance().threads.list().itemsCount) {
+            Log.i(TAG, Textile.instance().threads.list().getItems(i).toString())
+        }
+    }
 
     private fun createThread(name: String, type: Type, sharing: Sharing) {
         val schema = View.AddThreadConfig.Schema.newBuilder()
@@ -95,7 +99,7 @@ object TextileWrapper {
 
                 override fun onError(e: Exception?) {
                     Log.i(TAG, "Add file ($filePath) to thread ($threadId) with error.")
-                    Log.getStackTraceString(e)
+                    Log.e(TAG, Log.getStackTraceString(e))
                 }
             })
     }
@@ -113,7 +117,7 @@ object TextileWrapper {
             val hasResumed = AtomicBoolean(false)
             val filesList =
                 Textile.instance().files.list(getThreadIdByName(threadName), null, limit)
-            Log.d(TAG, "filesList size: ${filesList.itemsCount}")
+            Log.d(TAG, "fetched filesList size: ${filesList.itemsCount}")
             for (i in 0 until filesList.itemsCount) {
                 val files = filesList.getItems(i)
                 val handler = object : Handlers.DataHandler {
@@ -131,7 +135,7 @@ object TextileWrapper {
                     }
 
                     override fun onError(e: Exception) {
-                        Log.getStackTraceString(e)
+                        Log.e(TAG, Log.getStackTraceString(e))
                         if (!hasResumed.get()) {
                             hasResumed.set(true)
                             // still resume posts though some posts cannot be retrieved
