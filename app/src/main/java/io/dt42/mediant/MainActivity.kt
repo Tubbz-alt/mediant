@@ -21,12 +21,12 @@ import com.google.android.material.tabs.TabLayout
 import io.dt42.mediant.model.ProofBundle
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.*
 import org.witness.proofmode.ProofMode
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.concurrent.thread
 
 private enum class PermissionCode(val value: Int) { DEFAULT(0) }
 
@@ -39,7 +39,7 @@ private const val CAMERA_REQUEST_CODE = 0
 private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
 private const val TAG = "MAIN_ACTIVITY"
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var currentPhotoPath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +49,11 @@ class MainActivity : AppCompatActivity() {
         initTabs()
 
         TextileWrapper.init(applicationContext, true)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancel()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -80,7 +85,7 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.actionAcceptExternalInvitation -> {
                 // https://www.textile.photos/invites/new#id=QmTnxH2U5CXZ2NT1JZQFdU5n8capSXTDiXm5evYrBMZMXe&key=9X6obPAc4Gm3HqBRJXqFW6ayyxudSYC2fpTGmgKGQhfh71TQHgoSN1MTSjH9&inviter=P4ibDYs2oa2mz9unQaPrJRtuso83NUSAebxVtQuniUjUqe4K&name=nbsdev&referral=MSCES
-                thread {
+                launch {
                     Log.d(TAG, "========== accepting external invitation started ===========")
                     TextileWrapper.acceptExternalInvitation(
                         "QmTnxH2U5CXZ2NT1JZQFdU5n8capSXTDiXm5evYrBMZMXe",
@@ -117,16 +122,14 @@ class MainActivity : AppCompatActivity() {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     currentPhotoPath?.also {
-                        thread {
-                            val proofBundle = generateProof(it)
+                        launch {
+                            val proofBundle = withContext(Dispatchers.IO) { generateProof(it) }
                             Log.d(TAG, "proof bundle: $proofBundle")
-                            runOnUiThread {
-                                Toast.makeText(
-                                    this,
-                                    "Uploading via Textile $proofBundle",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Uploading via Textile $proofBundle",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             TextileWrapper.addImage(
                                 it,
                                 TextileWrapper.profileAddress,

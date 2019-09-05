@@ -10,18 +10,20 @@ import io.dt42.mediant.R
 import io.dt42.mediant.TextileWrapper
 import io.dt42.mediant.model.Post
 import kotlinx.android.synthetic.main.fragment_thread.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
-abstract class ThreadFragment : Fragment() {
+abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
     lateinit var name: String
-    private val posts: MutableList<Post> =
-        java.util.Collections.synchronizedList(mutableListOf<Post>())
+    private val posts = java.util.Collections.synchronizedList(mutableListOf<Post>())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancel()
     }
 
     override fun onCreateView(
@@ -45,18 +47,15 @@ abstract class ThreadFragment : Fragment() {
         }
     }
 
-    protected fun refreshPosts() = GlobalScope.launch {
-        val deferred = async { TextileWrapper.fetchPosts(name) }
-        val newPosts = deferred.await()
+    protected fun refreshPosts() = launch {
+        val newPosts = withContext(Dispatchers.IO) { TextileWrapper.fetchPosts(name) }
         val comparator =
             compareByDescending<Post> { it.date.seconds }.thenByDescending { it.date.nanos }
-        activity?.runOnUiThread {
-            posts.clear()
-            posts.addAll(newPosts.sortedWith(comparator))
-            recyclerView.adapter?.notifyDataSetChanged()
-            swipeRefreshLayout.isRefreshing = false
-            recyclerView.adapter?.notifyItemRangeInserted(0, posts.size)
-            recyclerView.layoutManager?.scrollToPosition(0)
-        }
+        posts.clear()
+        posts.addAll(newPosts.sortedWith(comparator))
+        recyclerView.adapter?.notifyDataSetChanged()
+        swipeRefreshLayout.isRefreshing = false
+        recyclerView.adapter?.notifyItemRangeInserted(0, posts.size)
+        recyclerView.layoutManager?.scrollToPosition(0)
     }
 }
