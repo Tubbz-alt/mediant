@@ -16,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.tabs.TabLayout
 import io.dt42.mediant.model.ProofBundle
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
@@ -44,8 +46,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        viewPager.adapter = SectionsPagerAdapter(this, supportFragmentManager)
-        tabs.setupWithViewPager(viewPager)
+        initTabs()
 
         TextileWrapper.init(applicationContext, true)
     }
@@ -95,10 +96,10 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.actionShowTestingInfo -> {
                 PreferenceManager.getDefaultSharedPreferences(this).apply {
-                    Log.d(TAG, "autoNotarize ${getBoolean("autoNotarize", false)}")
-                    Log.d(TAG, "trackLocation ${getBoolean("trackLocation", false)}")
-                    Log.d(TAG, "trackDeviceId ${getBoolean("trackDeviceId", false)}")
-                    Log.d(TAG, "trackMobileNetwork ${getBoolean("trackMobileNetwork", false)}")
+                    Log.i(TAG, "autoNotarize ${getBoolean("autoNotarize", false)}")
+                    Log.i(TAG, "trackLocation ${getBoolean("trackLocation", false)}")
+                    Log.i(TAG, "trackDeviceId ${getBoolean("trackDeviceId", false)}")
+                    Log.i(TAG, "trackMobileNetwork ${getBoolean("trackMobileNetwork", false)}")
                 }
                 true
             }
@@ -157,6 +158,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun initTabs() {
+        val adapter = SectionsPagerAdapter(this, supportFragmentManager)
+        viewPager.adapter = adapter
+        tabs.setupWithViewPager(viewPager)
+        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) {
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                adapter.getItem(tab.position).apply {
+                    view?.findViewById<RecyclerView>(R.id.recyclerView)?.smoothScrollToPosition(0)
+                }
+            }
+
+        })
+    }
+
     private fun dispatchTakePictureIntent() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             // Ensure that there's a camera activity to handle the intent
@@ -164,8 +185,8 @@ class MainActivity : AppCompatActivity() {
                 // Create the File where the photo should go
                 val photoFile = try {
                     createImageFile()
-                } catch (ex: IOException) {
-                    Log.e(TAG, "Error occurred while creating the File")
+                } catch (e: IOException) {
+                    Log.e(TAG, Log.getStackTraceString(e))
                     null
                 }
                 // Continue only if the File was successfully created
