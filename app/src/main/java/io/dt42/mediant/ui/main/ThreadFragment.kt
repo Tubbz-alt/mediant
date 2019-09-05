@@ -46,20 +46,17 @@ abstract class ThreadFragment : Fragment() {
     }
 
     protected fun refreshPosts() = GlobalScope.launch {
-        val deferred =
-            async { TextileWrapper.fetchPosts(name) }
+        val deferred = async { TextileWrapper.fetchPosts(name) }
         val newPosts = deferred.await()
         val comparator =
             compareByDescending<Post> { it.date.seconds }.thenByDescending { it.date.nanos }
-        posts.clear()
-        posts.addAll(newPosts.sortedWith(comparator))
         activity?.runOnUiThread {
-            activity?.runOnUiThread {
-                recyclerView.adapter?.notifyDataSetChanged()
-                swipeRefreshLayout.isRefreshing = false
-                recyclerView.adapter?.notifyItemRangeInserted(0, posts.size)
-                recyclerView.layoutManager?.scrollToPosition(0)
-            }
+            posts.clear()
+            posts.addAll(newPosts.sortedWith(comparator))
+            recyclerView.adapter?.notifyDataSetChanged()
+            swipeRefreshLayout.isRefreshing = false
+            recyclerView.adapter?.notifyItemRangeInserted(0, posts.size)
+            recyclerView.layoutManager?.scrollToPosition(0)
         }
     }
 }

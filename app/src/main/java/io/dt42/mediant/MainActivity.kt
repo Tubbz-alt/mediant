@@ -16,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.tabs.TabLayout
 import io.dt42.mediant.model.ProofBundle
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
@@ -44,8 +46,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        viewPager.adapter = SectionsPagerAdapter(this, supportFragmentManager)
-        tabs.setupWithViewPager(viewPager)
+        initTabs()
 
         TextileWrapper.init(applicationContext, true)
     }
@@ -155,6 +156,26 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun initTabs() {
+        val adapter = SectionsPagerAdapter(this, supportFragmentManager)
+        viewPager.adapter = adapter
+        tabs.setupWithViewPager(viewPager)
+        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) {
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                adapter.getItem(tab.position).apply {
+                    view?.findViewById<RecyclerView>(R.id.recyclerView)?.smoothScrollToPosition(0)
+                }
+            }
+
+        })
     }
 
     private fun dispatchTakePictureIntent() {

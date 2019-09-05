@@ -33,7 +33,7 @@ object TextileWrapper {
         }
         Textile.launch(context, path, debug)
         Textile.instance().addEventListener(TextileLoggingListener())
-        // invokeAfterNodeOnline { initPersonalThread() }
+        invokeAfterNodeOnline { initPersonalThread() }
     }
 
     fun destroy() = Textile.instance().destroy()
