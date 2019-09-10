@@ -1,6 +1,7 @@
 package io.dt42.mediant.ui.main
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +12,8 @@ import io.dt42.mediant.TextileWrapper
 import io.dt42.mediant.model.Post
 import kotlinx.android.synthetic.main.fragment_thread.*
 import kotlinx.coroutines.*
+
+private const val TAG = "THREAD_FRAGMENT"
 
 abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
     lateinit var name: String
@@ -48,14 +51,23 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
     }
 
     protected fun refreshPosts() = launch {
-        val newPosts = withContext(Dispatchers.IO) { TextileWrapper.fetchPosts(name) }
-        val comparator =
-            compareByDescending<Post> { it.date.seconds }.thenByDescending { it.date.nanos }
-        posts.clear()
-        posts.addAll(newPosts.sortedWith(comparator))
-        recyclerView.adapter?.notifyDataSetChanged()
-        swipeRefreshLayout.isRefreshing = false
-        recyclerView.adapter?.notifyItemRangeInserted(0, posts.size)
-        recyclerView.layoutManager?.scrollToPosition(0)
+        val newPosts = withContext(Dispatchers.IO) {
+            try {
+                TextileWrapper.fetchPosts(name)
+            } catch (e: NoSuchElementException) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                null
+            }
+        }
+        newPosts?.also {
+            val comparator =
+                compareByDescending<Post> { it.date.seconds }.thenByDescending { it.date.nanos }
+            posts.clear()
+            posts.addAll(newPosts.sortedWith(comparator))
+            recyclerView.adapter?.notifyDataSetChanged()
+            swipeRefreshLayout.isRefreshing = false
+            recyclerView.adapter?.notifyItemRangeInserted(0, posts.size)
+            recyclerView.layoutManager?.scrollToPosition(0)
+        }
     }
 }

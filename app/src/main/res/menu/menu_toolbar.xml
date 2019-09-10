@@ -17,6 +17,9 @@
         android:id="@+id/actionShowTestingInfo"
         android:title="show testing info" />
     <item
-        android:id="@+id/actionInitPrivateThread"
-        android:title="init Storage" />
+        android:id="@+id/actionAccountSync"
+        android:title="accountSync" />
+    <item
+        android:id="@+id/actionPictureDirectlyToPublic"
+        android:title="pictureDirectlyToPublic" />
 </menu>
