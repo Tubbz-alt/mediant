@@ -36,6 +36,7 @@ private val DEFAULT_PERMISSIONS = listOf(
 )
 
 private const val CAMERA_REQUEST_CODE = 0
+private const val CAMERA_REQUEST_DEBUGGING_CODE = 999  // TODO: debugging
 private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
 private const val TAG = "MAIN_ACTIVITY"
 
@@ -75,7 +76,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         return when (item.itemId) {
             android.R.id.home -> {
                 if (hasPermissions(DEFAULT_PERMISSIONS)) {
-                    dispatchTakePictureIntent()
+                    dispatchTakePictureIntent(CAMERA_REQUEST_CODE)
                 }
                 true
             }
@@ -84,12 +85,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 true
             }
             R.id.actionAcceptExternalInvitation -> {
-                // https://www.textile.photos/invites/new#id=QmTnxH2U5CXZ2NT1JZQFdU5n8capSXTDiXm5evYrBMZMXe&key=9X6obPAc4Gm3HqBRJXqFW6ayyxudSYC2fpTGmgKGQhfh71TQHgoSN1MTSjH9&inviter=P4ibDYs2oa2mz9unQaPrJRtuso83NUSAebxVtQuniUjUqe4K&name=nbsdev&referral=MSCES
-                launch {
+                // https://www.textile.photos/invites/new#id=QmecDNuwrSJUJGcwciTt8rqKAA3MnPDPDiRXjsvVixjniQ&key=22vh6CNre6Vk2v54pE6Xd22Qefz1K8pXQPmR6rgGqe7uYzk1TqHfeuZjK7pyM&inviter=P4ibDYs2oa2mz9unQaPrJRtuso83NUSAebxVtQuniUjUqe4K&name=nbsdev&referral=MSCES
+                launch(Dispatchers.IO) {
                     Log.d(TAG, "========== accepting external invitation started ===========")
                     TextileWrapper.acceptExternalInvitation(
-                        "QmTnxH2U5CXZ2NT1JZQFdU5n8capSXTDiXm5evYrBMZMXe",
-                        "9X6obPAc4Gm3HqBRJXqFW6ayyxudSYC2fpTGmgKGQhfh71TQHgoSN1MTSjH9"
+                        "QmecDNuwrSJUJGcwciTt8rqKAA3MnPDPDiRXjsvVixjniQ",
+                        "22vh6CNre6Vk2v54pE6Xd22Qefz1K8pXQPmR6rgGqe7uYzk1TqHfeuZjK7pyM"
                     )
                     Log.d(TAG, "========= accepting external invitation finished ===========")
                 }
@@ -108,8 +109,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 }
                 true
             }
-            R.id.actionInitPrivateThread -> {
-                TextileWrapper.initPersonalThread()
+            R.id.actionAccountSync -> {
+                TextileWrapper.syncAccount()
+                true
+            }
+            R.id.actionPictureDirectlyToPublic -> {
+                if (hasPermissions(DEFAULT_PERMISSIONS)) {
+                    dispatchTakePictureIntent(CAMERA_REQUEST_DEBUGGING_CODE)
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -141,6 +148,28 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     }
                 }
             }
+            CAMERA_REQUEST_DEBUGGING_CODE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    currentPhotoPath?.also {
+                        launch {
+                            val proofBundle = withContext(Dispatchers.IO) { generateProof(it) }
+                            Log.d(TAG, "proof bundle: $proofBundle")
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Uploading via Textile $proofBundle",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            TextileWrapper.addImage(
+                                it,
+                                "nbsdev",
+                                //"${proofBundle.proof}\n${proofBundle.imageSignature}\n${proofBundle.proofSignature}"
+                                proofBundle.proof
+                            )
+                        }
+                        viewPager.currentItem = 0
+                    }
+                }
+            }
         }
     }
 
@@ -153,7 +182,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         when (requestCode) {
             PermissionCode.DEFAULT.value -> {
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    dispatchTakePictureIntent()
+                    dispatchTakePictureIntent(CAMERA_REQUEST_CODE)
                 } else {
                     showPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
@@ -181,7 +210,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         })
     }
 
-    private fun dispatchTakePictureIntent() {
+    private fun dispatchTakePictureIntent(/*TODO: debugging arg*/requestCode: Int) {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             // Ensure that there's a camera activity to handle the intent
             takePictureIntent.resolveActivity(packageManager)?.also {
@@ -196,7 +225,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 photoFile?.also {
                     val photoURI = FileProvider.getUriForFile(this, "$packageName.provider", it)
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-                    startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE)
+                    startActivityForResult(takePictureIntent, requestCode)
                 }
             }
         }

@@ -39,10 +39,18 @@ object TextileWrapper {
     fun destroy() = Textile.instance().destroy()
 
     /*-------------------------------------------
+     * Accounts
+     *-----------------------------------------*/
+
+    fun syncAccount() {
+        Textile.instance().account.sync(QueryOuterClass.QueryOptions.getDefaultInstance())
+    }
+
+    /*-------------------------------------------
      * Threads
      *-----------------------------------------*/
 
-    fun initPersonalThread() {
+    private fun initPersonalThread() {
         try {
             getThreadIdByName(profileAddress)
         } catch (e: NoSuchElementException) {
@@ -63,7 +71,7 @@ object TextileWrapper {
 
     private fun createThread(name: String, type: Type, sharing: Sharing) {
         val schema = View.AddThreadConfig.Schema.newBuilder()
-            .setPreset(View.AddThreadConfig.Schema.Preset.BLOB)
+            .setPreset(View.AddThreadConfig.Schema.Preset.MEDIA)
             .build()
         val config = View.AddThreadConfig.newBuilder()
             .setKey("${BuildConfig.APPLICATION_ID}.${BuildConfig.VERSION_NAME}.$name")
@@ -117,7 +125,10 @@ object TextileWrapper {
             val hasResumed = AtomicBoolean(false)
             val filesList =
                 Textile.instance().files.list(getThreadIdByName(threadName), null, limit)
-            Log.d(TAG, "fetched filesList size: ${filesList.itemsCount}")
+            Log.d(TAG, "$threadName fetched filesList size: ${filesList.itemsCount}")
+            if (filesList.itemsCount == 0) {
+                continuation.resume(posts)
+            }
             for (i in 0 until filesList.itemsCount) {
                 val files = filesList.getItems(i)
                 val handler = object : Handlers.DataHandler {
