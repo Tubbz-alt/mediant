@@ -36,16 +36,6 @@ object TextileWrapper {
         invokeAfterNodeOnline { initPersonalThread() }
     }
 
-    fun destroy() = Textile.instance().destroy()
-
-    /*-------------------------------------------
-     * Accounts
-     *-----------------------------------------*/
-
-    fun syncAccount() {
-        Textile.instance().account.sync(QueryOuterClass.QueryOptions.getDefaultInstance())
-    }
-
     /*-------------------------------------------
      * Threads
      *-----------------------------------------*/
@@ -60,8 +50,6 @@ object TextileWrapper {
             Log.i(TAG, "Personal thread ($profileAddress) has been created.")
         }
     }
-
-    fun createPublicThread(name: String) = createThread(name, Type.READ_ONLY, Sharing.SHARED)
 
     fun logThreads() {
         for (i in 0 until Textile.instance().threads.list().itemsCount) {
@@ -106,7 +94,7 @@ object TextileWrapper {
                 }
 
                 override fun onError(e: Exception?) {
-                    Log.i(TAG, "Add file ($filePath) to thread ($threadId) with error.")
+                    Log.e(TAG, "Add file ($filePath) to thread ($threadId) with error.")
                     Log.e(TAG, Log.getStackTraceString(e))
                 }
             })
@@ -119,7 +107,7 @@ object TextileWrapper {
     fun addImage(filePath: String, threadName: String, caption: String) =
         addThreadFileByFilePath(filePath, getThreadIdByName(threadName), caption)
 
-    suspend fun fetchPosts(threadName: String, limit: Long = 20): MutableList<Post> =
+    suspend fun fetchPosts(threadName: String, limit: Long = 10): MutableList<Post> =
         suspendCoroutine { continuation ->
             val posts = java.util.Collections.synchronizedList(mutableListOf<Post>())
             val hasResumed = AtomicBoolean(false)
@@ -188,60 +176,42 @@ object TextileWrapper {
      *-----------------------------------------*/
 
     /**
-     * This function gets nothing.
-     */
-    fun logInvitations() {
-        val invites = Textile.instance().invites.list()
-        for (i in 0 until invites.itemsCount) {
-            Log.i(TAG, "Invite: ${invites.getItems(i)}")
-        }
-    }
-
-    /**
      * Accept invitation sent by Textile Photo
      */
     fun acceptExternalInvitation(inviteId: String, key: String) {
-        val threadId = Textile.instance().invites.acceptExternal(inviteId, key)
-        Log.i(TAG, "Accept invitation of thread: $threadId")
+        Log.i(TAG, "Accepting invitation: $inviteId with key $key")
+        val newBlockHash = Textile.instance().invites.acceptExternal(inviteId, key)
+        Log.i(TAG, "Accepted invitation of thread: $newBlockHash")
     }
-
-    /**
-     * Share Meimei to Jonathan
-     */
-    fun inviteJonathan() {
-        Textile.instance().invites.add(
-            getThreadIdByName("Meimei"),
-            "P7HfibZvGWznbhYDT4LD8csDDiyaWCdLgMbrj7L7MCaksRKY"
-        )
-    }
-
-    /*
-    private SearchHandle addContactByAddress(String address) {
-        QueryOptions options = QueryOptions.newBuilder()
-                .setWait(10)
-                .setLimit(1)
-                .build();
-        ContactQuery query = ContactQuery.newBuilder()
-                .setAddress("P8rW2RCMn75Dcb96Eiyg8mirb8nL4ruCumvJxKZRfAdpE5fG")
-                .build();
-        try {
-            return Textile.instance().contacts.search(query, options);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-     */
 
     /*-------------------------------------------
      * Utils
      *-----------------------------------------*/
 
+    /**
+     * Invoke the callback function after node has online. If the node has already online, the
+     *   callback will be invoked immediately.
+     * @param callback the callback function
+     */
     fun invokeAfterNodeOnline(callback: () -> Unit) {
-        Textile.instance().addEventListener(object : BaseTextileEventListener() {
-            override fun nodeOnline() {
-                super.nodeOnline()
+        try {
+            if (isOnline) {
                 callback.invoke()
+            } else {
+                Textile.instance().addEventListener(object : BaseTextileEventListener() {
+                    override fun nodeOnline() {
+                        super.nodeOnline()
+                        callback.invoke()
+                    }
+                })
             }
-        })
+        } catch (e: NullPointerException) {
+            Textile.instance().addEventListener(object : BaseTextileEventListener() {
+                override fun nodeOnline() {
+                    super.nodeOnline()
+                    callback.invoke()
+                }
+            })
+        }
     }
 }

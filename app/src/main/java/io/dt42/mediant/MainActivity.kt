@@ -15,7 +15,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import io.dt42.mediant.model.ProofBundle
@@ -48,6 +47,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         initTabs()
+        handleIntent(intent)
 
         TextileWrapper.init(applicationContext, true)
     }
@@ -67,6 +67,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         currentPhotoPath = savedInstanceState.getString(CURRENT_PHOTO_PATH)
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_toolbar, menu)
         return true
@@ -84,28 +89,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 dispatchSettingsActivityIntent()
                 true
             }
-            R.id.actionAcceptExternalInvitation -> {
-                launch(Dispatchers.IO) {
-                    Log.d(TAG, "========== accepting external invitation started ===========")
-                    TextileWrapper.acceptExternalInvitation(
-                        "QmVdgWnDaZGjT8VfbZVSvB8s8WyeNNQToQtzHtma7XkvnA",
-                        "Dnppzu9fpmHN7jKBkZQWukjwcLVS5V7thYJiDCvWybFvvReUHmQs2ejtyw2C"
-                    )
-                    Log.d(TAG, "========= accepting external invitation finished ===========")
-                }
-                true
-            }
             R.id.actionListThread -> {
                 TextileWrapper.logThreads()
                 true
             }
             R.id.actionShowTestingInfo -> {
-                PreferenceManager.getDefaultSharedPreferences(this).apply {
-                    Log.i(TAG, "autoNotarize ${getBoolean("autoNotarize", false)}")
-                    Log.i(TAG, "trackLocation ${getBoolean("trackLocation", false)}")
-                    Log.i(TAG, "trackDeviceId ${getBoolean("trackDeviceId", false)}")
-                    Log.i(TAG, "trackMobileNetwork ${getBoolean("trackMobileNetwork", false)}")
-                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -181,6 +169,26 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         })
     }
 
+    private fun handleIntent(intent: Intent) {
+        if (intent.action == Intent.ACTION_VIEW) {
+            intent.data?.apply {
+                if (toString().startsWith("https://www.textile.photos/invites/new")) {
+                    acceptExternalInvite(this)
+                }
+            }
+        }
+    }
+
+    private fun acceptExternalInvite(uri: Uri) {
+        val uriWithoutFragment = Uri.parse(uri.toString().replaceFirst('#', '?'))
+        TextileWrapper.invokeAfterNodeOnline {
+            TextileWrapper.acceptExternalInvitation(
+                uriWithoutFragment.getQueryParameter("id")!!,
+                uriWithoutFragment.getQueryParameter("key")!!
+            )
+        }
+    }
+
     private fun dispatchTakePictureIntent() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             // Ensure that there's a camera activity to handle the intent
@@ -231,7 +239,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         return ProofBundle(imageSignature!!, proof!!, proofSignature!!)
     }
 
-    @Throws(IOException::class)
     private fun createImageFile(): File {
         // Create an image file name
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.TAIWAN).format(Date())
