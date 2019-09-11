@@ -19,6 +19,7 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import io.dt42.mediant.model.ProofBundle
+import io.dt42.mediant.ui.main.PUBLIC_THREAD_NAME
 import io.dt42.mediant.ui.main.SectionsPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
@@ -36,7 +37,6 @@ private val DEFAULT_PERMISSIONS = listOf(
 )
 
 private const val CAMERA_REQUEST_CODE = 0
-private const val CAMERA_REQUEST_DEBUGGING_CODE = 999  // TODO: debugging
 private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
 private const val TAG = "MAIN_ACTIVITY"
 
@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         return when (item.itemId) {
             android.R.id.home -> {
                 if (hasPermissions(DEFAULT_PERMISSIONS)) {
-                    dispatchTakePictureIntent(CAMERA_REQUEST_CODE)
+                    dispatchTakePictureIntent()
                 }
                 true
             }
@@ -85,12 +85,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 true
             }
             R.id.actionAcceptExternalInvitation -> {
-                // https://www.textile.photos/invites/new#id=QmecDNuwrSJUJGcwciTt8rqKAA3MnPDPDiRXjsvVixjniQ&key=22vh6CNre6Vk2v54pE6Xd22Qefz1K8pXQPmR6rgGqe7uYzk1TqHfeuZjK7pyM&inviter=P4ibDYs2oa2mz9unQaPrJRtuso83NUSAebxVtQuniUjUqe4K&name=nbsdev&referral=MSCES
                 launch(Dispatchers.IO) {
                     Log.d(TAG, "========== accepting external invitation started ===========")
                     TextileWrapper.acceptExternalInvitation(
-                        "QmecDNuwrSJUJGcwciTt8rqKAA3MnPDPDiRXjsvVixjniQ",
-                        "22vh6CNre6Vk2v54pE6Xd22Qefz1K8pXQPmR6rgGqe7uYzk1TqHfeuZjK7pyM"
+                        "QmVdgWnDaZGjT8VfbZVSvB8s8WyeNNQToQtzHtma7XkvnA",
+                        "Dnppzu9fpmHN7jKBkZQWukjwcLVS5V7thYJiDCvWybFvvReUHmQs2ejtyw2C"
                     )
                     Log.d(TAG, "========= accepting external invitation finished ===========")
                 }
@@ -106,16 +105,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     Log.i(TAG, "trackLocation ${getBoolean("trackLocation", false)}")
                     Log.i(TAG, "trackDeviceId ${getBoolean("trackDeviceId", false)}")
                     Log.i(TAG, "trackMobileNetwork ${getBoolean("trackMobileNetwork", false)}")
-                }
-                true
-            }
-            R.id.actionAccountSync -> {
-                TextileWrapper.syncAccount()
-                true
-            }
-            R.id.actionPictureDirectlyToPublic -> {
-                if (hasPermissions(DEFAULT_PERMISSIONS)) {
-                    dispatchTakePictureIntent(CAMERA_REQUEST_DEBUGGING_CODE)
                 }
                 true
             }
@@ -140,33 +129,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                             TextileWrapper.addImage(
                                 it,
                                 TextileWrapper.profileAddress,
-                                //"${proofBundle.proof}\n${proofBundle.imageSignature}\n${proofBundle.proofSignature}"
+                                proofBundle.proof
+                            )
+                            TextileWrapper.addImage(
+                                it,
+                                PUBLIC_THREAD_NAME,
                                 proofBundle.proof
                             )
                         }
                         viewPager.currentItem = 1
-                    }
-                }
-            }
-            CAMERA_REQUEST_DEBUGGING_CODE -> {
-                if (resultCode == Activity.RESULT_OK) {
-                    currentPhotoPath?.also {
-                        launch {
-                            val proofBundle = withContext(Dispatchers.IO) { generateProof(it) }
-                            Log.d(TAG, "proof bundle: $proofBundle")
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Uploading via Textile $proofBundle",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            TextileWrapper.addImage(
-                                it,
-                                "nbsdev",
-                                //"${proofBundle.proof}\n${proofBundle.imageSignature}\n${proofBundle.proofSignature}"
-                                proofBundle.proof
-                            )
-                        }
-                        viewPager.currentItem = 0
                     }
                 }
             }
@@ -182,7 +153,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         when (requestCode) {
             PermissionCode.DEFAULT.value -> {
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    dispatchTakePictureIntent(CAMERA_REQUEST_CODE)
+                    dispatchTakePictureIntent()
                 } else {
                     showPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
@@ -210,7 +181,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         })
     }
 
-    private fun dispatchTakePictureIntent(/*TODO: debugging arg*/requestCode: Int) {
+    private fun dispatchTakePictureIntent() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             // Ensure that there's a camera activity to handle the intent
             takePictureIntent.resolveActivity(packageManager)?.also {
@@ -225,7 +196,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 photoFile?.also {
                     val photoURI = FileProvider.getUriForFile(this, "$packageName.provider", it)
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-                    startActivityForResult(takePictureIntent, requestCode)
+                    startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE)
                 }
             }
         }
