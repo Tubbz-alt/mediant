@@ -1,61 +1,40 @@
 package io.dt42.mediant;
 
 import android.content.Context;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
+import io.textile.pb.Model;
 import io.textile.pb.Model.Block;
-import io.textile.pb.Model.Contact;
 import io.textile.pb.Model.Peer;
+import io.textile.pb.Model.Thread;
+import io.textile.pb.Model.Thread.Sharing;
+import io.textile.pb.Model.Thread.Type;
+import io.textile.pb.Model.ThreadList;
 import io.textile.pb.QueryOuterClass.ContactQuery;
 import io.textile.pb.QueryOuterClass.QueryOptions;
-import io.textile.pb.Model.Thread;
-import io.textile.pb.Model.ThreadList;
 import io.textile.pb.View.AddThreadConfig;
-import io.textile.pb.View.FilesList;
 import io.textile.pb.View.Files;
+import io.textile.pb.View.FilesList;
 import io.textile.pb.View.InviteViewList;
+import io.textile.textile.Handlers;
 import io.textile.textile.Handlers.BlockHandler;
-import io.textile.textile.Profile;
 import io.textile.textile.Textile;
 import io.textile.textile.TextileLoggingListener;
 import mobile.SearchHandle;
 
-public class TextileWrapper {
-    private static final String TAG = "mediant";
-
-    /*
-    private void initTextile() {
-        try {
-            Context ctx = getApplicationContext();
-
-            final File filesDir = ctx.getFilesDir();
-            final String path = new File(filesDir, "textile-go").getAbsolutePath();
-
-            if (!Textile.isInitialized(path)) {
-                String phrase = Textile.initializeCreatingNewWalletAndAccount(path, true, false);
-                System.out.println(phrase);
-            }
-
-            Textile.launch(ctx, path, true);
-
-            Textile.instance().addEventListener(new TextileLoggingListener());
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private void destroyTextile() {
-        Textile.instance().destroy();
-    }
-    */
+public class TextileWrapperOld {
+    private static final String TAG = "TEXTILE_WRAPPER";
 
     /*-------------------------------------------------------------------------
      * Construction and Destruction
@@ -68,14 +47,14 @@ public class TextileWrapper {
 
             if (!Textile.isInitialized(path)) {
                 String phrase = Textile.initializeCreatingNewWalletAndAccount(path, true, false);
-                System.out.println(phrase);
+                Log.d(TAG, phrase);
             }
 
             Textile.launch(ctx, path, true);
 
             Textile.instance().addEventListener(new TextileLoggingListener());
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            Log.e(TAG, e.getMessage());
         }
     }
 
@@ -83,28 +62,57 @@ public class TextileWrapper {
         Textile.instance().destroy();
     }
 
-
     /*-------------------------------------------------------------------------
      * Thread
      *------------------------------------------------------------------------*/
 
-    public static void createThread() {
-        Log.i(TAG, "Create a thread");
+    public static void createThread(String name, Type type, Sharing sharing) {
+        Log.i(TAG, "Create a thread " + name);
 
         AddThreadConfig.Schema schema = AddThreadConfig.Schema.newBuilder()
                 .setPreset(AddThreadConfig.Schema.Preset.BLOB)
                 .build();
         AddThreadConfig config = AddThreadConfig.newBuilder()
                 .setKey("your.bundle.id.version.Basic")
-                .setName("Meimei")
-                .setType(Thread.Type.READ_ONLY)
-                .setSharing(Thread.Sharing.SHARED)
+                .setName(name)
+                .setType(type)
+                .setSharing(sharing)
                 .setSchema(schema)
                 .build();
         try {
             Textile.instance().threads.add(config);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void createPrivateThread() {
+        String address = getProfileAddress();
+        Log.i(TAG, "Create a private thread " + address);
+        createThread(address, Type.PRIVATE, Sharing.NOT_SHARED);
+    }
+
+    public static void createPublicThread() {
+        createThread("nbsdev", Type.READ_ONLY, Sharing.SHARED);
+    }
+
+    /* Create the private thread by using profile address as name
+     * if the private thread does not exist.
+     */
+    public static void initPrivateThread() {
+        String address = getProfileAddress();
+        String threadId = getThreadIdByName(address);
+
+        Log.i(TAG, String.format("initPrivateThread, addr: %s, tid: %s",
+                address, threadId));
+
+        if (threadId == null) {
+            Log.i(TAG, String.format("Create private thread %s",
+                    address));
+            createPrivateThread();
+        } else {
+            Log.i(TAG, String.format("Private thread %s has been created",
+                    address));
         }
     }
 
@@ -123,8 +131,8 @@ public class TextileWrapper {
 
     /* Get the ID of a thread by its name.
      *
-     * param threadName: The targeting thread name.
-     * return: The ID of the thread whose name matches the given thread name.
+     * @param threadName: The targeting thread name.
+     * @return: The ID of the thread whose name matches the given thread name.
      */
     private static String getThreadIdByName(String threadName) {
         ThreadList tlist = null;
@@ -132,9 +140,10 @@ public class TextileWrapper {
             tlist = Textile.instance().threads.list();
         } catch (Exception e) {
             e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
         Log.d(TAG, "Targeting thread name: " + threadName);
-        for (int i = 0; i < tlist.getItemsCount(); i++) {
+        for (int i = 0; i < Objects.requireNonNull(tlist).getItemsCount(); i++) {
             Thread t = tlist.getItems(i);
             Log.d(TAG, "Thread name: " + t.getName());
             Log.d(TAG, "Thread ID: " + t.getId());
@@ -149,7 +158,7 @@ public class TextileWrapper {
                         threadName, threadName.length()));
             }
         }
-        Log.d(TAG, "Should NOT be here!!!!!");
+        Log.e(TAG, String.format("Can not find thread %s", threadName));
         return null;
     }
 
@@ -172,11 +181,11 @@ public class TextileWrapper {
      *------------------------------------------------------------------------*/
 
     public static void addImage(String filePath) {
-        addThreadFileByFilepath(
-                filePath,
-                getThreadIdByName("nbsdev"),
-                getTimestamp()
-        );
+        addImage(filePath, "nbsdev", getTimestamp());
+    }
+
+    public static void addImage(String filePath, String threadName, String caption) {
+        addThreadFileByFilepath(filePath, getThreadIdByName(threadName), caption);
     }
 
     public static void addImage(String filePath, String caption) {
@@ -191,25 +200,79 @@ public class TextileWrapper {
     public static void addImageDev() {
         // changed thread name from Meimei to nbsdev
         addThreadFileByFilepath(
-            "/storage/emulated/0/DCIM/100MEDIA/IMAG0976.jpg",
-            getThreadIdByName("nbsdev"),
-            getTimestamp()
+                "/storage/emulated/0/DCIM/100MEDIA/IMAG0976.jpg",
+                getThreadIdByName("nbsdev"),
+                getTimestamp()
         );
     }
 
     public static void listImages() {
-        FilesList flist = null;
+        FilesList filesList;
         try {
-            flist = Textile.instance().files.list(
+            filesList = Textile.instance().files.list(
                     getThreadIdByName("nbsdev"),
                     null,
                     5);
-            for (int i = 0; i < flist.getItemsCount(); i++) {
-                Files f = flist.getItems(i);
+            for (int i = 0; i < filesList.getItemsCount(); i++) {
+                Files f = filesList.getItems(i);
                 Log.d(TAG, "File string: " + f.toString());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.getStackTraceString(e);
+        }
+    }
+
+    @Nullable
+    public static List<Files> getImageList() {
+        FilesList filesList;
+        try {
+            filesList = Textile.instance().files.list(
+                    getThreadIdByName("nbsdev"),
+                    null,
+                    5
+            );
+            return filesList.getItemsList();
+        } catch (Exception e) {
+            Log.getStackTraceString(e);
+            return null;
+        }
+    }
+
+    /**
+     * Fetch only one image content with given hash for simple demo.
+     * TODO: use [fetchImageContents] instead in the future to encapsulate parsing process of file list.
+     *
+     * @param hash        The hash to return image for
+     * @param dataHandler The callback object to handle the result
+     */
+    public static void fetchImageContent(String hash, Handlers.DataHandler dataHandler) {
+        Textile.instance().files.content(hash, dataHandler);
+    }
+
+    public static void fetchImageContents(Handlers.DataHandler dataHandler) {
+        /* TODO: use [imageContentForMinWidth] to fetch images (currently, this method only gets null
+         *   data, and I don't know why
+         */
+//      List<Files> imageList = getImageList();
+//      if (imageList != null) {
+//          imageList.forEach(file -> {
+//              Log.d(TAG, file.toString());
+//              Log.d(TAG, file.getData());
+//              Log.d(TAG, file.getBlock());
+//              Textile.instance().files.imageContentForMinWidth(file.getData(), 10, dataHandler);
+//          });
+//      }
+
+        List<Files> imageList = getImageList();
+        if (imageList != null) {
+            imageList.forEach(files -> files.getFilesList().forEach(file -> {
+                        Map<String, Model.FileIndex> linksMap = file.getLinksMap();
+                        Model.FileIndex largeImage = linksMap.get("large");
+                        if (largeImage != null) {
+                            Textile.instance().files.content(largeImage.getHash(), dataHandler);
+                        }
+                    }
+            ));
         }
     }
 
@@ -258,8 +321,7 @@ public class TextileWrapper {
         }
     }
 
-    /* Invitation was sent by Textile Photo, and the invitation link is
-     * https://www.textile.photos/invites/new#id=QmVrUmZ7cd75GjkK4iivdcqnM4F6DrmsPqgEYqH4zSzjeV&key=ow88n7AskjX86pBGw6sxQDs22EBx5Lb8uc1kumTSmp1k5952EoqoZdnVzzpQ&inviter=P411Po6YYU4Kduu29mZBThGwks9kzBRv9xzs2nsgGBsVgNDm&name=nbsdev&referral=MSCES
+    /* Invitation was sent by Textile Photo
      */
     public static void acceptExternalInvitation(String inviteId, String key) {
         try {
@@ -308,9 +370,11 @@ public class TextileWrapper {
      * Others
      *------------------------------------------------------------------------*/
 
-    public static void getProfile() {
+    /* Get account address (public key)
+     */
+    public static String getProfileAddress() {
         /* Get local profile. */
-        Log.i(TAG, "Get profile");
+        Log.i(TAG, "Get profile address (public key)");
 
         Peer peer = null;
         try {
@@ -319,13 +383,14 @@ public class TextileWrapper {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return peer.getAddress();
     }
 
     /*-------------------------------------------------------------------------
      * Utilities
      *------------------------------------------------------------------------*/
     public static String getTimestamp() {
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.TAIWAN);
         return df.format(new Date());
     }
 }

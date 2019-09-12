@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/actionSettings"
@@ -7,18 +8,9 @@
         android:title="@string/title_activity_settings"
         app:showAsAction="always" />
     <item
-        android:id="@+id/actionAcceptExternalInvitation"
-        android:title="accept external invitation" />
-    <item
         android:id="@+id/actionListThread"
-        android:title="list thread" />
+        android:title="log thread" />
     <item
-        android:id="@+id/actionListImages"
-        android:title="list images" />
-    <item
-        android:id="@+id/actionGetProfile"
-        android:title="get profile" />
-    <item
-        android:id="@+id/actionAddImage"
-        android:title="add image" />
+        android:id="@+id/actionShowTestingInfo"
+        android:title="show testing info" />
 </menu>
