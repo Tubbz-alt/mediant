@@ -9,14 +9,18 @@ import android.util.Log
 import com.htc.htcwalletsdk.Export.HtcWalletSdkManager
 import com.htc.htcwalletsdk.Export.RESULT
 import com.htc.htcwalletsdk.Native.Type.ByteArrayHolder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.security.MessageDigest
 import java.util.*
-import kotlin.concurrent.thread
 
 private const val TAG = "ZION"
+private const val DEV_WALLET_NAME = "DEV_WALLET_NAME"
 
-class ZionUtility {
+class ZionWrapper : CoroutineScope by MainScope() {
     private val ethereumType = 60
     private var htcWalletSdkManager: HtcWalletSdkManager = HtcWalletSdkManager.getInstance()
     private var uniqueId: Long = -1
@@ -45,8 +49,8 @@ class ZionUtility {
         Log.i(TAG, "Eth receivePublicKey ${receivePublicKeyHolderEthereum.key}")
     }
 
-    fun initZion(activity: MainActivity, applicationContext: Context) {
-        thread {
+    fun init(activity: MainActivity, applicationContext: Context) {
+        launch(Dispatchers.IO) {
             val mHtcWalletSdkManager = HtcWalletSdkManager.getInstance()
             val zionInitResult: Int = mHtcWalletSdkManager.init(applicationContext)
             val mHandler: Handler = createZionInitResultDialogHandler(activity)
@@ -59,7 +63,7 @@ class ZionUtility {
                     Log.i(TAG, "Zion API Version: $apiVersion")
                     message.what = 0
                     message.sendToTarget()
-                    createWalletSeed("Foobar")
+                    createWalletSeed(DEV_WALLET_NAME)
                 }
 
                 RESULT.E_SDK_ROM_TZAPI_TOO_OLD -> {
@@ -93,10 +97,15 @@ class ZionUtility {
         json.put("path", "m/44'/60'/0'/0/0")
         json.put("message", message)
 
-        thread {
+        launch(Dispatchers.IO) {
             val signature = ByteArrayHolder()
             val msgResult =
-                this.htcWalletSdkManager.signMessage(this.uniqueId, this.ethereumType, json.toString(), signature)
+                this@ZionWrapper.htcWalletSdkManager.signMessage(
+                    this@ZionWrapper.uniqueId,
+                    this@ZionWrapper.ethereumType,
+                    json.toString(),
+                    signature
+                )
             Log.i(TAG, "message result: $msgResult")
             Log.i(TAG, "signature: ${Arrays.toString(signature.byteArray)}")
             callback?.invoke(Arrays.toString(signature.byteArray))

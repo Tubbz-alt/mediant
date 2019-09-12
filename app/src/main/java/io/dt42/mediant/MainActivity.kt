@@ -181,11 +181,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private fun acceptExternalInvite(uri: Uri) {
         val uriWithoutFragment = Uri.parse(uri.toString().replaceFirst('#', '?'))
         Toast.makeText(this, "Attempt to accept invitation...", Toast.LENGTH_SHORT).show()
-        TextileWrapper.invokeAfterNodeOnline {
-            TextileWrapper.acceptExternalInvitation(
-                uriWithoutFragment.getQueryParameter("id")!!,
-                uriWithoutFragment.getQueryParameter("key")!!
-            )
+        launch(Dispatchers.IO) {
+            TextileWrapper.invokeAfterNodeOnline {
+                TextileWrapper.acceptExternalInvitation(
+                    uriWithoutFragment.getQueryParameter("id")!!,
+                    uriWithoutFragment.getQueryParameter("key")!!
+                )
+            }
         }
     }
 
