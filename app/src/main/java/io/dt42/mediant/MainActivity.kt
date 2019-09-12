@@ -3,6 +3,7 @@ package io.dt42.mediant
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -15,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import io.dt42.mediant.model.ProofBundle
@@ -23,6 +25,7 @@ import io.dt42.mediant.ui.main.SectionsPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import org.witness.proofmode.ProofMode
+import org.witness.proofmode.crypto.HashUtils
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -41,15 +44,61 @@ private const val TAG = "MAIN_ACTIVITY"
 
 class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var currentPhotoPath: String? = null
+    private lateinit var defaultSharedPreferences: SharedPreferences
+    // To prevent unintended garbage collection, we store a strong reference to the listener.
+    private lateinit var onSharedPreferenceChangeListener: SharedPreferences.OnSharedPreferenceChangeListener
+    private val useZion: Boolean
+        get() = defaultSharedPreferences.getBoolean(
+            resources.getString(R.string.preference_key_use_zion),
+            false
+        )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+        defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         initTabs()
         handleIntent(intent)
-
         TextileWrapper.init(applicationContext, true)
+        defaultSharedPreferences.apply {
+            if (useZion) {
+                ZionWrapper.init(this@MainActivity, applicationContext)
+            }
+            onSharedPreferenceChangeListener = createSharedPreferenceChangeListener()
+            registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+        }
+    }
+
+    private fun initTabs() {
+        val adapter = SectionsPagerAdapter(this, supportFragmentManager)
+        viewPager.adapter = adapter
+        tabs.setupWithViewPager(viewPager)
+        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) {
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                adapter.getItem(tab.position).apply {
+                    view?.findViewById<RecyclerView>(R.id.recyclerView)?.smoothScrollToPosition(0)
+                }
+            }
+        })
+    }
+
+    private fun createSharedPreferenceChangeListener(): SharedPreferences.OnSharedPreferenceChangeListener {
+        return SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                resources.getString(R.string.preference_key_use_zion) -> {
+                    if (useZion) {
+                        ZionWrapper.init(this, applicationContext)
+                    }
+                }
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -70,6 +119,28 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        if (intent.action == Intent.ACTION_VIEW) {
+            intent.data?.also {
+                if (toString().startsWith("https://www.textile.photos/invites/new")) {
+                    Toast.makeText(this, "Attempt to accept invitation...", Toast.LENGTH_SHORT)
+                        .show()
+                    acceptExternalInvite(it)
+                }
+            }
+        }
+    }
+
+    private fun acceptExternalInvite(uri: Uri) = launch(Dispatchers.IO) {
+        val uriWithoutFragment = Uri.parse(uri.toString().replaceFirst('#', '?'))
+        TextileWrapper.invokeAfterNodeOnline {
+            TextileWrapper.acceptExternalInvitation(
+                uriWithoutFragment.getQueryParameter("id")!!,
+                uriWithoutFragment.getQueryParameter("key")!!
+            )
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -106,30 +177,66 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     currentPhotoPath?.also {
-                        launch {
-                            val proofBundle = withContext(Dispatchers.IO) { generateProof(it) }
-                            Log.d(TAG, "proof bundle: $proofBundle")
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Uploading via Textile $proofBundle",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            TextileWrapper.addImage(
-                                it,
-                                TextileWrapper.profileAddress,
-                                proofBundle.proof
-                            )
-                            TextileWrapper.addImage(
-                                it,
-                                PUBLIC_THREAD_NAME,
-                                proofBundle.proof
-                            )
-                        }
+                        uploadPost(it)
                         viewPager.currentItem = 1
                     }
                 }
             }
         }
+    }
+
+    private fun uploadPost(imageFilePath: String) = launch {
+        val proofBundle = if (useZion) {
+            withContext(Dispatchers.IO) { generateProofWithZion(imageFilePath) }
+        } else {
+            withContext(Dispatchers.IO) { generateProof(imageFilePath) }
+        }
+        Log.d(TAG, "proof bundle: $proofBundle")
+        Toast.makeText(this@MainActivity, "Uploading via Textile $proofBundle", Toast.LENGTH_SHORT)
+            .show()
+        TextileWrapper.addImage(
+            imageFilePath,
+            TextileWrapper.profileAddress,
+            proofBundle.toString()
+        )
+        TextileWrapper.addImage(imageFilePath, PUBLIC_THREAD_NAME, proofBundle.toString())
+    }
+
+    private fun generateProof(filePath: String): ProofBundle {
+        var imageSignature: String? = null
+        var proof: String? = null
+        var proofSignature: String? = null
+        ProofMode.generateProof(this, Uri.fromFile(File(filePath)))?.also { fileHash ->
+            ProofMode.getProofDir(fileHash)?.apply {
+                if (exists()) {
+                    listFiles()?.forEach {
+                        when {
+                            it.name.endsWith(".jpg${ProofMode.OPENPGP_FILE_TAG}") -> // photo signature file
+                                imageSignature = it.readText()
+                            it.name.endsWith(".jpg${ProofMode.PROOF_FILE_TAG}") -> // proof file
+                                proof = it.readText()
+                            it.name.endsWith(".jpg${ProofMode.PROOF_FILE_TAG}${ProofMode.OPENPGP_FILE_TAG}") -> // proof signature file
+                                proofSignature = it.readText()
+                        }
+                    }
+                }
+            }
+        }
+        return ProofBundle(imageSignature!!, proof!!, proofSignature!!)
+    }
+
+    private fun generateProofWithZion(filePath: String): ProofBundle {
+        val proof = generateProof(filePath).proof
+        val mediaHash = HashUtils.getSHA256FromFileContent(File(filePath))
+        return ProofBundle(
+            ZionWrapper.signMessage(mediaHash).contentToString(),
+            proof,
+            ZionWrapper.signMessage(convertStringToHex(proof)).contentToString()
+        )
+    }
+
+    private fun convertStringToHex(asciiString: String): String {
+        return asciiString.toCharArray().joinToString("") { Integer.toHexString(it.toInt()) }
     }
 
     override fun onRequestPermissionsResult(
@@ -145,48 +252,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 } else {
                     showPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
-            }
-        }
-    }
-
-    private fun initTabs() {
-        val adapter = SectionsPagerAdapter(this, supportFragmentManager)
-        viewPager.adapter = adapter
-        tabs.setupWithViewPager(viewPager)
-        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab) {
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab) {
-                adapter.getItem(tab.position).apply {
-                    view?.findViewById<RecyclerView>(R.id.recyclerView)?.smoothScrollToPosition(0)
-                }
-            }
-        })
-    }
-
-    private fun handleIntent(intent: Intent) {
-        if (intent.action == Intent.ACTION_VIEW) {
-            intent.data?.apply {
-                if (toString().startsWith("https://www.textile.photos/invites/new")) {
-                    acceptExternalInvite(this)
-                }
-            }
-        }
-    }
-
-    private fun acceptExternalInvite(uri: Uri) {
-        val uriWithoutFragment = Uri.parse(uri.toString().replaceFirst('#', '?'))
-        Toast.makeText(this, "Attempt to accept invitation...", Toast.LENGTH_SHORT).show()
-        launch(Dispatchers.IO) {
-            TextileWrapper.invokeAfterNodeOnline {
-                TextileWrapper.acceptExternalInvitation(
-                    uriWithoutFragment.getQueryParameter("id")!!,
-                    uriWithoutFragment.getQueryParameter("key")!!
-                )
             }
         }
     }
@@ -212,33 +277,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun dispatchSettingsActivityIntent() {
-        Intent(this, SettingsActivity::class.java).also {
-            startActivity(it)
-        }
-    }
-
-    private fun generateProof(filePath: String): ProofBundle {
-        var imageSignature: String? = null
-        var proof: String? = null
-        var proofSignature: String? = null
-        ProofMode.generateProof(this, Uri.fromFile(File(filePath)))?.also { fileHash ->
-            ProofMode.getProofDir(fileHash)?.apply {
-                if (exists()) {
-                    listFiles()?.forEach {
-                        when {
-                            it.name.endsWith(".jpg${ProofMode.OPENPGP_FILE_TAG}") -> // photo signature file
-                                imageSignature = it.readText()
-                            it.name.endsWith(".jpg${ProofMode.PROOF_FILE_TAG}") -> // proof file
-                                proof = it.readText()
-                            it.name.endsWith(".jpg${ProofMode.PROOF_FILE_TAG}${ProofMode.OPENPGP_FILE_TAG}") -> // proof signature file
-                                proofSignature = it.readText()
-                        }
-                    }
-                }
-            }
-        }
-        return ProofBundle(imageSignature!!, proof!!, proofSignature!!)
+    private fun dispatchSettingsActivityIntent() = Intent(this, SettingsActivity::class.java).also {
+        startActivity(it)
     }
 
     private fun createImageFile(): File {
@@ -281,14 +321,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun showDefaultPermissionsRationale() {
-        Toast.makeText(
-            this,
-            R.string.permission_rationale_default,
-            Toast.LENGTH_LONG
-        ).apply {
-            setGravity(Gravity.CENTER, 0, 0)
-            show()
-        }
+    private fun showDefaultPermissionsRationale() = Toast.makeText(
+        this,
+        R.string.permission_rationale_default,
+        Toast.LENGTH_LONG
+    ).apply {
+        setGravity(Gravity.CENTER, 0, 0)
+        show()
     }
 }

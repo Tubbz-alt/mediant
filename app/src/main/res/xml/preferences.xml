@@ -11,4 +11,7 @@
     <SwitchPreferenceCompat
         app:key="trackMobileNetwork"
         app:title="trackMobileNetwork" />
+    <SwitchPreferenceCompat
+        app:key="@string/preference_key_use_zion"
+        app:title="@string/preference_key_use_zion" />
 </PreferenceScreen>

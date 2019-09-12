@@ -19,75 +19,96 @@ import java.util.*
 
 private const val TAG = "ZION"
 private const val DEV_WALLET_NAME = "DEV_WALLET_NAME"
+private const val ETHEREUM_TYPE = 60
 
-class ZionWrapper : CoroutineScope by MainScope() {
-    private val ethereumType = 60
-    private var htcWalletSdkManager: HtcWalletSdkManager = HtcWalletSdkManager.getInstance()
-    private var uniqueId: Long = -1
+object ZionWrapper : CoroutineScope by MainScope() {
+    private val zkma: HtcWalletSdkManager
+        get() = HtcWalletSdkManager.getInstance()
+    private var uniqueId: Long? = null
 
-    private fun createSha256Hash(str: String): String {
-        val bytes = str.toByteArray()
-        val md = MessageDigest.getInstance("SHA-256")
-        val digest = md.digest(bytes)
-        return digest.fold("", { s, it -> s + "%02x".format(it) })
+    fun init(context: Context, applicationContext: Context) = launch(Dispatchers.IO) {
+        val result = zkma.init(applicationContext)
+        val dialogHandler = createZionInitResultDialogHandler(context)
+        val message = dialogHandler.obtainMessage()
+        when (result) {
+            RESULT.SUCCESS -> {
+                Log.i(TAG, "Zion SDK Version: ${zkma.moduleVersion}")
+                Log.i(TAG, "Zion API Version: ${zkma.apiVersion}")
+                message.what = 0
+                message.sendToTarget()
+                createWalletSeed(DEV_WALLET_NAME)
+            }
+            RESULT.E_SDK_ROM_TZAPI_TOO_OLD -> {
+                // App should prompt the user to update ROM
+                message.what = 1
+                message.sendToTarget()
+            }
+            RESULT.E_TEEKM_TAMPERED -> {
+                // App should prompt the user it’s rooted device
+                message.what = 2
+                message.sendToTarget()
+            }
+            else -> {
+                message.what = 3
+                message.arg1 = result
+                message.sendToTarget()
+            }
+        }
     }
 
     private fun createWalletSeed(walletName: String) {
         val sha256 = createSha256Hash(walletName)
         Log.i(TAG, "Wallet Name: $walletName")
         Log.i(TAG, "sha256: $sha256")
-        this.uniqueId = this.htcWalletSdkManager.register(walletName, sha256)
-        val createSeedResult = this.htcWalletSdkManager.createSeed(this.uniqueId)
-        Log.i(TAG, "createSeedResult: $createSeedResult")
-
-        val sendPublicKeyHolderEthereum =
-            this.htcWalletSdkManager.getSendPublicKey(this.uniqueId, this.ethereumType)
-        val receivePublicKeyHolderEthereum =
-            this.htcWalletSdkManager.getReceivePublicKey(this.uniqueId, this.ethereumType)
-
-        Log.i(TAG, "Eth sendPublicKey: ${sendPublicKeyHolderEthereum.key}")
-        Log.i(TAG, "Eth receivePublicKey ${receivePublicKeyHolderEthereum.key}")
-    }
-
-    fun init(activity: MainActivity, applicationContext: Context) {
-        launch(Dispatchers.IO) {
-            val mHtcWalletSdkManager = HtcWalletSdkManager.getInstance()
-            val zionInitResult: Int = mHtcWalletSdkManager.init(applicationContext)
-            val mHandler: Handler = createZionInitResultDialogHandler(activity)
-            val message: Message = mHandler.obtainMessage()
-            when (zionInitResult) {
+        uniqueId = zkma.register(walletName, sha256)
+        uniqueId?.also {
+            when (val result = zkma.createSeed(it)) {
                 RESULT.SUCCESS -> {
-                    val sdkVersion: String = mHtcWalletSdkManager.moduleVersion
-                    val apiVersion: String = mHtcWalletSdkManager.apiVersion
-                    Log.i(TAG, "Zion SDK Version: $sdkVersion")
-                    Log.i(TAG, "Zion API Version: $apiVersion")
-                    message.what = 0
-                    message.sendToTarget()
-                    createWalletSeed(DEV_WALLET_NAME)
+                    Log.i(
+                        TAG,
+                        "Eth sendPublicKey: ${zkma.getSendPublicKey(it, ETHEREUM_TYPE).key}"
+                    )
+                    Log.i(
+                        TAG,
+                        "Eth receivePublicKey ${zkma.getReceivePublicKey(it, ETHEREUM_TYPE).key}"
+                    )
                 }
-
-                RESULT.E_SDK_ROM_TZAPI_TOO_OLD -> {
-                    // App should prompt the user to update ROM
-                    message.what = 1
-                    message.sendToTarget()
+                RESULT.E_TEEKM_SEED_EXISTS -> {
+                    Log.i(TAG, "Seed has been already generated.")
                 }
-
-                RESULT.E_TEEKM_TAMPERED -> {
-                    // App should prompt the user it’s rooted device
-                    message.what = 2
-                    message.sendToTarget()
-                }
-
                 else -> {
-                    message.what = 3
-                    message.arg1 = zionInitResult
-                    message.sendToTarget()
+                    Log.e(TAG, "Create seed result: $result")
                 }
             }
         }
     }
 
-    fun signMessage(hexData: String, callback: ((String) -> Unit)? = null) {
+    private fun createSha256Hash(str: String): String {
+        val bytes = str.toByteArray()
+        val messageDigest = MessageDigest.getInstance("SHA-256")
+        val digest = messageDigest.digest(bytes)
+        return digest.fold("", { s, it -> s + "%02x".format(it) })
+    }
+
+    private fun createZionInitResultDialogHandler(context: Context): Handler {
+        return object : Handler(Looper.getMainLooper()) {
+            override fun handleMessage(msg: Message) {
+                super.handleMessage(msg)
+                val builder = AlertDialog.Builder(context)
+                val text = when (msg.what) {
+                    0 -> "Zion Initialization success."
+                    1 -> "Please update your system in order to use Zion."
+                    2 -> "Zion SDK can't support rooted device."
+                    else -> "Zion initialization failed. Error code: ${msg.arg1}"
+                }
+                builder.setMessage(text).setNeutralButton("ok") { _, _ -> }
+                val dialog = builder.create()
+                dialog.show()
+            }
+        }
+    }
+
+    fun signMessage(hexData: String): ByteArray {
         Log.d(TAG, hexData)
         val message = JSONObject()
         message.put("version", "45")
@@ -97,36 +118,10 @@ class ZionWrapper : CoroutineScope by MainScope() {
         json.put("path", "m/44'/60'/0'/0/0")
         json.put("message", message)
 
-        launch(Dispatchers.IO) {
-            val signature = ByteArrayHolder()
-            val msgResult =
-                this@ZionWrapper.htcWalletSdkManager.signMessage(
-                    this@ZionWrapper.uniqueId,
-                    this@ZionWrapper.ethereumType,
-                    json.toString(),
-                    signature
-                )
-            Log.i(TAG, "message result: $msgResult")
-            Log.i(TAG, "signature: ${Arrays.toString(signature.byteArray)}")
-            callback?.invoke(Arrays.toString(signature.byteArray))
-        }
-    }
-
-    private fun createZionInitResultDialogHandler(activity: MainActivity): Handler {
-        return object : Handler(Looper.getMainLooper()) {
-            override fun handleMessage(message: Message) {
-                val builder = AlertDialog.Builder(activity)
-                val msg: String = when (message.what) {
-                    0 -> "Zion Initialization success."
-                    1 -> "Please update your system in order to use Zion."
-                    2 -> "Zion SDK can't support rooted device."
-                    else -> "Zion initialization failed. Error code: ${message.arg1}"
-                }
-                builder.setMessage(msg)
-                    .setNeutralButton("ok") { _, _ -> }
-                val dialog = builder.create()
-                dialog.show()
-            }
-        }
+        val signature = ByteArrayHolder()
+        val msgResult = zkma.signMessage(uniqueId!!, ETHEREUM_TYPE, json.toString(), signature)
+        Log.i(TAG, "zkma.signMessage result: $msgResult")
+        Log.i(TAG, "signature: ${Arrays.toString(signature.byteArray)}")
+        return signature.byteArray
     }
 }
