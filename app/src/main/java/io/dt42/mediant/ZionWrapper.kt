@@ -57,7 +57,7 @@ object ZionWrapper : CoroutineScope by MainScope() {
     }
 
     private fun createWalletSeed(walletName: String) {
-        val sha256 = createSha256Hash(walletName)
+        val sha256 = getHashFromString(walletName)
         Log.i(TAG, "Wallet Name: $walletName")
         Log.i(TAG, "sha256: $sha256")
         uniqueId = zkma.register(walletName, sha256)
@@ -83,7 +83,7 @@ object ZionWrapper : CoroutineScope by MainScope() {
         }
     }
 
-    private fun createSha256Hash(str: String): String {
+    fun getHashFromString(str: String): String {
         val bytes = str.toByteArray()
         val messageDigest = MessageDigest.getInstance("SHA-256")
         val digest = messageDigest.digest(bytes)
