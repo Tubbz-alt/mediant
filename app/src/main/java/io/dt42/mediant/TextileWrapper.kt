@@ -21,7 +21,11 @@ private const val TAG = "TEXTILE_WRAPPER"
 
 object TextileWrapper {
     val isOnline: Boolean
-        get() = Textile.instance().online()
+        get() = try {
+            Textile.instance().online()
+        } catch (e: NullPointerException) {
+            false
+        }
     val profileAddress: String
         get() = Textile.instance().profile.get().address
 
@@ -194,18 +198,9 @@ object TextileWrapper {
      * @param callback the callback function
      */
     fun invokeAfterNodeOnline(callback: () -> Unit) {
-        try {
-            if (isOnline) {
-                callback.invoke()
-            } else {
-                Textile.instance().addEventListener(object : BaseTextileEventListener() {
-                    override fun nodeOnline() {
-                        super.nodeOnline()
-                        callback.invoke()
-                    }
-                })
-            }
-        } catch (e: NullPointerException) {
+        if (isOnline) {
+            callback.invoke()
+        } else {
             Textile.instance().addEventListener(object : BaseTextileEventListener() {
                 override fun nodeOnline() {
                     super.nodeOnline()
