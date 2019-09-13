@@ -228,15 +228,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private fun generateProofWithZion(filePath: String): ProofBundle {
         val proof = generateProof(filePath).proof
         val mediaHash = HashUtils.getSHA256FromFileContent(File(filePath))
+        val proofHash = ZionWrapper.getHashFromString(proof)
         return ProofBundle(
             ZionWrapper.signMessage(mediaHash).contentToString(),
             proof,
-            ZionWrapper.signMessage(convertStringToHex(proof)).contentToString()
+            ZionWrapper.signMessage(proofHash).contentToString()
         )
-    }
-
-    private fun convertStringToHex(asciiString: String): String {
-        return asciiString.toCharArray().joinToString("") { Integer.toHexString(it.toInt()) }
     }
 
     override fun onRequestPermissionsResult(
