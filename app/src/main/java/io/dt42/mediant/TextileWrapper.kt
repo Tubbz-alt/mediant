@@ -78,13 +78,30 @@ object TextileWrapper {
 
     private fun getThreadIdByName(name: String): String {
         val threadList = Textile.instance().threads.list()
-        for (i in 0 until threadList.itemsCount) {
-            val mThread = threadList.getItems(i)
-            if (name == mThread.name) {
-                return mThread.id
+
+        /* TODO: Get Thread ID by name is not reliable because
+         *       multiple Threads can have the same name.
+         *
+         *       A better solution is to get the Thread ID in the block
+         *       returned by the acceptExternal function.
+         */
+        if (name == "nbsdev") {
+            // The nbsdev Thread
+            //val feedThreadId = "12D3KooWGrbKBz9yyYKx8McB1RSWpagiPnEmfuagp41mxPd8Gfyy"
+            // The nbsdev-ntdemo Thread
+            val feedThreadId = "12D3KooWMY4S9aqj5h5LyxKUTja7mP4K34hsG647ZqCbKBCqpVyk"
+            Log.d(TAG, "Return nbsdev thread ID: %s".format(feedThreadId))
+            return feedThreadId
+        } else {
+            for (i in 0 until threadList.itemsCount) {
+                val mThread = threadList.getItems(i)
+                if (name == mThread.name) {
+                    return mThread.id
+                }
             }
+            logThreads()
+            throw NoSuchElementException("Cannot find thread $name")
         }
-        throw NoSuchElementException("Cannot find thread $name")
     }
 
     private fun addThreadFileByFilePath(filePath: String, threadId: String, caption: String) {
