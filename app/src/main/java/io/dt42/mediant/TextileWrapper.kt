@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import io.dt42.mediant.model.Post
 import io.textile.pb.Model
+import io.textile.pb.Model.CafeSessionList
 import io.textile.pb.Model.Thread.Sharing
 import io.textile.pb.Model.Thread.Type
 import io.textile.pb.QueryOuterClass
@@ -28,6 +29,12 @@ object TextileWrapper {
         }
     val profileAddress: String
         get() = Textile.instance().profile.get().address
+    /*
+    val cafePeerId: String
+        get() = "12D3KooWFxcVguc3zAxwifk3bbfJjHwkRdX36wKSV56vMohYxj7J"
+    val cafeToken: String
+        get() = "oWRT9okTuHQHDjFQZMa9udFv88dLgg9JsXbveVeGyHCbgbyY4Uppn3c6osiv"
+     */
 
     fun init(context: Context, debug: Boolean) {
         val path = File(context.filesDir, "textile-go").absolutePath
@@ -37,7 +44,10 @@ object TextileWrapper {
         }
         Textile.launch(context, path, debug)
         Textile.instance().addEventListener(TextileLoggingListener())
-        invokeAfterNodeOnline { initPersonalThread() }
+        invokeAfterNodeOnline {
+            initPersonalThread()
+            //addCafe(cafePeerId, cafeToken)
+        }
     }
 
     /*-------------------------------------------
@@ -203,6 +213,41 @@ object TextileWrapper {
         Log.i(TAG, "Accepting invitation: $inviteId with key $key")
         val newBlockHash = Textile.instance().invites.acceptExternal(inviteId, key)
         Log.i(TAG, "Accepted invitation of thread: $newBlockHash")
+    }
+
+    /*-------------------------------------------
+     * Cafes
+     *-----------------------------------------*/
+
+    fun listCafes(peerId: String) {
+        var cafes = Textile.instance().cafes.sessions()
+        Log.d(TAG, "Registered Cafes:")
+        for (i in 0 until cafes.itemsCount) {
+            Log.d(TAG, cafes.getItems(i).toString())
+        }
+    }
+
+    /* This function can not work because of the known issue
+     * https://github.com/textileio/android-textile/issues/58
+     */
+    fun addCafe(peerId: String, token: String) {
+        Log.i(TAG, "Add Cafe $peerId")
+
+        Textile.instance().cafes.register(
+            peerId,
+            token,
+            object : Handlers.ErrorHandler {
+                override fun onComplete() {
+                    Log.i(TAG, "Add Cafe $peerId successfully.")
+                    listCafes(peerId)
+                }
+
+                override fun onError(e: Exception?) {
+                    Log.e(TAG, "Add Cafe with error.")
+                    Log.e(TAG, Log.getStackTraceString(e))
+                    listCafes(peerId)
+                }
+            })
     }
 
     /*-------------------------------------------
