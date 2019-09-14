@@ -47,6 +47,10 @@ object TextileWrapper {
         invokeAfterNodeOnline {
             initPersonalThread()
             //addCafe(cafePeerId, cafeToken)
+            // invitation of nbsdev-ntdemo thread (current nbsdev)
+            acceptExternalInvitation(
+                "QmdwCxZJURujDE9pwvvwq198SahcCNTj7SjDa13tEM1BEo",
+            "otKCiY9DRMKmnksmcjDR4YdAMNdSEf2aUmMsqTPDwNvPBvNe8dgSnLzr3MMd")
         }
     }
 
@@ -152,7 +156,7 @@ object TextileWrapper {
                 val files = filesList.getItems(i)
                 val handler = object : Handlers.DataHandler {
                     override fun onComplete(data: ByteArray?, media: String?) {
-                        if (media == "image/jpeg") {
+                        if (media == "image/jpeg" || media == "image/png") {
                             posts.add(Post(files.user.name, files.date, data, files.caption))
                         } else {
                             Log.e(TAG, "Unknown media type: $media")
