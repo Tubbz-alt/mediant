@@ -1,4 +1,4 @@
-package io.dt42.mediant
+package io.dt42.mediant.wrappers
 
 import android.app.AlertDialog
 import android.content.Context
@@ -28,7 +28,8 @@ object ZionWrapper : CoroutineScope by MainScope() {
 
     fun init(context: Context, applicationContext: Context) = launch(Dispatchers.IO) {
         val result = zkma.init(applicationContext)
-        val dialogHandler = createZionInitResultDialogHandler(context)
+        val dialogHandler =
+            createZionInitResultDialogHandler(context)
         val message = dialogHandler.obtainMessage()
         when (result) {
             RESULT.SUCCESS -> {
@@ -66,11 +67,17 @@ object ZionWrapper : CoroutineScope by MainScope() {
                 RESULT.SUCCESS -> {
                     Log.i(
                         TAG,
-                        "Eth sendPublicKey: ${zkma.getSendPublicKey(it, ETHEREUM_TYPE).key}"
+                        "Eth sendPublicKey: ${zkma.getSendPublicKey(
+                            it,
+                            ETHEREUM_TYPE
+                        ).key}"
                     )
                     Log.i(
                         TAG,
-                        "Eth receivePublicKey ${zkma.getReceivePublicKey(it, ETHEREUM_TYPE).key}"
+                        "Eth receivePublicKey ${zkma.getReceivePublicKey(
+                            it,
+                            ETHEREUM_TYPE
+                        ).key}"
                     )
                 }
                 RESULT.E_TEEKM_SEED_EXISTS -> {
@@ -119,7 +126,10 @@ object ZionWrapper : CoroutineScope by MainScope() {
         json.put("message", message)
 
         val signature = ByteArrayHolder()
-        val msgResult = zkma.signMessage(uniqueId!!, ETHEREUM_TYPE, json.toString(), signature)
+        val msgResult = zkma.signMessage(
+            uniqueId!!,
+            ETHEREUM_TYPE, json.toString(), signature
+        )
         Log.i(TAG, "zkma.signMessage result: $msgResult")
         Log.i(TAG, "signature: ${Arrays.toString(signature.byteArray)}")
         return signature.byteArray

@@ -1,4 +1,4 @@
-package io.dt42.mediant
+package io.dt42.mediant.activities
 
 import android.Manifest
 import android.app.Activity
@@ -19,9 +19,12 @@ import androidx.core.content.FileProvider
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
-import io.dt42.mediant.model.ProofBundle
-import io.dt42.mediant.ui.main.PUBLIC_THREAD_NAME
-import io.dt42.mediant.ui.main.SectionsPagerAdapter
+import io.dt42.mediant.R
+import io.dt42.mediant.adapters.SectionsPagerAdapter
+import io.dt42.mediant.fragments.PUBLIC_THREAD_NAME
+import io.dt42.mediant.models.ProofBundle
+import io.dt42.mediant.wrappers.TextileWrapper
+import io.dt42.mediant.wrappers.ZionWrapper
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import org.witness.proofmode.ProofMode
@@ -206,7 +209,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             TextileWrapper.profileAddress,
             proofBundle.toString()
         )
-        TextileWrapper.addImage(imageFilePath, PUBLIC_THREAD_NAME, proofBundle.toString())
+        TextileWrapper.addImage(
+            imageFilePath,
+            PUBLIC_THREAD_NAME,
+            proofBundle.toString()
+        )
     }
 
     private fun generateProof(filePath: String): ProofBundle {
@@ -275,7 +282,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 photoFile?.also {
                     val photoURI = FileProvider.getUriForFile(this, "$packageName.provider", it)
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-                    startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE)
+                    startActivityForResult(
+                        takePictureIntent,
+                        CAMERA_REQUEST_CODE
+                    )
                 }
             }
         }

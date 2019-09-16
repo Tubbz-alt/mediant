@@ -1,4 +1,4 @@
-package io.dt42.mediant.ui.main
+package io.dt42.mediant.adapters
 
 import android.graphics.BitmapFactory
 import android.view.LayoutInflater
@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.protobuf.Timestamp
 import io.dt42.mediant.R
-import io.dt42.mediant.model.Post
+import io.dt42.mediant.models.Post
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

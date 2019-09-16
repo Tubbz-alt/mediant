@@ -1,4 +1,4 @@
-package io.dt42.mediant.model
+package io.dt42.mediant.models
 
 import com.google.protobuf.Timestamp
 

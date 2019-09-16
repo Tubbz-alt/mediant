@@ -1,4 +1,4 @@
-package io.dt42.mediant.ui.main
+package io.dt42.mediant.fragments
 
 import android.os.Bundle
 import android.util.Log
@@ -8,8 +8,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.dt42.mediant.R
-import io.dt42.mediant.TextileWrapper
-import io.dt42.mediant.model.Post
+import io.dt42.mediant.adapters.PostsAdapter
+import io.dt42.mediant.models.Post
+import io.dt42.mediant.wrappers.TextileWrapper
 import kotlinx.android.synthetic.main.fragment_thread.*
 import kotlinx.coroutines.*
 

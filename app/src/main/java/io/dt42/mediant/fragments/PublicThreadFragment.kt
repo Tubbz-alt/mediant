@@ -1,8 +1,8 @@
-package io.dt42.mediant.ui.main
+package io.dt42.mediant.fragments
 
 import android.os.Bundle
 import android.view.View
-import io.dt42.mediant.TextileWrapper
+import io.dt42.mediant.wrappers.TextileWrapper
 
 const val PUBLIC_THREAD_NAME = "nbsdev"
 

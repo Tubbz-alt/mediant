@@ -1,8 +1,9 @@
-package io.dt42.mediant
+package io.dt42.mediant.wrappers
 
 import android.content.Context
 import android.util.Log
-import io.dt42.mediant.model.Post
+import io.dt42.mediant.BuildConfig
+import io.dt42.mediant.models.Post
 import io.textile.pb.Model
 import io.textile.pb.Model.Thread.Sharing
 import io.textile.pb.Model.Thread.Type
@@ -46,10 +47,11 @@ object TextileWrapper {
         invokeAfterNodeOnline {
             initPersonalThread()
             //addCafe(cafePeerId, cafeToken)
-            // invitation of nbsdev-ntdemo thread (current nbsdev)
-            acceptExternalInvitation(
-                "QmdwCxZJURujDE9pwvvwq198SahcCNTj7SjDa13tEM1BEo",
-            "otKCiY9DRMKmnksmcjDR4YdAMNdSEf2aUmMsqTPDwNvPBvNe8dgSnLzr3MMd")
+            // invitation of nbsdev-ntdemo thread (current nbsdev), which might cause an run-time error
+//            acceptExternalInvitation(
+//                "QmdwCxZJURujDE9pwvvwq198SahcCNTj7SjDa13tEM1BEo",
+//                "otKCiY9DRMKmnksmcjDR4YdAMNdSEf2aUmMsqTPDwNvPBvNe8dgSnLzr3MMd"
+//            )
         }
     }
 
@@ -61,7 +63,11 @@ object TextileWrapper {
         try {
             getThreadIdByName(profileAddress)
         } catch (e: NoSuchElementException) {
-            createThread(profileAddress, Type.PRIVATE, Sharing.NOT_SHARED)
+            createThread(
+                profileAddress,
+                Type.PRIVATE,
+                Sharing.NOT_SHARED
+            )
             Log.i(TAG, "Create personal thread: $profileAddress")
         } finally {
             Log.i(TAG, "Personal thread ($profileAddress) has been created.")
@@ -139,14 +145,22 @@ object TextileWrapper {
      *-----------------------------------------*/
 
     fun addImage(filePath: String, threadName: String, caption: String) =
-        addThreadFileByFilePath(filePath, getThreadIdByName(threadName), caption)
+        addThreadFileByFilePath(
+            filePath,
+            getThreadIdByName(threadName),
+            caption
+        )
 
     suspend fun fetchPosts(threadName: String, limit: Long = 10): MutableList<Post> =
         suspendCoroutine { continuation ->
             val posts = java.util.Collections.synchronizedList(mutableListOf<Post>())
             val hasResumed = AtomicBoolean(false)
             val filesList =
-                Textile.instance().files.list(getThreadIdByName(threadName), null, limit)
+                Textile.instance().files.list(
+                    getThreadIdByName(
+                        threadName
+                    ), null, limit
+                )
             Log.d(TAG, "$threadName fetched filesList size: ${filesList.itemsCount}")
             if (filesList.itemsCount == 0) {
                 continuation.resume(posts)
