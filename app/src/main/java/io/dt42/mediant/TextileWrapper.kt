@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import io.dt42.mediant.model.Post
 import io.textile.pb.Model
-import io.textile.pb.Model.CafeSessionList
 import io.textile.pb.Model.Thread.Sharing
 import io.textile.pb.Model.Thread.Type
 import io.textile.pb.QueryOuterClass
@@ -224,7 +223,7 @@ object TextileWrapper {
      *-----------------------------------------*/
 
     fun listCafes(peerId: String) {
-        var cafes = Textile.instance().cafes.sessions()
+        val cafes = Textile.instance().cafes.sessions()
         Log.d(TAG, "Registered Cafes:")
         for (i in 0 until cafes.itemsCount) {
             Log.d(TAG, cafes.getItems(i).toString())

@@ -125,13 +125,16 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         if (intent.action == Intent.ACTION_VIEW) {
             intent.data?.also {
                 val invitationUrl = intent.data.toString()
-                Log.d(TAG, "Legal invitation: " + invitationUrl.startsWith("https://www.textile.photos/invites/new").toString())
+                Log.d(
+                    TAG,
+                    "Legal invitation: ${invitationUrl.startsWith("https://www.textile.photos/invites/new")}"
+                )
                 if (invitationUrl.startsWith("https://www.textile.photos/invites/new")) {
                     Toast.makeText(this, "Attempt to accept invitation...", Toast.LENGTH_SHORT)
                         .show()
                     acceptExternalInvite(it)
                 } else {
-                    Log.e(TAG, "Failed to run invitation acceptance: %s".format(invitationUrl))
+                    Log.e(TAG, "Failed to run invitation acceptance: $invitationUrl")
                 }
             }
         }
