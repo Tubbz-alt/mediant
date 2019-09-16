@@ -27,6 +27,12 @@ android {
     }
 }
 
+repositories {
+    flatDir {
+        dirs project(':app').file('libs')
+    }
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -41,6 +47,7 @@ dependencies {
     implementation 'com.eternitywall:opentimestamps:0.1.14.1'
     implementation 'org.witness:android-libproofmode:0.0.3'
     implementation 'io.textile:textile:2.0.8'
+    implementation(name:'ZKMA-release', ext:'aar')
     testImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
