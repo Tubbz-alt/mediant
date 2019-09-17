@@ -20,7 +20,8 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.properties.Delegates
 
 private const val TAG = "TEXTILE_WRAPPER"
-private const val PREFERENCE_KEY_PUBLIC_THREAD_ID = "PUBLIC_KEY_ID"
+private const val PREFERENCE_KEY_PERSONAL_THREAD_ID = "PREFERENCE_KEY_PERSONAL_THREAD_ID"
+private const val PREFERENCE_KEY_PUBLIC_THREAD_ID = "PREFERENCE_KEY_PUBLIC_THREAD_ID"
 private const val FEED_REQUEST_LIMIT = 999
 
 object TextileWrapper {
@@ -38,7 +39,6 @@ object TextileWrapper {
         } catch (e: NullPointerException) {
             false
         }
-
     private val onPersonalThreadIdChangedListeners = mutableListOf<(String) -> Unit>()
     private val onPublicThreadIdChangedListeners = mutableListOf<(String) -> Unit>()
 
@@ -78,10 +78,17 @@ object TextileWrapper {
     }
 
     private fun initPersonalThread() {
+        val defaultSharedPreferences =
+            PreferenceManager.getDefaultSharedPreferences(Textile.instance().applicationContext)
+        personalThreadId =
+            defaultSharedPreferences.getString(PREFERENCE_KEY_PERSONAL_THREAD_ID, null)
+        invokeAfterPersonalThreadIdChanged {
+            defaultSharedPreferences.edit().putString(PREFERENCE_KEY_PERSONAL_THREAD_ID, it).apply()
+        }
         val profileAddress = Textile.instance().profile.get().address
         try {
-            personalThreadId = getThreadByName(profileAddress).id
-        } catch (e: NoSuchElementException) {
+            Textile.instance().threads.get(personalThreadId!!)
+        } catch (e: Exception) {
             createThread(profileAddress, Type.PRIVATE, Sharing.NOT_SHARED).apply {
                 personalThreadId = id
                 Log.i(TAG, "Create personal thread: $name ($id)")
@@ -92,13 +99,11 @@ object TextileWrapper {
     }
 
     private fun initPublicThread() {
-        val sharedPreferences =
+        val defaultSharedPreferences =
             PreferenceManager.getDefaultSharedPreferences(Textile.instance().applicationContext)
-        publicThreadId = sharedPreferences.getString(PREFERENCE_KEY_PUBLIC_THREAD_ID, null)
+        publicThreadId = defaultSharedPreferences.getString(PREFERENCE_KEY_PUBLIC_THREAD_ID, null)
         invokeAfterPublicThreadIdChanged {
-            sharedPreferences.edit().putString(
-                PREFERENCE_KEY_PUBLIC_THREAD_ID, it
-            ).apply()
+            defaultSharedPreferences.edit().putString(PREFERENCE_KEY_PUBLIC_THREAD_ID, it).apply()
         }
     }
 
@@ -114,23 +119,6 @@ object TextileWrapper {
             .setSchema(schema)
             .build()
         return Textile.instance().threads.add(config)
-    }
-
-    /**
-     * Get the first thread ID with given thread name.
-     * @param name The target thread name
-     * @return The thread with given thread name
-     * @throws NoSuchElementException Cannot find the thread with given thread name
-     */
-    private fun getThreadByName(name: String): Model.Thread {
-        val threadList = Textile.instance().threads.list()
-        for (i in 0 until threadList.itemsCount) {
-            val threadItem = threadList.getItems(i)
-            if (name == threadItem.name) {
-                return threadItem
-            }
-        }
-        throw NoSuchElementException("Cannot find thread $name")
     }
 
     private fun findParentThread(blockId: String): Model.Thread {
