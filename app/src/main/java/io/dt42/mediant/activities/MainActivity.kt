@@ -127,12 +127,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         if (intent.action == Intent.ACTION_VIEW) {
             intent.data?.also {
                 val invitationUrl = intent.data.toString()
-                Log.d(
-                    TAG,
-                    "Legal invitation: ${invitationUrl.startsWith("https://www.textile.photos/invites/new")}"
-                )
                 if (invitationUrl.startsWith("https://www.textile.photos/invites/new")) {
-                    Toast.makeText(this, "Attempt to accept invitation...", Toast.LENGTH_SHORT)
+                    Toast.makeText(this, "Attempt to accept invitation...", Toast.LENGTH_LONG)
                         .show()
                     acceptExternalInvite(it)
                 } else {
@@ -145,10 +141,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private fun acceptExternalInvite(uri: Uri) = launch(Dispatchers.IO) {
         val uriWithoutFragment = Uri.parse(uri.toString().replaceFirst('#', '?'))
         TextileWrapper.invokeAfterNodeOnline {
-            TextileWrapper.acceptExternalInvitation(
+            TextileWrapper.publicThreadId = TextileWrapper.acceptExternalInvitation(
                 uriWithoutFragment.getQueryParameter("id")!!,
                 uriWithoutFragment.getQueryParameter("key")!!
-            )
+            ).id
         }
     }
 
@@ -203,16 +199,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         Log.d(TAG, "proof bundle: $proofBundle")
         Toast.makeText(this@MainActivity, "Uploading via Textile $proofBundle", Toast.LENGTH_SHORT)
             .show()
-//        TextileWrapper.addImage(
-//            imageFilePath,
-//            TextileWrapper.profileAddress,
-//            proofBundle.toString()
-//        )
-//        TextileWrapper.addImage(
-//            imageFilePath,
-//            PUBLIC_THREAD_NAME,
-//            proofBundle.toString()
-//        )
+        TextileWrapper.personalThreadId?.also {
+            TextileWrapper.addFile(imageFilePath, it, proofBundle.toString())
+        }
+        TextileWrapper.publicThreadId?.also {
+            TextileWrapper.addFile(imageFilePath, it, proofBundle.toString())
+        }
     }
 
     private fun generateProof(filePath: String): ProofBundle {

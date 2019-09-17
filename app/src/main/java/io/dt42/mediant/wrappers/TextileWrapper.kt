@@ -2,6 +2,7 @@ package io.dt42.mediant.wrappers
 
 import android.content.Context
 import android.util.Log
+import androidx.preference.PreferenceManager
 import io.dt42.mediant.BuildConfig
 import io.dt42.mediant.models.Post
 import io.textile.pb.Model
@@ -19,6 +20,8 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.properties.Delegates
 
 private const val TAG = "TEXTILE_WRAPPER"
+private const val PREFERENCE_KEY_PUBLIC_THREAD_ID = "PUBLIC_KEY_ID"
+private const val FEED_REQUEST_LIMIT = 999
 
 object TextileWrapper {
     var personalThreadId by Delegates.observable<String?>(null) { _, _, newValue ->
@@ -54,6 +57,7 @@ object TextileWrapper {
         Textile.instance().addEventListener(TextileLoggingListener())
         invokeAfterNodeOnline {
             initPersonalThread()
+            initPublicThread()
 //            addCafe(cafePeerId, cafeToken)
 //            invitation of nbsdev-ntdemo thread (current nbsdev), which might cause an run-time error
 //            acceptExternalInvitation(
@@ -66,11 +70,17 @@ object TextileWrapper {
     /*-------------------------------------------
      * Threads
      *-----------------------------------------*/
+    fun logThreads() {
+        val threadList = Textile.instance().threads.list()
+        for (i in 0 until threadList.itemsCount) {
+            Log.i(TAG, "${threadList.getItems(i).name} (${threadList.getItems(i).id})")
+        }
+    }
 
     private fun initPersonalThread() {
         val profileAddress = Textile.instance().profile.get().address
         try {
-            personalThreadId = getThreadIdByName(profileAddress)
+            personalThreadId = getThreadByName(profileAddress).id
         } catch (e: NoSuchElementException) {
             createThread(profileAddress, Type.PRIVATE, Sharing.NOT_SHARED).apply {
                 personalThreadId = id
@@ -81,9 +91,14 @@ object TextileWrapper {
         }
     }
 
-    fun logThreads() {
-        for (i in 0 until Textile.instance().threads.list().itemsCount) {
-            Log.i(TAG, Textile.instance().threads.list().getItems(i).toString())
+    private fun initPublicThread() {
+        val sharedPreferences =
+            PreferenceManager.getDefaultSharedPreferences(Textile.instance().applicationContext)
+        publicThreadId = sharedPreferences.getString(PREFERENCE_KEY_PUBLIC_THREAD_ID, null)
+        invokeAfterPublicThreadIdChanged {
+            sharedPreferences.edit().putString(
+                PREFERENCE_KEY_PUBLIC_THREAD_ID, it
+            ).apply()
         }
     }
 
@@ -104,47 +119,55 @@ object TextileWrapper {
     /**
      * Get the first thread ID with given thread name.
      * @param name The target thread name
-     * @return The thread ID with given thread name
+     * @return The thread with given thread name
      * @throws NoSuchElementException Cannot find the thread with given thread name
      */
-    private fun getThreadIdByName(name: String): String {
+    private fun getThreadByName(name: String): Model.Thread {
         val threadList = Textile.instance().threads.list()
         for (i in 0 until threadList.itemsCount) {
             val threadItem = threadList.getItems(i)
             if (name == threadItem.name) {
-                return threadItem.id
+                return threadItem
             }
         }
         throw NoSuchElementException("Cannot find thread $name")
     }
 
-    private fun addThreadFileByFilePath(filePath: String, threadId: String, caption: String) {
-        Textile.instance().files.addFiles(
-            filePath,
-            threadId,
-            caption,
-            object : Handlers.BlockHandler {
-                override fun onComplete(block: Model.Block?) {
-                    Log.i(TAG, "Add file ($filePath) to thread ($threadId) successfully.")
+    private fun findParentThread(blockId: String): Model.Thread {
+        // TODO: We should use block API instead of feed API after block API has been implemented.
+        // https://github.com/textileio/android-textile/issues/15
+        val threadList = Textile.instance().threads.list()
+        for (i in 0 until threadList.itemsCount) {
+            val threadItem = threadList.getItems(i)
+            val request = View.FeedRequest.newBuilder()
+                .setThread(threadItem.id)
+                .setLimit(FEED_REQUEST_LIMIT)
+                .build()
+            Textile.instance().feed.list(request).forEach {
+                if (it.block == blockId) {
+                    return threadItem
                 }
-
-                override fun onError(e: Exception?) {
-                    Log.e(TAG, "Add file ($filePath) to thread ($threadId) with error.")
-                    Log.e(TAG, Log.getStackTraceString(e))
-                }
-            })
+            }
+        }
+        throw NoSuchElementException("Cannot find the block ($blockId) via feed API.")
     }
 
     /*-------------------------------------------
      * Files
      *-----------------------------------------*/
 
-    fun addImage(filePath: String, threadName: String, caption: String) =
-        addThreadFileByFilePath(
-            filePath,
-            getThreadIdByName(threadName),
-            caption
-        )
+    fun addFile(filePath: String, threadId: String, caption: String) =
+        Textile.instance().files.addFiles(filePath, threadId, caption,
+            object : Handlers.BlockHandler {
+                override fun onComplete(block: Model.Block?) {
+                    Log.i(TAG, "Add file ($filePath) to thread ($threadId) successfully.")
+                }
+
+                override fun onError(e: Exception) {
+                    Log.e(TAG, "Add file ($filePath) to thread ($threadId) with error.")
+                    Log.e(TAG, Log.getStackTraceString(e))
+                }
+            })
 
     suspend fun fetchPosts(threadId: String, limit: Long = 10): MutableList<Post> =
         suspendCoroutine { continuation ->
@@ -199,10 +222,13 @@ object TextileWrapper {
     /**
      * Accept invitation sent by Textile Photo
      */
-    fun acceptExternalInvitation(inviteId: String, key: String) {
+    fun acceptExternalInvitation(inviteId: String, key: String): Model.Thread {
         Log.i(TAG, "Accepting invitation: $inviteId with key $key")
         val newBlockHash = Textile.instance().invites.acceptExternal(inviteId, key)
-        Log.i(TAG, "Accepted invitation of thread: $newBlockHash")
+        findParentThread(newBlockHash).also {
+            Log.i(TAG, "Join to thread: ${it.id}")
+            return it
+        }
     }
 
     /*-------------------------------------------
