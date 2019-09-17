@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import io.dt42.mediant.R
 import io.dt42.mediant.adapters.SectionsPagerAdapter
-import io.dt42.mediant.fragments.PUBLIC_THREAD_NAME
 import io.dt42.mediant.models.ProofBundle
 import io.dt42.mediant.wrappers.TextileWrapper
 import io.dt42.mediant.wrappers.ZionWrapper
@@ -204,16 +203,16 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         Log.d(TAG, "proof bundle: $proofBundle")
         Toast.makeText(this@MainActivity, "Uploading via Textile $proofBundle", Toast.LENGTH_SHORT)
             .show()
-        TextileWrapper.addImage(
-            imageFilePath,
-            TextileWrapper.profileAddress,
-            proofBundle.toString()
-        )
-        TextileWrapper.addImage(
-            imageFilePath,
-            PUBLIC_THREAD_NAME,
-            proofBundle.toString()
-        )
+//        TextileWrapper.addImage(
+//            imageFilePath,
+//            TextileWrapper.profileAddress,
+//            proofBundle.toString()
+//        )
+//        TextileWrapper.addImage(
+//            imageFilePath,
+//            PUBLIC_THREAD_NAME,
+//            proofBundle.toString()
+//        )
     }
 
     private fun generateProof(filePath: String): ProofBundle {

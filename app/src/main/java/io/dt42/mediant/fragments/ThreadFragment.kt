@@ -17,7 +17,6 @@ import kotlinx.coroutines.*
 private const val TAG = "THREAD_FRAGMENT"
 
 abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
-    lateinit var name: String
     private val posts = java.util.Collections.synchronizedList(mutableListOf<Post>())
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,29 +43,23 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
             layoutManager = LinearLayoutManager(activity)
             adapter = PostsAdapter(posts)
         }
-        swipeRefreshLayout.setOnRefreshListener {
-            if (TextileWrapper.isOnline) {
-                refreshPosts()
-            }
-        }
     }
 
-    protected fun refreshPosts() = launch {
-        val newPosts = withContext(Dispatchers.IO) {
+    protected fun refreshPosts(threadId: String) = launch {
+        Log.d(TAG, "Refreshing thread: $threadId")
+        withContext(Dispatchers.IO) {
             try {
-                TextileWrapper.fetchPosts(name)
+                TextileWrapper.fetchPosts(threadId)
             } catch (e: NoSuchElementException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 null
             }
-        }
-        newPosts?.also {
+        }?.also { newPosts ->
             val comparator =
                 compareByDescending<Post> { it.date.seconds }.thenByDescending { it.date.nanos }
             posts.clear()
             posts.addAll(newPosts.sortedWith(comparator))
             recyclerView.adapter?.notifyDataSetChanged()
-            swipeRefreshLayout.isRefreshing = false
             recyclerView.adapter?.notifyItemRangeInserted(0, posts.size)
             recyclerView.layoutManager?.scrollToPosition(0)
         }

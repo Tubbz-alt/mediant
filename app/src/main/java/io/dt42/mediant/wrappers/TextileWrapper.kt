@@ -7,7 +7,6 @@ import io.dt42.mediant.models.Post
 import io.textile.pb.Model
 import io.textile.pb.Model.Thread.Sharing
 import io.textile.pb.Model.Thread.Type
-import io.textile.pb.QueryOuterClass
 import io.textile.pb.View
 import io.textile.textile.BaseTextileEventListener
 import io.textile.textile.Handlers
@@ -17,20 +16,29 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.properties.Delegates
 
 private const val TAG = "TEXTILE_WRAPPER"
 
 object TextileWrapper {
-    var personalThreadId: String? = null
-    var publicThreadId: String? = null
-    val profileAddress: String
-        get() = Textile.instance().profile.get().address
+    var personalThreadId by Delegates.observable<String?>(null) { _, _, newValue ->
+        newValue?.apply { onPersonalThreadIdChangedListeners.forEach { it(this) } }
+    }
+
+    var publicThreadId by Delegates.observable<String?>(null) { _, _, newValue ->
+        newValue?.apply { onPublicThreadIdChangedListeners.forEach { it(this) } }
+    }
+
     val isOnline: Boolean
         get() = try {
             Textile.instance().online()
         } catch (e: NullPointerException) {
             false
         }
+
+    private val onPersonalThreadIdChangedListeners = mutableListOf<(String) -> Unit>()
+    private val onPublicThreadIdChangedListeners = mutableListOf<(String) -> Unit>()
+
 //    val cafePeerId: String
 //        get() = "12D3KooWFxcVguc3zAxwifk3bbfJjHwkRdX36wKSV56vMohYxj7J"
 //    val cafeToken: String
@@ -60,6 +68,7 @@ object TextileWrapper {
      *-----------------------------------------*/
 
     private fun initPersonalThread() {
+        val profileAddress = Textile.instance().profile.get().address
         try {
             personalThreadId = getThreadIdByName(profileAddress)
         } catch (e: NoSuchElementException) {
@@ -68,7 +77,7 @@ object TextileWrapper {
                 Log.i(TAG, "Create personal thread: $name ($id)")
             }
         } finally {
-            Log.i(TAG, "Personal thread $profileAddress ($personalThreadId) has been created.")
+            Log.i(TAG, "Personal thread has been created: $profileAddress ($personalThreadId)")
         }
     }
 
@@ -137,17 +146,12 @@ object TextileWrapper {
             caption
         )
 
-    suspend fun fetchPosts(threadName: String, limit: Long = 10): MutableList<Post> =
+    suspend fun fetchPosts(threadId: String, limit: Long = 10): MutableList<Post> =
         suspendCoroutine { continuation ->
             val posts = java.util.Collections.synchronizedList(mutableListOf<Post>())
             val hasResumed = AtomicBoolean(false)
-            val filesList =
-                Textile.instance().files.list(
-                    getThreadIdByName(
-                        threadName
-                    ), null, limit
-                )
-            Log.d(TAG, "$threadName fetched filesList size: ${filesList.itemsCount}")
+            val filesList = Textile.instance().files.list(threadId, null, limit)
+            Log.d(TAG, "$threadId fetched filesList size: ${filesList.itemsCount}")
             if (filesList.itemsCount == 0) {
                 continuation.resume(posts)
             }
@@ -187,23 +191,6 @@ object TextileWrapper {
                 }
             }
         }
-
-
-    /*-------------------------------------------
-     * Contacts
-     *-----------------------------------------*/
-
-    fun getContactByName(name: String) {
-        val options = QueryOuterClass.QueryOptions.newBuilder()
-            .setWait(10)
-            .setLimit(1)
-            .build()
-        val query = QueryOuterClass.ContactQuery.newBuilder()
-            .setName(name)
-            .build()
-        val handle = Textile.instance().contacts.search(query, options)
-        Log.i(TAG, "Handle string: $handle")
-    }
 
     /*-------------------------------------------
      * Invites
@@ -273,5 +260,13 @@ object TextileWrapper {
                 }
             })
         }
+    }
+
+    fun invokeAfterPersonalThreadIdChanged(callback: (String) -> Unit) {
+        onPersonalThreadIdChangedListeners.add(callback)
+    }
+
+    fun invokeAfterPublicThreadIdChanged(callback: (String) -> Unit) {
+        onPublicThreadIdChangedListeners.add(callback)
     }
 }

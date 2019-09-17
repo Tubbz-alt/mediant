@@ -3,17 +3,22 @@ package io.dt42.mediant.fragments
 import android.os.Bundle
 import android.view.View
 import io.dt42.mediant.wrappers.TextileWrapper
-
-const val PUBLIC_THREAD_NAME = "nbsdev"
+import kotlinx.android.synthetic.main.fragment_thread.*
 
 class PublicThreadFragment : ThreadFragment() {
-    init {
-        name = PUBLIC_THREAD_NAME
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        TextileWrapper.invokeAfterNodeOnline { refreshPosts() }
+        swipeRefreshLayout.setOnRefreshListener {
+            if (TextileWrapper.isOnline) {
+                TextileWrapper.publicThreadId?.also { refreshPosts(it) }
+                swipeRefreshLayout.isRefreshing = false
+            }
+        }
+        TextileWrapper.invokeAfterPublicThreadIdChanged {
+            refreshPosts(it)
+            swipeRefreshLayout.isRefreshing = false
+        }
     }
 
     companion object {
