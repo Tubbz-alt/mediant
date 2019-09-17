@@ -29,12 +29,10 @@ object TextileWrapper {
         }
     val profileAddress: String
         get() = Textile.instance().profile.get().address
-    /*
-    val cafePeerId: String
-        get() = "12D3KooWFxcVguc3zAxwifk3bbfJjHwkRdX36wKSV56vMohYxj7J"
-    val cafeToken: String
-        get() = "oWRT9okTuHQHDjFQZMa9udFv88dLgg9JsXbveVeGyHCbgbyY4Uppn3c6osiv"
-     */
+//    val cafePeerId: String
+//        get() = "12D3KooWFxcVguc3zAxwifk3bbfJjHwkRdX36wKSV56vMohYxj7J"
+//    val cafeToken: String
+//        get() = "oWRT9okTuHQHDjFQZMa9udFv88dLgg9JsXbveVeGyHCbgbyY4Uppn3c6osiv"
 
     fun init(context: Context, debug: Boolean) {
         val path = File(context.filesDir, "textile-go").absolutePath
@@ -46,8 +44,8 @@ object TextileWrapper {
         Textile.instance().addEventListener(TextileLoggingListener())
         invokeAfterNodeOnline {
             initPersonalThread()
-            //addCafe(cafePeerId, cafeToken)
-            // invitation of nbsdev-ntdemo thread (current nbsdev), which might cause an run-time error
+//            addCafe(cafePeerId, cafeToken)
+//            invitation of nbsdev-ntdemo thread (current nbsdev), which might cause an run-time error
 //            acceptExternalInvitation(
 //                "QmdwCxZJURujDE9pwvvwq198SahcCNTj7SjDa13tEM1BEo",
 //                "otKCiY9DRMKmnksmcjDR4YdAMNdSEf2aUmMsqTPDwNvPBvNe8dgSnLzr3MMd"
@@ -95,32 +93,21 @@ object TextileWrapper {
         Log.i(TAG, "Create new thread: $name")
     }
 
+    /**
+     * Get the first thread ID with given thread name.
+     * @param name The target thread name
+     * @return The thread ID with given thread name
+     * @throws NoSuchElementException Cannot find the thread with given thread name
+     */
     private fun getThreadIdByName(name: String): String {
         val threadList = Textile.instance().threads.list()
-
-        /* TODO: Get Thread ID by name is not reliable because
-         *       multiple Threads can have the same name.
-         *
-         *       A better solution is to get the Thread ID in the block
-         *       returned by the acceptExternal function.
-         */
-        if (name == "nbsdev") {
-            // The nbsdev Thread
-            //val feedThreadId = "12D3KooWGrbKBz9yyYKx8McB1RSWpagiPnEmfuagp41mxPd8Gfyy"
-            // The nbsdev-ntdemo Thread
-            val feedThreadId = "12D3KooWMY4S9aqj5h5LyxKUTja7mP4K34hsG647ZqCbKBCqpVyk"
-            Log.d(TAG, "Return nbsdev thread ID: %s".format(feedThreadId))
-            return feedThreadId
-        } else {
-            for (i in 0 until threadList.itemsCount) {
-                val mThread = threadList.getItems(i)
-                if (name == mThread.name) {
-                    return mThread.id
-                }
+        for (i in 0 until threadList.itemsCount) {
+            val threadItem = threadList.getItems(i)
+            if (name == threadItem.name) {
+                return threadItem.id
             }
-            logThreads()
-            throw NoSuchElementException("Cannot find thread $name")
         }
+        throw NoSuchElementException("Cannot find thread $name")
     }
 
     private fun addThreadFileByFilePath(filePath: String, threadId: String, caption: String) {
