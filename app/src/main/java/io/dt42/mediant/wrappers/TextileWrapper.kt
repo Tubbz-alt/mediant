@@ -21,14 +21,16 @@ import kotlin.coroutines.suspendCoroutine
 private const val TAG = "TEXTILE_WRAPPER"
 
 object TextileWrapper {
+    var personalThreadId: String? = null
+    var publicThreadId: String? = null
+    val profileAddress: String
+        get() = Textile.instance().profile.get().address
     val isOnline: Boolean
         get() = try {
             Textile.instance().online()
         } catch (e: NullPointerException) {
             false
         }
-    val profileAddress: String
-        get() = Textile.instance().profile.get().address
 //    val cafePeerId: String
 //        get() = "12D3KooWFxcVguc3zAxwifk3bbfJjHwkRdX36wKSV56vMohYxj7J"
 //    val cafeToken: String
@@ -59,16 +61,14 @@ object TextileWrapper {
 
     private fun initPersonalThread() {
         try {
-            getThreadIdByName(profileAddress)
+            personalThreadId = getThreadIdByName(profileAddress)
         } catch (e: NoSuchElementException) {
-            createThread(
-                profileAddress,
-                Type.PRIVATE,
-                Sharing.NOT_SHARED
-            )
-            Log.i(TAG, "Create personal thread: $profileAddress")
+            createThread(profileAddress, Type.PRIVATE, Sharing.NOT_SHARED).apply {
+                personalThreadId = id
+                Log.i(TAG, "Create personal thread: $name ($id)")
+            }
         } finally {
-            Log.i(TAG, "Personal thread ($profileAddress) has been created.")
+            Log.i(TAG, "Personal thread $profileAddress ($personalThreadId) has been created.")
         }
     }
 
@@ -78,7 +78,7 @@ object TextileWrapper {
         }
     }
 
-    private fun createThread(name: String, type: Type, sharing: Sharing) {
+    private fun createThread(name: String, type: Type, sharing: Sharing): Model.Thread {
         val schema = View.AddThreadConfig.Schema.newBuilder()
             .setPreset(View.AddThreadConfig.Schema.Preset.MEDIA)
             .build()
@@ -89,8 +89,7 @@ object TextileWrapper {
             .setSharing(sharing)
             .setSchema(schema)
             .build()
-        Textile.instance().threads.add(config)
-        Log.i(TAG, "Create new thread: $name")
+        return Textile.instance().threads.add(config)
     }
 
     /**
