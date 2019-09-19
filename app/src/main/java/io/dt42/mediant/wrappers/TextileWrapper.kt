@@ -24,6 +24,10 @@ private const val PREFERENCE_KEY_PERSONAL_THREAD_ID = "PREFERENCE_KEY_PERSONAL_T
 private const val PREFERENCE_KEY_PUBLIC_THREAD_ID = "PREFERENCE_KEY_PUBLIC_THREAD_ID"
 private const val REQUEST_LIMIT = 999
 
+// DEBUGGING
+private const val DEV_CAFE_URL = "https://us-west-dev.textile.cafe"
+private const val DEV_CAFE_TOKEN = "uggU4NcVGFSPchULpa2zG2NRjw2bFzaiJo3BYAgaFyzCUPRLuAgToE3HXPyo"
+
 object TextileWrapper {
     var personalThreadId by Delegates.observable<String?>(null) { _, _, newValue ->
         newValue?.apply { onPersonalThreadIdChangedListeners.forEach { it(this) } }
@@ -42,11 +46,6 @@ object TextileWrapper {
     private val onPersonalThreadIdChangedListeners = mutableListOf<(String) -> Unit>()
     private val onPublicThreadIdChangedListeners = mutableListOf<(String) -> Unit>()
 
-//    val cafePeerId: String
-//        get() = "12D3KooWFxcVguc3zAxwifk3bbfJjHwkRdX36wKSV56vMohYxj7J"
-//    val cafeToken: String
-//        get() = "oWRT9okTuHQHDjFQZMa9udFv88dLgg9JsXbveVeGyHCbgbyY4Uppn3c6osiv"
-
     fun init(context: Context, debug: Boolean) {
         val path = File(context.filesDir, "textile-go").absolutePath
         if (!Textile.isInitialized(path)) {
@@ -56,14 +55,9 @@ object TextileWrapper {
         Textile.launch(context, path, debug)
         Textile.instance().addEventListener(TextileLoggingListener())
         invokeAfterNodeOnline {
+            addCafe(DEV_CAFE_URL, DEV_CAFE_TOKEN)
             initPersonalThread()
             initPublicThread()
-//            addCafe(cafePeerId, cafeToken)
-//            invitation of nbsdev-ntdemo thread (current nbsdev), which might cause an run-time error
-//            acceptExternalInvitation(
-//                "QmdwCxZJURujDE9pwvvwq198SahcCNTj7SjDa13tEM1BEo",
-//                "otKCiY9DRMKmnksmcjDR4YdAMNdSEf2aUmMsqTPDwNvPBvNe8dgSnLzr3MMd"
-//            )
         }
     }
 
@@ -230,7 +224,7 @@ object TextileWrapper {
      * Cafes
      *-----------------------------------------*/
 
-    fun listCafes(peerId: String) {
+    fun listCafes() {
         val cafes = Textile.instance().cafes.sessions()
         Log.d(TAG, "Registered Cafes:")
         for (i in 0 until cafes.itemsCount) {
@@ -241,22 +235,18 @@ object TextileWrapper {
     /* This function can not work because of the known issue
      * https://github.com/textileio/android-textile/issues/58
      */
-    fun addCafe(peerId: String, token: String) {
-        Log.i(TAG, "Add Cafe $peerId")
-
+    private fun addCafe(peerId: String, token: String) {
         Textile.instance().cafes.register(
-            peerId,
-            token,
+            peerId, token,
             object : Handlers.ErrorHandler {
                 override fun onComplete() {
                     Log.i(TAG, "Add Cafe $peerId successfully.")
-                    listCafes(peerId)
+                    listCafes()
                 }
 
                 override fun onError(e: Exception?) {
-                    Log.e(TAG, "Add Cafe with error.")
-                    Log.e(TAG, Log.getStackTraceString(e))
-                    listCafes(peerId)
+                    Log.e(TAG, "Add Cafe with error: " + Log.getStackTraceString(e))
+                    listCafes()
                 }
             })
     }
