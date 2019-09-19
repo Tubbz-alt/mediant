@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.preference.PreferenceManager
 import io.dt42.mediant.BuildConfig
 import io.dt42.mediant.activities.TAG
-import io.dt42.mediant.models.Post
 import io.textile.pb.Model
 import io.textile.pb.Model.Thread.Sharing
 import io.textile.pb.Model.Thread.Type
@@ -15,16 +14,13 @@ import io.textile.textile.Handlers
 import io.textile.textile.Textile
 import io.textile.textile.TextileLoggingListener
 import java.io.File
-import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlin.properties.Delegates
 
 private const val PREFERENCE_KEY_PERSONAL_THREAD_ID = "PREFERENCE_KEY_PERSONAL_THREAD_ID"
 private const val PREFERENCE_KEY_PUBLIC_THREAD_ID = "PREFERENCE_KEY_PUBLIC_THREAD_ID"
 private const val REQUEST_LIMIT = 999
 
-// DEBUGGING
+// TODO: DEVELOPMENT ONLY
 private const val DEV_CAFE_URL = "https://us-west-dev.textile.cafe"
 private const val DEV_CAFE_TOKEN = "uggU4NcVGFSPchULpa2zG2NRjw2bFzaiJo3BYAgaFyzCUPRLuAgToE3HXPyo"
 
@@ -37,7 +33,7 @@ object TextileWrapper {
         newValue?.apply { onPublicThreadIdChangedListeners.forEach { it(this) } }
     }
 
-    val isOnline: Boolean
+    private val isOnline: Boolean
         get() = try {
             Textile.instance().online()
         } catch (e: NullPointerException) {
@@ -105,10 +101,6 @@ object TextileWrapper {
         val schema = View.AddThreadConfig.Schema.newBuilder()
             .setPreset(View.AddThreadConfig.Schema.Preset.MEDIA)
             .build()
-        View.AddThreadConfig.Schema.newBuilder().apply {
-            preset = View.AddThreadConfig.Schema.Preset.MEDIA
-            build()
-        }
         val config = View.AddThreadConfig.newBuilder()
             .setKey("${BuildConfig.APPLICATION_ID}.${BuildConfig.VERSION_NAME}.$name")
             .setName(name)
@@ -154,55 +146,6 @@ object TextileWrapper {
                     Log.e(TAG, Log.getStackTraceString(e))
                 }
             })
-
-    suspend fun fetchPosts(
-        threadId: String,
-        limit: Long = REQUEST_LIMIT.toLong()
-    ): MutableList<Post> =
-        suspendCoroutine { continuation ->
-            val posts = java.util.Collections.synchronizedList(mutableListOf<Post>())
-            val hasResumed = AtomicBoolean(false)
-            val filesList = Textile.instance().files.list(threadId, null, limit)
-            Log.d(TAG, "$threadId fetched filesList size: ${filesList.itemsCount}")
-            if (filesList.itemsCount == 0) {
-                continuation.resume(posts)
-            }
-            for (i in 0 until filesList.itemsCount) {
-                val files = filesList.getItems(i)
-                val handler = object : Handlers.DataHandler {
-                    override fun onComplete(data: ByteArray?, media: String?) {
-                        if (media == "image/jpeg" || media == "image/png") {
-                            posts.add(Post(files.user.name, files.date, data, files.caption))
-                        } else {
-                            Log.e(TAG, "Unknown media type: $media")
-                        }
-                        Log.i(TAG, "Posts fetched: ${posts.size} / ${filesList.itemsCount}")
-                        if (posts.size == filesList.itemsCount && !hasResumed.get()) {
-                            hasResumed.set(true)
-                            continuation.resume(posts)
-                        }
-                    }
-
-                    override fun onError(e: Exception) {
-                        Log.e(TAG, Log.getStackTraceString(e))
-                        if (!hasResumed.get()) {
-                            hasResumed.set(true)
-                            // still resume posts though some posts cannot be retrieved
-                            continuation.resume(posts)
-                        }
-                    }
-                }
-
-                // TODO: use Textile.instance().files.imageContentForMinWidth() instead
-                // Currently, Textile.instance().files.imageContentForMinWidth() only gets null, and
-                // I don't know why.
-                files.filesList.forEach { file ->
-                    file.linksMap["large"]?.hash?.also {
-                        Textile.instance().files.content(it, handler)
-                    }
-                }
-            }
-        }
 
     /*-------------------------------------------
      * Invites
@@ -270,11 +213,11 @@ object TextileWrapper {
         }
     }
 
-    fun invokeAfterPersonalThreadIdChanged(callback: (String) -> Unit) {
+    private fun invokeAfterPersonalThreadIdChanged(callback: (String) -> Unit) {
         onPersonalThreadIdChangedListeners.add(callback)
     }
 
-    fun invokeAfterPublicThreadIdChanged(callback: (String) -> Unit) {
+    private fun invokeAfterPublicThreadIdChanged(callback: (String) -> Unit) {
         onPublicThreadIdChangedListeners.add(callback)
     }
 }

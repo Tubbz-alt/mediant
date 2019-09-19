@@ -1,19 +1,18 @@
 package io.dt42.mediant.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.dt42.mediant.R
-import io.dt42.mediant.activities.TAG
 import io.dt42.mediant.adapters.PostsAdapter
 import io.dt42.mediant.models.Post
-import io.dt42.mediant.wrappers.TextileWrapper
 import kotlinx.android.synthetic.main.fragment_thread.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 
 abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
     private val posts = java.util.Collections.synchronizedList(mutableListOf<Post>())
@@ -44,24 +43,24 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
         }
     }
 
-    protected fun refreshPosts(threadId: String) = launch {
-        Log.d(TAG, "Refreshing thread: $threadId")
-        withContext(Dispatchers.IO) {
-            try {
-                TextileWrapper.fetchPosts(threadId)
-            } catch (e: NoSuchElementException) {
-                Log.e(TAG, Log.getStackTraceString(e))
-                null
-            }
-        }?.also { newPosts ->
-            val comparator =
-                compareByDescending<Post> { it.date.seconds }.thenByDescending { it.date.nanos }
-            posts.clear()
-            posts.addAll(newPosts.sortedWith(comparator))
-            recyclerView.adapter?.notifyDataSetChanged()
-            recyclerView.adapter?.notifyItemRangeInserted(0, posts.size)
-            recyclerView.layoutManager?.scrollToPosition(0)
-        }
-        swipeRefreshLayout.isRefreshing = false
-    }
+//    protected fun refreshPosts(threadId: String) = launch {
+//        Log.d(TAG, "Refreshing thread: $threadId")
+//        withContext(Dispatchers.IO) {
+//            try {
+//                TextileWrapper.fetchPosts(threadId)
+//            } catch (e: NoSuchElementException) {
+//                Log.e(TAG, Log.getStackTraceString(e))
+//                null
+//            }
+//        }?.also { newPosts ->
+//            val comparator =
+//                compareByDescending<Post> { it.date.seconds }.thenByDescending { it.date.nanos }
+//            posts.clear()
+//            posts.addAll(newPosts.sortedWith(comparator))
+//            recyclerView.adapter?.notifyDataSetChanged()
+//            recyclerView.adapter?.notifyItemRangeInserted(0, posts.size)
+//            recyclerView.layoutManager?.scrollToPosition(0)
+//        }
+//        swipeRefreshLayout.isRefreshing = false
+//    }
 }
