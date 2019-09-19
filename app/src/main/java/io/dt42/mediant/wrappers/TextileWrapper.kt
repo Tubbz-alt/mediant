@@ -232,15 +232,12 @@ object TextileWrapper {
         }
     }
 
-    /* This function can not work because of the known issue
-     * https://github.com/textileio/android-textile/issues/58
-     */
-    private fun addCafe(peerId: String, token: String) {
+    private fun addCafe(url: String, token: String) {
         Textile.instance().cafes.register(
-            peerId, token,
+            url, token,
             object : Handlers.ErrorHandler {
                 override fun onComplete() {
-                    Log.i(TAG, "Add Cafe $peerId successfully.")
+                    Log.i(TAG, "Add Cafe $url successfully.")
                     listCafes()
                 }
 
