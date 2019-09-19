@@ -9,10 +9,7 @@ import io.textile.pb.Model
 import io.textile.pb.Model.Thread.Sharing
 import io.textile.pb.Model.Thread.Type
 import io.textile.pb.View
-import io.textile.textile.BaseTextileEventListener
-import io.textile.textile.Handlers
-import io.textile.textile.Textile
-import io.textile.textile.TextileLoggingListener
+import io.textile.textile.*
 import java.io.File
 import kotlin.properties.Delegates
 
@@ -50,7 +47,7 @@ object TextileWrapper {
         }
         Textile.launch(context, path, debug)
         Textile.instance().addEventListener(TextileLoggingListener())
-        invokeAfterNodeOnline {
+        addOnNodeOnlineListener {
             addCafe(DEV_CAFE_URL, DEV_CAFE_TOKEN)
             initPersonalThread()
             initPublicThread()
@@ -63,7 +60,7 @@ object TextileWrapper {
     fun logThreads() {
         val threadList = Textile.instance().threads.list()
         for (i in 0 until threadList.itemsCount) {
-            Log.i(TAG, "${threadList.getItems(i).name} (${threadList.getItems(i).id})")
+            Log.i(TAG, "${threadList.getItems(i).id}: ${threadList.getItems(i).blockCount}")
         }
     }
 
@@ -72,7 +69,7 @@ object TextileWrapper {
             PreferenceManager.getDefaultSharedPreferences(Textile.instance().applicationContext)
         personalThreadId =
             defaultSharedPreferences.getString(PREFERENCE_KEY_PERSONAL_THREAD_ID, null)
-        invokeAfterPersonalThreadIdChanged {
+        addOnPersonalThreadIdChangedListener {
             defaultSharedPreferences.edit().putString(PREFERENCE_KEY_PERSONAL_THREAD_ID, it).apply()
         }
         val profileAddress = Textile.instance().profile.get().address
@@ -92,7 +89,7 @@ object TextileWrapper {
         val defaultSharedPreferences =
             PreferenceManager.getDefaultSharedPreferences(Textile.instance().applicationContext)
         publicThreadId = defaultSharedPreferences.getString(PREFERENCE_KEY_PUBLIC_THREAD_ID, null)
-        invokeAfterPublicThreadIdChanged {
+        addOnPublicThreadIdChangedListener {
             defaultSharedPreferences.edit().putString(PREFERENCE_KEY_PUBLIC_THREAD_ID, it).apply()
         }
     }
@@ -134,11 +131,12 @@ object TextileWrapper {
      * Files
      *-----------------------------------------*/
 
+    // TODO: wrap this function with suspendCoroutine for async return
     fun addFile(filePath: String, threadId: String, caption: String) =
         Textile.instance().files.addFiles(filePath, threadId, caption,
             object : Handlers.BlockHandler {
-                override fun onComplete(block: Model.Block?) {
-                    Log.i(TAG, "Add file ($filePath) to thread ($threadId) successfully.")
+                override fun onComplete(block: Model.Block) {
+                    Log.i(TAG, "Add file ($filePath) to thread (${block.thread}) successfully.")
                 }
 
                 override fun onError(e: Exception) {
@@ -146,6 +144,61 @@ object TextileWrapper {
                     Log.e(TAG, Log.getStackTraceString(e))
                 }
             })
+
+    // TODO: wrap this function with suspendCoroutine for async return
+    fun getImageContent(path: String, minWidth: Long, handler: Handlers.DataHandler) {
+        // imageContentForMinWidth usage: (Textile has not documented)
+        // https://github.com/textileio/photos/blob/master/App/Components/authoring-input.tsx#L184
+        Textile.instance().files.imageContentForMinWidth(path, minWidth, handler)
+    }
+
+//    suspend fun fetchPosts(threadId: String, limit: Long = 10): MutableList<Feed> =
+//        suspendCoroutine { continuation ->
+//            val posts = java.util.Collections.synchronizedList(mutableListOf<Feed>())
+//            val hasResumed = AtomicBoolean(false)
+//            val filesList =
+//                Textile.instance().files.list(threadId, null, limit)
+//            Log.d(TAG, "$threadId fetched filesList size: ${filesList.itemsCount}")
+//            if (filesList.itemsCount == 0) {
+//                continuation.resume(posts)
+//            }
+//            for (i in 0 until filesList.itemsCount) {
+//                val files = filesList.getItems(i)
+//                val handler = object : Handlers.DataHandler {
+//                    override fun onComplete(data: ByteArray?, media: String?) {
+//                        if (media == "image/jpeg" || media == "image/png") {
+//                            posts.add(Feed(files.user.name, files.date, data, files.caption))
+//                        } else {
+//                            Log.e(TAG, "Unknown media type: $media")
+//                        }
+//                        Log.i(TAG, "Posts fetched: ${posts.size} / ${filesList.itemsCount}")
+//                        if (posts.size == filesList.itemsCount && !hasResumed.get()) {
+//                            hasResumed.set(true)
+//                            continuation.resume(posts)
+//                        }
+//                    }
+//
+//                    override fun onError(e: Exception) {
+//                        Log.e(TAG, Log.getStackTraceString(e))
+//                        if (!hasResumed.get()) {
+//                            hasResumed.set(true)
+//                            // still resume posts though some posts cannot be retrieved
+//                            continuation.resume(posts)
+//                        }
+//                    }
+//                }
+//
+//                // TODO: use Textile.instance().files.imageContentForMinWidth() instead
+//                // Currently, Textile.instance().files.imageContentForMinWidth() only gets null, and
+//                // I don't know why.
+//                files.filesList.forEach { file ->
+//                    file.linksMap["large"]?.hash?.also {
+//                        Textile.instance().files.content(it, handler)
+//                    }
+//                }
+//            }
+//        }
+
 
     /*-------------------------------------------
      * Invites
@@ -166,27 +219,16 @@ object TextileWrapper {
     /*-------------------------------------------
      * Cafes
      *-----------------------------------------*/
-
-    fun listCafes() {
-        val cafes = Textile.instance().cafes.sessions()
-        Log.d(TAG, "Registered Cafes:")
-        for (i in 0 until cafes.itemsCount) {
-            Log.d(TAG, cafes.getItems(i).toString())
-        }
-    }
-
     private fun addCafe(url: String, token: String) {
         Textile.instance().cafes.register(
             url, token,
             object : Handlers.ErrorHandler {
                 override fun onComplete() {
-                    Log.i(TAG, "Add Cafe $url successfully.")
-                    listCafes()
+                    Log.i(TAG, "Add Cafe ($url) successfully.")
                 }
 
                 override fun onError(e: Exception?) {
                     Log.e(TAG, "Add Cafe with error: " + Log.getStackTraceString(e))
-                    listCafes()
                 }
             })
     }
@@ -200,7 +242,7 @@ object TextileWrapper {
      *   callback will be invoked immediately.
      * @param callback the callback function
      */
-    fun invokeAfterNodeOnline(callback: () -> Unit) {
+    fun addOnNodeOnlineListener(callback: () -> Unit) {
         if (isOnline) {
             callback.invoke()
         } else {
@@ -213,11 +255,33 @@ object TextileWrapper {
         }
     }
 
-    private fun invokeAfterPersonalThreadIdChanged(callback: (String) -> Unit) {
+    fun addOnPersonalThreadUpdateReceivedListener(callback: (FeedItemData) -> Unit) {
+        Textile.instance().addEventListener(object : BaseTextileEventListener() {
+            override fun threadUpdateReceived(threadId: String, feedItemData: FeedItemData) {
+                super.threadUpdateReceived(threadId, feedItemData)
+                if (threadId == personalThreadId) {
+                    callback.invoke(feedItemData)
+                }
+            }
+        })
+    }
+
+    fun addOnPublicThreadUpdateReceivedListener(callback: (FeedItemData) -> Unit) {
+        Textile.instance().addEventListener(object : BaseTextileEventListener() {
+            override fun threadUpdateReceived(threadId: String, feedItemData: FeedItemData) {
+                super.threadUpdateReceived(threadId, feedItemData)
+                if (threadId == publicThreadId) {
+                    callback.invoke(feedItemData)
+                }
+            }
+        })
+    }
+
+    private fun addOnPersonalThreadIdChangedListener(callback: (String) -> Unit) {
         onPersonalThreadIdChangedListeners.add(callback)
     }
 
-    private fun invokeAfterPublicThreadIdChanged(callback: (String) -> Unit) {
+    private fun addOnPublicThreadIdChangedListener(callback: (String) -> Unit) {
         onPublicThreadIdChangedListeners.add(callback)
     }
 }

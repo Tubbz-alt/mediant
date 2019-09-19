@@ -20,7 +20,7 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import io.dt42.mediant.R
-import io.dt42.mediant.adapters.SectionsPagerAdapter
+import io.dt42.mediant.adapters.ThreadsPagerAdapter
 import io.dt42.mediant.models.ProofBundle
 import io.dt42.mediant.wrappers.TextileWrapper
 import io.dt42.mediant.wrappers.ZionWrapper
@@ -61,21 +61,33 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        TextileWrapper.init(applicationContext, false)
+        initZion()
         initTabs()
         handleIntent(intent)
-        TextileWrapper.init(applicationContext, true)
+    }
+
+    private fun initZion() {
         defaultSharedPreferences.apply {
             if (useZion) {
                 ZionWrapper.init(this@MainActivity, applicationContext)
             }
-            onSharedPreferenceChangeListener = createSharedPreferenceChangeListener()
-            registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+            onSharedPreferenceChangeListener = createSharedPreferenceChangeListener().also {
+                registerOnSharedPreferenceChangeListener(it)
+            }
         }
     }
 
     private fun initTabs() {
-        val adapter = SectionsPagerAdapter(this, supportFragmentManager)
-        viewPager.adapter = adapter
+        val adapter = ThreadsPagerAdapter(this, supportFragmentManager).also { adapter ->
+            viewPager.adapter = adapter
+            TextileWrapper.addOnPersonalThreadUpdateReceivedListener {
+                adapter.currentFragments[1].addFeed(it)
+            }
+            TextileWrapper.addOnPublicThreadUpdateReceivedListener {
+                adapter.currentFragments[0].addFeed(it)
+            }
+        }
         tabs.setupWithViewPager(viewPager)
         tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
@@ -85,9 +97,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
 
             override fun onTabReselected(tab: TabLayout.Tab) {
-                adapter.getItem(tab.position).apply {
-                    view?.findViewById<RecyclerView>(R.id.recyclerView)?.smoothScrollToPosition(0)
-                }
+                adapter.currentFragments[tab.position]
+                    .view?.findViewById<RecyclerView>(R.id.recyclerView)?.smoothScrollToPosition(0)
             }
         })
     }
@@ -141,7 +152,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun acceptExternalInvite(uri: Uri) = launch(Dispatchers.IO) {
         val uriWithoutFragment = Uri.parse(uri.toString().replaceFirst('#', '?'))
-        TextileWrapper.invokeAfterNodeOnline {
+        TextileWrapper.addOnNodeOnlineListener {
             TextileWrapper.publicThreadId = TextileWrapper.acceptExternalInvitation(
                 uriWithoutFragment.getQueryParameter("id")!!,
                 uriWithoutFragment.getQueryParameter("key")!!
@@ -183,7 +194,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     currentPhotoPath?.also {
-                        uploadPost(it)
+                        uploadFeed(it)
                         viewPager.currentItem = 1
                     }
                 }
@@ -191,7 +202,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun uploadPost(imageFilePath: String) = launch {
+    private fun uploadFeed(imageFilePath: String) = launch {
         val proofBundle = if (useZion) {
             withContext(Dispatchers.IO) { generateProofWithZion(imageFilePath) }
         } else {
@@ -201,9 +212,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         Toast.makeText(this@MainActivity, "Uploading via Textile $proofBundle", Toast.LENGTH_SHORT)
             .show()
         TextileWrapper.personalThreadId?.also {
+            Log.d(TAG, "upload to personal: $it")
             TextileWrapper.addFile(imageFilePath, it, proofBundle.toString())
         }
         TextileWrapper.publicThreadId?.also {
+            Log.d(TAG, "upload to public: $it")
             TextileWrapper.addFile(imageFilePath, it, proofBundle.toString())
         }
     }

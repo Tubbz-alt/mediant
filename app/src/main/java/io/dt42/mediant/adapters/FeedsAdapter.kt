@@ -9,30 +9,30 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.protobuf.Timestamp
 import io.dt42.mediant.R
-import io.dt42.mediant.models.Post
+import io.dt42.mediant.models.Feed
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.*
 
-class PostsAdapter(private val posts: List<Post>) :
-    RecyclerView.Adapter<PostsAdapter.ViewHolder>() {
+class FeedsAdapter(private val feeds: List<Feed>) :
+    RecyclerView.Adapter<FeedsAdapter.ViewHolder>() {
 
-    override fun getItemCount() = posts.size
+    override fun getItemCount() = feeds.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.post, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.feed, parent, false)
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.username.text = posts[position].username
-        holder.date.text = convertToFormattedString(posts[position].date)
-        posts[position].data?.apply {
+        holder.username.text = feeds[position].username
+        holder.date.text = convertToFormattedString(feeds[position].date)
+        feeds[position].data?.apply {
             holder.image.setImageBitmap(BitmapFactory.decodeByteArray(this, 0, this.size))
         }
-        holder.description.text = posts[position].caption
+        holder.description.text = feeds[position].caption
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
