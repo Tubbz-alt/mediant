@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.preference.PreferenceManager
 import io.dt42.mediant.BuildConfig
+import io.dt42.mediant.activities.TAG
 import io.dt42.mediant.models.Post
 import io.textile.pb.Model
 import io.textile.pb.Model.Thread.Sharing
@@ -19,10 +20,9 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.properties.Delegates
 
-private const val TAG = "TEXTILE_WRAPPER"
 private const val PREFERENCE_KEY_PERSONAL_THREAD_ID = "PREFERENCE_KEY_PERSONAL_THREAD_ID"
 private const val PREFERENCE_KEY_PUBLIC_THREAD_ID = "PREFERENCE_KEY_PUBLIC_THREAD_ID"
-private const val FEED_REQUEST_LIMIT = 999
+private const val REQUEST_LIMIT = 999
 
 object TextileWrapper {
     var personalThreadId by Delegates.observable<String?>(null) { _, _, newValue ->
@@ -111,6 +111,10 @@ object TextileWrapper {
         val schema = View.AddThreadConfig.Schema.newBuilder()
             .setPreset(View.AddThreadConfig.Schema.Preset.MEDIA)
             .build()
+        View.AddThreadConfig.Schema.newBuilder().apply {
+            preset = View.AddThreadConfig.Schema.Preset.MEDIA
+            build()
+        }
         val config = View.AddThreadConfig.newBuilder()
             .setKey("${BuildConfig.APPLICATION_ID}.${BuildConfig.VERSION_NAME}.$name")
             .setName(name)
@@ -129,7 +133,7 @@ object TextileWrapper {
             val threadItem = threadList.getItems(i)
             val request = View.FeedRequest.newBuilder()
                 .setThread(threadItem.id)
-                .setLimit(FEED_REQUEST_LIMIT)
+                .setLimit(REQUEST_LIMIT)
                 .build()
             Textile.instance().feed.list(request).forEach {
                 if (it.block == blockId) {
@@ -157,7 +161,10 @@ object TextileWrapper {
                 }
             })
 
-    suspend fun fetchPosts(threadId: String, limit: Long = 10): MutableList<Post> =
+    suspend fun fetchPosts(
+        threadId: String,
+        limit: Long = REQUEST_LIMIT.toLong()
+    ): MutableList<Post> =
         suspendCoroutine { continuation ->
             val posts = java.util.Collections.synchronizedList(mutableListOf<Post>())
             val hasResumed = AtomicBoolean(false)

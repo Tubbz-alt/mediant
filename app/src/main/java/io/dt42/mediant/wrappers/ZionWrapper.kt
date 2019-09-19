@@ -9,6 +9,7 @@ import android.util.Log
 import com.htc.htcwalletsdk.Export.HtcWalletSdkManager
 import com.htc.htcwalletsdk.Export.RESULT
 import com.htc.htcwalletsdk.Native.Type.ByteArrayHolder
+import io.dt42.mediant.activities.TAG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -17,7 +18,6 @@ import org.json.JSONObject
 import java.security.MessageDigest
 import java.util.*
 
-private const val TAG = "ZION"
 private const val DEV_WALLET_NAME = "DEV_WALLET_NAME"
 private const val ETHEREUM_TYPE = 60
 

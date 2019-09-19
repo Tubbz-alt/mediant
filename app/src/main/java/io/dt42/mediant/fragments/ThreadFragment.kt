@@ -8,13 +8,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.dt42.mediant.R
+import io.dt42.mediant.activities.TAG
 import io.dt42.mediant.adapters.PostsAdapter
 import io.dt42.mediant.models.Post
 import io.dt42.mediant.wrappers.TextileWrapper
 import kotlinx.android.synthetic.main.fragment_thread.*
 import kotlinx.coroutines.*
-
-private const val TAG = "THREAD_FRAGMENT"
 
 abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
     private val posts = java.util.Collections.synchronizedList(mutableListOf<Post>())
@@ -63,5 +62,6 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
             recyclerView.adapter?.notifyItemRangeInserted(0, posts.size)
             recyclerView.layoutManager?.scrollToPosition(0)
         }
+        swipeRefreshLayout.isRefreshing = false
     }
 }

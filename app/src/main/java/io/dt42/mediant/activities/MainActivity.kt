@@ -33,6 +33,8 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
+const val TAG = "MEDIANT"
+
 private enum class PermissionCode(val value: Int) { DEFAULT(0) }
 
 private val DEFAULT_PERMISSIONS = listOf(
@@ -42,7 +44,6 @@ private val DEFAULT_PERMISSIONS = listOf(
 
 private const val CAMERA_REQUEST_CODE = 0
 private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
-private const val TAG = "MAIN_ACTIVITY"
 
 class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var currentPhotoPath: String? = null
