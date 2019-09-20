@@ -32,17 +32,19 @@ class ThreadsPagerAdapter(private val context: Context, fm: FragmentManager) :
         return super.instantiateItem(container, position).also { fragment ->
             fragment as ThreadFragment
             when (position) {
-                0 -> {
-                    TextileWrapper.addOnPublicThreadIdChangedListener {
-                        it?.let { fragment.refreshFeeds(it) }
+                0 -> TextileWrapper.apply {
+                    invokeWhenNodeOnline { publicThreadId?.let { fragment.refreshFeeds(it) } }
+                    addOnPublicThreadIdChangedListener {
+                        publicThreadId?.let { fragment.refreshFeeds(it) }
                     }
-                    TextileWrapper.addOnPublicThreadUpdateReceivedListener { fragment.addFeed(it) }
+                    addOnPublicThreadUpdateReceivedListener { fragment.addFeed(it) }
                 }
-                1 -> {
-                    TextileWrapper.addOnPersonalThreadIdChangedListener {
-                        it?.let { fragment.refreshFeeds(it) }
+                1 -> TextileWrapper.apply {
+                    invokeWhenNodeOnline { personalThreadId?.let { fragment.refreshFeeds(it) } }
+                    addOnPersonalThreadIdChangedListener {
+                        personalThreadId?.let { fragment.refreshFeeds(it) }
                     }
-                    TextileWrapper.addOnPersonalThreadUpdateReceivedListener { fragment.addFeed(it) }
+                    addOnPersonalThreadUpdateReceivedListener { fragment.addFeed(it) }
                 }
             }
             currentFragments.add(position, fragment)

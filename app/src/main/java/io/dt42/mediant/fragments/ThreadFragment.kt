@@ -18,9 +18,7 @@ import io.textile.textile.FeedItemData
 import io.textile.textile.FeedItemType
 import io.textile.textile.Handlers
 import kotlinx.android.synthetic.main.fragment_thread.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 
 abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
 
@@ -71,16 +69,17 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
         }
     }
 
-    fun refreshFeeds(threadId: String) {
-        this.threadId = threadId
-        feedsAdapter.feeds.clear()
-        TextileWrapper.listFeeds(threadId).forEach {
+    fun refreshFeeds(threadId: String) = launch(Dispatchers.IO) {
+        Log.d(TAG, "para $threadId | this ${this@ThreadFragment.threadId}")
+        this@ThreadFragment.threadId = threadId
+        withContext(Dispatchers.Main) { feedsAdapter.feeds.clear() }
+        TextileWrapper.listFeeds(threadId).forEachIndexed { index, it ->
+            Log.i(TAG, "Feed ($index)\ttype: ${it.type}\tblock: ${it.block}")
             addFeed(it)
         }
     }
 
-    fun addFeed(feedItemData: FeedItemData) {
-        Log.i(TAG, "Received feed type: ${feedItemData.type}")
+    fun addFeed(feedItemData: FeedItemData) = launch(Dispatchers.IO) {
         if (feedItemData.type == FeedItemType.FILES) {
             feedItemData.files.apply {
                 val fileIndex =
@@ -108,7 +107,7 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun addFeed(feed: Feed) = activity?.runOnUiThread {
+    private fun addFeed(feed: Feed) = launch(Dispatchers.Main) {
         feedsAdapter.feeds.add(feed)
         // TODO: for better UX, we should show a overlay on the top-edge of the thread showing there
         //   is a update received. We cannot determine if the addFeed is called by user-generated

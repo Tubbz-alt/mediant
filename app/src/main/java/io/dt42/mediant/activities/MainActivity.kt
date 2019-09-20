@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var currentPhotoPath: String? = null
     private lateinit var defaultSharedPreferences: SharedPreferences
 
+    // TODO: move defaultSharedPreferences, sharedPreferenceChangeListener and useZion to ZionWrapper
     // To prevent unintended garbage collection, we store a strong reference to the listener.
     private lateinit var onSharedPreferenceChangeListener: SharedPreferences.OnSharedPreferenceChangeListener
 
@@ -127,25 +128,36 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private fun handleIntent(intent: Intent) {
         if (intent.action == Intent.ACTION_VIEW) {
             intent.data?.also {
-                val invitationUrl = intent.data.toString()
-                if (invitationUrl.startsWith("https://www.textile.photos/invites/new")) {
-                    Toast.makeText(this, "Attempt to accept invitation...", Toast.LENGTH_LONG)
-                        .show()
-                    acceptExternalInvite(it)
-                } else {
-                    Log.e(TAG, "Failed to run invitation acceptance: $invitationUrl")
-                }
+                if (it.toString().startsWith("https://www.textile.photos/invites/new")) {
+                    Toast.makeText(this, "Try to accept invitation", Toast.LENGTH_LONG).show()
+                    launch(Dispatchers.IO) { acceptExternalInvite(it) }
+                } else Log.e(TAG, "Failed to parse invitation acceptance: $it")
             }
         }
     }
 
-    private fun acceptExternalInvite(uri: Uri) = launch(Dispatchers.IO) {
+    private fun acceptExternalInvite(uri: Uri) {
         val uriWithoutFragment = Uri.parse(uri.toString().replaceFirst('#', '?'))
-        TextileWrapper.invokeWhenNodeOnline {
-            TextileWrapper.publicThreadId = TextileWrapper.acceptExternalInvitation(
-                uriWithoutFragment.getQueryParameter("id")!!,
-                uriWithoutFragment.getQueryParameter("key")!!
-            ).id
+        var newPublicThreadId: String? = null
+        TextileWrapper.apply {
+            invokeWhenNodeOnline {
+                try {
+                    newPublicThreadId = acceptExternalInvitation(
+                        uriWithoutFragment.getQueryParameter("id")!!,
+                        uriWithoutFragment.getQueryParameter("key")!!
+                    ).id
+                } catch (e: Exception) {
+                    val msg = "Accepting invitation with an error. Try again might help."
+                    Log.e(TAG, Log.getStackTraceString(e))
+                    launch(Dispatchers.Main) {
+                        Toast.makeText(this@MainActivity, msg, Toast.LENGTH_LONG).show()
+                    }
+                } finally {
+                    publicThreadId?.let { removeThread(it) }
+                    publicThreadId = newPublicThreadId
+                    Log.i(TAG, "New public thread ID: $publicThreadId")
+                }
+            }
         }
     }
 
@@ -171,6 +183,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 true
             }
             R.id.actionShowTestingInfo -> {
+                Log.d(TAG, "${TextileWrapper.publicThreadId}")
                 true
             }
             else -> super.onOptionsItemSelected(item)

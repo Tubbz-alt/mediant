@@ -1,6 +1,7 @@
 package io.dt42.mediant.wrappers
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.preference.PreferenceManager
 import io.dt42.mediant.BuildConfig
@@ -11,10 +12,9 @@ import io.textile.pb.Model.Thread.Type
 import io.textile.pb.View
 import io.textile.textile.*
 import java.io.File
-import kotlin.properties.Delegates
 
-private const val PREFERENCE_KEY_PERSONAL_THREAD_ID = "PREFERENCE_KEY_PERSONAL_THREAD_ID"
 private const val PREFERENCE_KEY_PUBLIC_THREAD_ID = "PREFERENCE_KEY_PUBLIC_THREAD_ID"
+private const val PREFERENCE_KEY_PERSONAL_THREAD_ID = "PREFERENCE_KEY_PERSONAL_THREAD_ID"
 private const val REQUEST_LIMIT = 999
 
 // TODO: DEVELOPMENT ONLY
@@ -22,13 +22,17 @@ private const val DEV_CAFE_URL = "https://us-west-dev.textile.cafe"
 private const val DEV_CAFE_TOKEN = "uggU4NcVGFSPchULpa2zG2NRjw2bFzaiJo3BYAgaFyzCUPRLuAgToE3HXPyo"
 
 object TextileWrapper {
-    var personalThreadId by Delegates.observable<String?>(null) { _, _, newValue ->
-        newValue.apply { onPersonalThreadIdChangedListeners.forEach { it(this) } }
-    }
 
-    var publicThreadId by Delegates.observable<String?>(null) { _, _, newValue ->
-        newValue.apply { onPublicThreadIdChangedListeners.forEach { it(this) } }
-    }
+    private lateinit var pref: SharedPreferences
+    private lateinit var prefChangeListener: SharedPreferences.OnSharedPreferenceChangeListener
+    private val onPublicThreadIdChangeListeners = mutableListOf<() -> Unit>()
+    private val onPersonalThreadIdChangeListeners = mutableListOf<() -> Unit>()
+    var publicThreadId: String?
+        get() = pref.getString(PREFERENCE_KEY_PUBLIC_THREAD_ID, null)
+        set(value) = pref.edit().putString(PREFERENCE_KEY_PUBLIC_THREAD_ID, value).apply()
+    var personalThreadId: String?
+        get() = pref.getString(PREFERENCE_KEY_PERSONAL_THREAD_ID, null)
+        set(value) = pref.edit().putString(PREFERENCE_KEY_PERSONAL_THREAD_ID, value).apply()
 
     private val isOnline: Boolean
         get() = try {
@@ -36,10 +40,9 @@ object TextileWrapper {
         } catch (e: NullPointerException) {
             false
         }
-    private val onPersonalThreadIdChangedListeners = mutableListOf<(String?) -> Unit>()
-    private val onPublicThreadIdChangedListeners = mutableListOf<(String?) -> Unit>()
 
     fun init(context: Context, debug: Boolean) {
+        initializeSharedPreferences(context)
         val path = File(context.filesDir, "textile-go").absolutePath
         if (!Textile.isInitialized(path)) {
             val phrase = Textile.initializeCreatingNewWalletAndAccount(path, debug, false)
@@ -50,8 +53,20 @@ object TextileWrapper {
         invokeWhenNodeOnline {
             addCafe(DEV_CAFE_URL, DEV_CAFE_TOKEN)
             initPersonalThread()
-            initPublicThread()
         }
+    }
+
+    private fun initializeSharedPreferences(context: Context) {
+        pref = PreferenceManager.getDefaultSharedPreferences(context)
+        prefChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
+            if (pref == this.pref) {
+                when (key) {
+                    PREFERENCE_KEY_PUBLIC_THREAD_ID -> onPublicThreadIdChangeListeners.forEach { it() }
+                    PREFERENCE_KEY_PERSONAL_THREAD_ID -> onPersonalThreadIdChangeListeners.forEach { it() }
+                }
+            }
+        }
+        pref.registerOnSharedPreferenceChangeListener(prefChangeListener)
     }
 
     /*-------------------------------------------
@@ -65,13 +80,6 @@ object TextileWrapper {
     }
 
     private fun initPersonalThread() {
-        PreferenceManager.getDefaultSharedPreferences(Textile.instance().applicationContext).apply {
-            personalThreadId = getString(PREFERENCE_KEY_PERSONAL_THREAD_ID, null)
-            addOnPersonalThreadIdChangedListener {
-                edit().putString(PREFERENCE_KEY_PERSONAL_THREAD_ID, it).apply()
-            }
-        }
-
         val profileAddress = Textile.instance().profile.get().address
         try {
             Textile.instance().threads.get(personalThreadId!!)
@@ -82,15 +90,6 @@ object TextileWrapper {
             }
         } finally {
             Log.i(TAG, "Personal thread has been created: $profileAddress ($personalThreadId)")
-        }
-    }
-
-    private fun initPublicThread() {
-        PreferenceManager.getDefaultSharedPreferences(Textile.instance().applicationContext).apply {
-            publicThreadId = getString(PREFERENCE_KEY_PUBLIC_THREAD_ID, null)
-            addOnPublicThreadIdChangedListener {
-                edit().putString(PREFERENCE_KEY_PUBLIC_THREAD_ID, it).apply()
-            }
         }
     }
 
@@ -106,6 +105,10 @@ object TextileWrapper {
             .setSchema(schema)
             .build()
         return Textile.instance().threads.add(config)
+    }
+
+    fun removeThread(threadId: String) {
+        Textile.instance().threads.remove(threadId)
     }
 
     private fun findParentThread(blockId: String): Model.Thread {
@@ -165,14 +168,13 @@ object TextileWrapper {
      *-----------------------------------------*/
 
     /**
-     * Accept invitation sent by Textile Photo
+     * Accept invitation sent from Textile Photo
      */
     fun acceptExternalInvitation(inviteId: String, key: String): Model.Thread {
         Log.i(TAG, "Accepting invitation: $inviteId with key $key")
         val newBlockHash = Textile.instance().invites.acceptExternal(inviteId, key)
-        findParentThread(newBlockHash).also {
-            Log.i(TAG, "Join to thread: ${it.id}")
-            return it
+        return findParentThread(newBlockHash).apply {
+            Log.i(TAG, "Join to thread: $id")
         }
     }
 
@@ -237,11 +239,11 @@ object TextileWrapper {
         })
     }
 
-    fun addOnPersonalThreadIdChangedListener(callback: (String?) -> Unit) {
-        onPersonalThreadIdChangedListeners.add(callback)
+    fun addOnPersonalThreadIdChangedListener(callback: () -> Unit) {
+        onPersonalThreadIdChangeListeners.add(callback)
     }
 
-    fun addOnPublicThreadIdChangedListener(callback: (String?) -> Unit) {
-        onPublicThreadIdChangedListeners.add(callback)
+    fun addOnPublicThreadIdChangedListener(callback: () -> Unit) {
+        onPublicThreadIdChangeListeners.add(callback)
     }
 }
