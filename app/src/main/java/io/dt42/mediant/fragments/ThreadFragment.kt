@@ -21,7 +21,8 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 
 abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
-    private val feeds = java.util.Collections.synchronizedList(mutableListOf<Feed>())
+
+    private val feedsAdapter = FeedsAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +46,14 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
         super.onViewCreated(view, savedInstanceState)
         recyclerView.apply {
             layoutManager = LinearLayoutManager(activity)
-            adapter = FeedsAdapter(feeds)
+            adapter = feedsAdapter
+        }
+    }
+
+    fun refreshFeeds(threadId: String) {
+        feedsAdapter.feeds.clear()
+        TextileWrapper.listFeeds(threadId).forEach {
+            addFeed(it)
         }
     }
 
@@ -59,7 +67,8 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
                     } else {
                         0
                     }
-                TextileWrapper.getImageContent("$data/$fileIndex", 10,
+                TextileWrapper.getImageContent(
+                    "$data/$fileIndex", 300,
                     object : Handlers.DataHandler {
                         override fun onComplete(data: ByteArray?, media: String?) {
                             if (media == "image/jpeg" || media == "image/png") {
@@ -76,11 +85,9 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
     }
 
     private fun addFeed(feed: Feed) = activity?.runOnUiThread {
-        Log.d(TAG, "timestamp: ${feed.date}")
-        // TODO: add feed according to its date by implementing compareTo in Feed class
-        feeds.add(0, feed)
-        recyclerView.adapter?.notifyItemInserted(0)
-        recyclerView.smoothScrollToPosition(0)
+        feedsAdapter.feeds.add(feed)
+        // TODO: for better UX, we should show a overlay on the top-edge of the thread showing there
+        //   is a update received.
     }
 
 //    protected fun refreshPosts(threadId: String) = launch {

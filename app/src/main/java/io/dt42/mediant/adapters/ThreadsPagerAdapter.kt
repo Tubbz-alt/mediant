@@ -8,6 +8,8 @@ import io.dt42.mediant.R
 import io.dt42.mediant.fragments.PersonalThreadFragment
 import io.dt42.mediant.fragments.PublicThreadFragment
 import io.dt42.mediant.fragments.ThreadFragment
+import io.dt42.mediant.wrappers.TextileWrapper
+import kotlinx.android.synthetic.main.fragment_thread.*
 
 data class Tab(val title: Int, val instance: () -> ThreadFragment)
 
@@ -18,15 +20,31 @@ private val TABS = listOf(
 
 class ThreadsPagerAdapter(private val context: Context, fm: FragmentManager) :
     FragmentPagerAdapter(fm) {
-    val currentFragments = mutableListOf<ThreadFragment>()
+
+    private val currentFragments = mutableListOf<ThreadFragment>()
 
     override fun getItem(position: Int): ThreadFragment {
         return TABS[position].instance.invoke()
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        return super.instantiateItem(container, position).also {
-            currentFragments.add(position, it as ThreadFragment)
+        return super.instantiateItem(container, position).also { fragment ->
+            fragment as ThreadFragment
+            when (position) {
+                0 -> {
+                    TextileWrapper.addOnPublicThreadIdChangedListener {
+                        it?.let { fragment.refreshFeeds(it) }
+                    }
+                    TextileWrapper.addOnPublicThreadUpdateReceivedListener { fragment.addFeed(it) }
+                }
+                1 -> {
+                    TextileWrapper.addOnPersonalThreadIdChangedListener {
+                        it?.let { fragment.refreshFeeds(it) }
+                    }
+                    TextileWrapper.addOnPersonalThreadUpdateReceivedListener { fragment.addFeed(it) }
+                }
+            }
+            currentFragments.add(position, fragment)
         }
     }
 
@@ -41,5 +59,9 @@ class ThreadsPagerAdapter(private val context: Context, fm: FragmentManager) :
 
     override fun getCount(): Int {
         return TABS.size
+    }
+
+    fun smoothScrollToTop(threadIndex: Int) {
+        currentFragments[threadIndex].recyclerView.smoothScrollToPosition(0)
     }
 }

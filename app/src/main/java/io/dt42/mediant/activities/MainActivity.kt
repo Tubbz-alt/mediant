@@ -17,7 +17,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.preference.PreferenceManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 import io.dt42.mediant.R
 import io.dt42.mediant.adapters.ThreadsPagerAdapter
@@ -46,10 +45,13 @@ private const val CAMERA_REQUEST_CODE = 0
 private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
 
 class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
+    private val threadsPagerAdapter = ThreadsPagerAdapter(this, supportFragmentManager)
     private var currentPhotoPath: String? = null
     private lateinit var defaultSharedPreferences: SharedPreferences
+
     // To prevent unintended garbage collection, we store a strong reference to the listener.
     private lateinit var onSharedPreferenceChangeListener: SharedPreferences.OnSharedPreferenceChangeListener
+
     private val useZion: Boolean
         get() = defaultSharedPreferences.getBoolean(
             resources.getString(R.string.preference_key_use_zion),
@@ -79,37 +81,24 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     private fun initTabs() {
-        val adapter = ThreadsPagerAdapter(this, supportFragmentManager).also { adapter ->
-            viewPager.adapter = adapter
-            TextileWrapper.addOnPersonalThreadUpdateReceivedListener {
-                adapter.currentFragments[1].addFeed(it)
-            }
-            TextileWrapper.addOnPublicThreadUpdateReceivedListener {
-                adapter.currentFragments[0].addFeed(it)
-            }
+        viewPager.adapter = threadsPagerAdapter
+        tabs.apply {
+            setupWithViewPager(viewPager)
+            addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab) {}
+                override fun onTabUnselected(tab: TabLayout.Tab) {}
+                override fun onTabReselected(tab: TabLayout.Tab) {
+                    threadsPagerAdapter.smoothScrollToTop(tab.position)
+                }
+            })
         }
-        tabs.setupWithViewPager(viewPager)
-        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab) {
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab) {
-                adapter.currentFragments[tab.position]
-                    .view?.findViewById<RecyclerView>(R.id.recyclerView)?.smoothScrollToPosition(0)
-            }
-        })
     }
 
     private fun createSharedPreferenceChangeListener(): SharedPreferences.OnSharedPreferenceChangeListener {
         return SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
                 resources.getString(R.string.preference_key_use_zion) -> {
-                    if (useZion) {
-                        ZionWrapper.init(this, applicationContext)
-                    }
+                    if (useZion) ZionWrapper.init(this, applicationContext)
                 }
             }
         }
@@ -152,7 +141,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun acceptExternalInvite(uri: Uri) = launch(Dispatchers.IO) {
         val uriWithoutFragment = Uri.parse(uri.toString().replaceFirst('#', '?'))
-        TextileWrapper.addOnNodeOnlineListener {
+        TextileWrapper.invokeWhenNodeOnline {
             TextileWrapper.publicThreadId = TextileWrapper.acceptExternalInvitation(
                 uriWithoutFragment.getQueryParameter("id")!!,
                 uriWithoutFragment.getQueryParameter("key")!!

@@ -23,11 +23,11 @@ private const val DEV_CAFE_TOKEN = "uggU4NcVGFSPchULpa2zG2NRjw2bFzaiJo3BYAgaFyzC
 
 object TextileWrapper {
     var personalThreadId by Delegates.observable<String?>(null) { _, _, newValue ->
-        newValue?.apply { onPersonalThreadIdChangedListeners.forEach { it(this) } }
+        newValue.apply { onPersonalThreadIdChangedListeners.forEach { it(this) } }
     }
 
     var publicThreadId by Delegates.observable<String?>(null) { _, _, newValue ->
-        newValue?.apply { onPublicThreadIdChangedListeners.forEach { it(this) } }
+        newValue.apply { onPublicThreadIdChangedListeners.forEach { it(this) } }
     }
 
     private val isOnline: Boolean
@@ -36,8 +36,8 @@ object TextileWrapper {
         } catch (e: NullPointerException) {
             false
         }
-    private val onPersonalThreadIdChangedListeners = mutableListOf<(String) -> Unit>()
-    private val onPublicThreadIdChangedListeners = mutableListOf<(String) -> Unit>()
+    private val onPersonalThreadIdChangedListeners = mutableListOf<(String?) -> Unit>()
+    private val onPublicThreadIdChangedListeners = mutableListOf<(String?) -> Unit>()
 
     fun init(context: Context, debug: Boolean) {
         val path = File(context.filesDir, "textile-go").absolutePath
@@ -47,7 +47,7 @@ object TextileWrapper {
         }
         Textile.launch(context, path, debug)
         Textile.instance().addEventListener(TextileLoggingListener())
-        addOnNodeOnlineListener {
+        invokeWhenNodeOnline {
             addCafe(DEV_CAFE_URL, DEV_CAFE_TOKEN)
             initPersonalThread()
             initPublicThread()
@@ -65,13 +65,13 @@ object TextileWrapper {
     }
 
     private fun initPersonalThread() {
-        val defaultSharedPreferences =
-            PreferenceManager.getDefaultSharedPreferences(Textile.instance().applicationContext)
-        personalThreadId =
-            defaultSharedPreferences.getString(PREFERENCE_KEY_PERSONAL_THREAD_ID, null)
-        addOnPersonalThreadIdChangedListener {
-            defaultSharedPreferences.edit().putString(PREFERENCE_KEY_PERSONAL_THREAD_ID, it).apply()
+        PreferenceManager.getDefaultSharedPreferences(Textile.instance().applicationContext).apply {
+            personalThreadId = getString(PREFERENCE_KEY_PERSONAL_THREAD_ID, null)
+            addOnPersonalThreadIdChangedListener {
+                edit().putString(PREFERENCE_KEY_PERSONAL_THREAD_ID, it).apply()
+            }
         }
+
         val profileAddress = Textile.instance().profile.get().address
         try {
             Textile.instance().threads.get(personalThreadId!!)
@@ -86,11 +86,11 @@ object TextileWrapper {
     }
 
     private fun initPublicThread() {
-        val defaultSharedPreferences =
-            PreferenceManager.getDefaultSharedPreferences(Textile.instance().applicationContext)
-        publicThreadId = defaultSharedPreferences.getString(PREFERENCE_KEY_PUBLIC_THREAD_ID, null)
-        addOnPublicThreadIdChangedListener {
-            defaultSharedPreferences.edit().putString(PREFERENCE_KEY_PUBLIC_THREAD_ID, it).apply()
+        PreferenceManager.getDefaultSharedPreferences(Textile.instance().applicationContext).apply {
+            publicThreadId = getString(PREFERENCE_KEY_PUBLIC_THREAD_ID, null)
+            addOnPublicThreadIdChangedListener {
+                edit().putString(PREFERENCE_KEY_PUBLIC_THREAD_ID, it).apply()
+            }
         }
     }
 
@@ -114,17 +114,25 @@ object TextileWrapper {
         val threadList = Textile.instance().threads.list()
         for (i in 0 until threadList.itemsCount) {
             val threadItem = threadList.getItems(i)
-            val request = View.FeedRequest.newBuilder()
-                .setThread(threadItem.id)
-                .setLimit(REQUEST_LIMIT)
-                .build()
-            Textile.instance().feed.list(request).forEach {
+            listFeeds(threadItem.id).forEach {
                 if (it.block == blockId) {
                     return threadItem
                 }
             }
         }
         throw NoSuchElementException("Cannot find the block ($blockId) via feed API.")
+    }
+
+    /*-------------------------------------------
+     * Feeds
+     *-----------------------------------------*/
+
+    fun listFeeds(threadId: String): ArrayList<FeedItemData> {
+        val request = View.FeedRequest.newBuilder()
+            .setThread(threadId)
+            .setLimit(REQUEST_LIMIT)
+            .build()
+        return Textile.instance().feed.list(request)
     }
 
     /*-------------------------------------------
@@ -242,7 +250,7 @@ object TextileWrapper {
      *   callback will be invoked immediately.
      * @param callback the callback function
      */
-    fun addOnNodeOnlineListener(callback: () -> Unit) {
+    fun invokeWhenNodeOnline(callback: () -> Unit) {
         if (isOnline) {
             callback.invoke()
         } else {
@@ -277,11 +285,11 @@ object TextileWrapper {
         })
     }
 
-    private fun addOnPersonalThreadIdChangedListener(callback: (String) -> Unit) {
+    fun addOnPersonalThreadIdChangedListener(callback: (String?) -> Unit) {
         onPersonalThreadIdChangedListeners.add(callback)
     }
 
-    private fun addOnPublicThreadIdChangedListener(callback: (String) -> Unit) {
+    fun addOnPublicThreadIdChangedListener(callback: (String?) -> Unit) {
         onPublicThreadIdChangedListeners.add(callback)
     }
 }
