@@ -5,8 +5,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import io.dt42.mediant.R
 import io.dt42.mediant.activities.TAG
 import io.dt42.mediant.adapters.FeedsAdapter
@@ -22,6 +24,7 @@ import kotlinx.coroutines.cancel
 
 abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
 
+    private var threadId: String? = null
     private val feedsAdapter = FeedsAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,9 +51,28 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
             layoutManager = LinearLayoutManager(activity)
             adapter = feedsAdapter
         }
+        swipeRefreshLayout.setOnRefreshListener(createRefreshListener())
+    }
+
+    private fun createRefreshListener() = SwipeRefreshLayout.OnRefreshListener {
+        threadId.also {
+            if (it == null) {
+                swipeRefreshLayout.isRefreshing = false
+                val msg = "This thread has not been initialized."
+                Log.e(TAG, msg)
+                Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+            } else {
+                refreshFeeds(it)
+
+                // TODO: modify refreshFeeds and addFeed to get the finishing callback
+                // TODO: also, scrollToTop when refreshing finished
+                swipeRefreshLayout.isRefreshing = false
+            }
+        }
     }
 
     fun refreshFeeds(threadId: String) {
+        this.threadId = threadId
         feedsAdapter.feeds.clear()
         TextileWrapper.listFeeds(threadId).forEach {
             addFeed(it)
@@ -73,6 +95,8 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
                         override fun onComplete(data: ByteArray?, media: String?) {
                             if (media == "image/jpeg" || media == "image/png") {
                                 addFeed(Feed(user.name, date, data, caption))
+                            } else {
+                                Log.e(TAG, "Unknown media type: $media")
                             }
                         }
 
@@ -87,27 +111,7 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
     private fun addFeed(feed: Feed) = activity?.runOnUiThread {
         feedsAdapter.feeds.add(feed)
         // TODO: for better UX, we should show a overlay on the top-edge of the thread showing there
-        //   is a update received.
+        //   is a update received. We cannot determine if the addFeed is called by user-generated
+        //   or cafe-updated feed. Therefore, we should not scrollToTop every time when addFeed called.
     }
-
-//    protected fun refreshPosts(threadId: String) = launch {
-//        Log.d(TAG, "Refreshing thread: $threadId")
-//        withContext(Dispatchers.IO) {
-//            try {
-//                TextileWrapper.fetchPosts(threadId)
-//            } catch (e: NoSuchElementException) {
-//                Log.e(TAG, Log.getStackTraceString(e))
-//                null
-//            }
-//        }?.also { newPosts ->
-//            val comparator =
-//                compareByDescending<Feed> { it.date.seconds }.thenByDescending { it.date.nanos }
-//            feeds.clear()
-//            feeds.addAll(newPosts.sortedWith(comparator))
-//            recyclerView.adapter?.notifyDataSetChanged()
-//            recyclerView.adapter?.notifyItemRangeInserted(0, feeds.size)
-//            recyclerView.layoutManager?.scrollToPosition(0)
-//        }
-//        swipeRefreshLayout.isRefreshing = false
-//    }
 }

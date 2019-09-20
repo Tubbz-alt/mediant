@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.recyclerview.widget.LinearSmoothScroller
 import io.dt42.mediant.R
 import io.dt42.mediant.fragments.PersonalThreadFragment
 import io.dt42.mediant.fragments.PublicThreadFragment
@@ -62,6 +63,11 @@ class ThreadsPagerAdapter(private val context: Context, fm: FragmentManager) :
     }
 
     fun smoothScrollToTop(threadIndex: Int) {
-        currentFragments[threadIndex].recyclerView.smoothScrollToPosition(0)
+        currentFragments[threadIndex].recyclerView.layoutManager?.startSmoothScroll(object :
+            LinearSmoothScroller(context) {
+            override fun getVerticalSnapPreference(): Int {
+                return SNAP_TO_START
+            }
+        }.apply { targetPosition = 0 })
     }
 }

@@ -160,54 +160,6 @@ object TextileWrapper {
         Textile.instance().files.imageContentForMinWidth(path, minWidth, handler)
     }
 
-//    suspend fun fetchPosts(threadId: String, limit: Long = 10): MutableList<Feed> =
-//        suspendCoroutine { continuation ->
-//            val posts = java.util.Collections.synchronizedList(mutableListOf<Feed>())
-//            val hasResumed = AtomicBoolean(false)
-//            val filesList =
-//                Textile.instance().files.list(threadId, null, limit)
-//            Log.d(TAG, "$threadId fetched filesList size: ${filesList.itemsCount}")
-//            if (filesList.itemsCount == 0) {
-//                continuation.resume(posts)
-//            }
-//            for (i in 0 until filesList.itemsCount) {
-//                val files = filesList.getItems(i)
-//                val handler = object : Handlers.DataHandler {
-//                    override fun onComplete(data: ByteArray?, media: String?) {
-//                        if (media == "image/jpeg" || media == "image/png") {
-//                            posts.add(Feed(files.user.name, files.date, data, files.caption))
-//                        } else {
-//                            Log.e(TAG, "Unknown media type: $media")
-//                        }
-//                        Log.i(TAG, "Posts fetched: ${posts.size} / ${filesList.itemsCount}")
-//                        if (posts.size == filesList.itemsCount && !hasResumed.get()) {
-//                            hasResumed.set(true)
-//                            continuation.resume(posts)
-//                        }
-//                    }
-//
-//                    override fun onError(e: Exception) {
-//                        Log.e(TAG, Log.getStackTraceString(e))
-//                        if (!hasResumed.get()) {
-//                            hasResumed.set(true)
-//                            // still resume posts though some posts cannot be retrieved
-//                            continuation.resume(posts)
-//                        }
-//                    }
-//                }
-//
-//                // TODO: use Textile.instance().files.imageContentForMinWidth() instead
-//                // Currently, Textile.instance().files.imageContentForMinWidth() only gets null, and
-//                // I don't know why.
-//                files.filesList.forEach { file ->
-//                    file.linksMap["large"]?.hash?.also {
-//                        Textile.instance().files.content(it, handler)
-//                    }
-//                }
-//            }
-//        }
-
-
     /*-------------------------------------------
      * Invites
      *-----------------------------------------*/
