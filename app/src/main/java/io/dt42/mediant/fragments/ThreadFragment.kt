@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import io.dt42.mediant.R
 import io.dt42.mediant.activities.TAG
@@ -63,7 +64,6 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
                 refreshFeeds(it)
 
                 // TODO: modify refreshFeeds and addFeed to get the finishing callback
-                // TODO: also, scrollToTop when refreshing finished
                 swipeRefreshLayout.isRefreshing = false
             }
         }
@@ -108,9 +108,15 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
     }
 
     private fun addFeed(feed: Feed) = launch(Dispatchers.Main) {
-        feedsAdapter.feeds.add(feed)
-        // TODO: for better UX, we should show a overlay on the top-edge of the thread showing there
-        //   is a update received. We cannot determine if the addFeed is called by user-generated
-        //   or cafe-updated feed. Therefore, we should not scrollToTop every time when addFeed called.
+        if (feedsAdapter.feeds.add(feed) == 0) {
+            smoothScrollToTop()
+        }
+    }
+
+    fun smoothScrollToTop() {
+        recyclerView.layoutManager?.startSmoothScroll(object :
+            LinearSmoothScroller(context) {
+            override fun getVerticalSnapPreference() = SNAP_TO_START
+        }.apply { targetPosition = 0 })
     }
 }

@@ -17,7 +17,8 @@ private const val PREFERENCE_KEY_PUBLIC_THREAD_ID = "PREFERENCE_KEY_PUBLIC_THREA
 private const val PREFERENCE_KEY_PERSONAL_THREAD_ID = "PREFERENCE_KEY_PERSONAL_THREAD_ID"
 private const val REQUEST_LIMIT = 999
 
-// TODO: DEVELOPMENT ONLY
+// TODO: DEVELOPMENT ONLY (we should replace it with private AWS cafe node)
+//   Remember to remove the private AWS cafe token if we want to open source this project.
 private const val DEV_CAFE_URL = "https://us-west-dev.textile.cafe"
 private const val DEV_CAFE_TOKEN = "uggU4NcVGFSPchULpa2zG2NRjw2bFzaiJo3BYAgaFyzCUPRLuAgToE3HXPyo"
 
