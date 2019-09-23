@@ -13,6 +13,9 @@ import io.textile.pb.Model.Thread.Type
 import io.textile.pb.View
 import io.textile.textile.*
 import java.io.File
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 private const val REQUEST_LIMIT = 999
 
@@ -119,6 +122,7 @@ object TextileWrapper {
     private fun findParentThread(blockId: String): Model.Thread {
         // TODO: We should use block API instead of feed API after block API has been implemented.
         // https://github.com/textileio/android-textile/issues/15
+        if (blockId == "") throw NoSuchElementException("You have already joined the thread.")
         val threadList = Textile.instance().threads.list()
         for (i in 0 until threadList.itemsCount) {
             val threadItem = threadList.getItems(i)
@@ -146,27 +150,40 @@ object TextileWrapper {
     /*-------------------------------------------
      * Files
      *-----------------------------------------*/
+    suspend fun addFile(filePath: String, threadId: String, caption: String) =
+        suspendCoroutine<Model.Block> { continuation ->
+            Textile.instance().files.addFiles(filePath, threadId, caption,
+                object : Handlers.BlockHandler {
+                    override fun onComplete(block: Model.Block) {
+                        Log.i(TAG, "Add file ($filePath) to thread (${block.thread}) successfully.")
+                        continuation.resume(block)
+                    }
 
-    // TODO: wrap this function with suspendCoroutine for async return
-    fun addFile(filePath: String, threadId: String, caption: String) =
-        Textile.instance().files.addFiles(filePath, threadId, caption,
-            object : Handlers.BlockHandler {
-                override fun onComplete(block: Model.Block) {
-                    Log.i(TAG, "Add file ($filePath) to thread (${block.thread}) successfully.")
-                }
+                    override fun onError(e: Exception) {
+                        Log.e(TAG, "Add file ($filePath) to thread ($threadId) with error.")
+                        continuation.resumeWithException(e)
+                    }
+                })
+        }
 
-                override fun onError(e: Exception) {
-                    Log.e(TAG, "Add file ($filePath) to thread ($threadId) with error.")
-                    Log.e(TAG, Log.getStackTraceString(e))
-                }
-            })
+    suspend fun getImageContent(path: String, minWidth: Long) =
+        suspendCoroutine<ByteArray?> { continuation ->
+            // imageContentForMinWidth usage: (Textile has not documented)
+            // https://github.com/textileio/photos/blob/master/App/Components/authoring-input.tsx#L184
+            Textile.instance().files.imageContentForMinWidth(
+                path,
+                minWidth,
+                object : Handlers.DataHandler {
+                    override fun onComplete(data: ByteArray?, media: String?) {
+                        if (media == "image/jpeg" || media == "image/png") continuation.resume(data)
+                        else continuation.resumeWithException(UnsupportedOperationException("Unknown media type"))
+                    }
 
-    // TODO: wrap this function with suspendCoroutine for async return
-    fun getImageContent(path: String, minWidth: Long, handler: Handlers.DataHandler) {
-        // imageContentForMinWidth usage: (Textile has not documented)
-        // https://github.com/textileio/photos/blob/master/App/Components/authoring-input.tsx#L184
-        Textile.instance().files.imageContentForMinWidth(path, minWidth, handler)
-    }
+                    override fun onError(e: Exception) {
+                        continuation.resumeWithException(e)
+                    }
+                })
+        }
 
     /*-------------------------------------------
      * Invites

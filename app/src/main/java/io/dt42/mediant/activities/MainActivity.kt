@@ -3,7 +3,6 @@ package io.dt42.mediant.activities
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -16,7 +15,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
-import androidx.preference.PreferenceManager
 import com.google.android.material.tabs.TabLayout
 import io.dt42.mediant.R
 import io.dt42.mediant.adapters.ThreadsPagerAdapter
@@ -45,14 +43,13 @@ private const val CAMERA_REQUEST_CODE = 0
 private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
 
 class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
+
     private var currentPhotoPath: String? = null
-    private lateinit var defaultSharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         TextileWrapper.init(applicationContext, false)
         ZionWrapper.init(this, applicationContext)
         initTabs()
@@ -100,13 +97,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             intent.data?.also {
                 if (it.toString().startsWith("https://www.textile.photos/invites/new")) {
                     Toast.makeText(this, "Try to accept invitation", Toast.LENGTH_LONG).show()
-                    launch(Dispatchers.IO) { acceptExternalInvite(it) }
+                    acceptExternalInvite(it)
                 } else Log.e(TAG, "Failed to parse invitation acceptance: $it")
             }
         }
     }
 
-    private fun acceptExternalInvite(uri: Uri) {
+    private fun acceptExternalInvite(uri: Uri) = launch(Dispatchers.IO) {
         val uriWithoutFragment = Uri.parse(uri.toString().replaceFirst('#', '?'))
         var newPublicThreadId: String? = null
         TextileWrapper.apply {
@@ -174,19 +171,31 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    // TODO: try catch Textile.addFile(), if a nil-pointer error occurs, upload again
     private fun uploadFeed(imageFilePath: String) = launch {
         val proofBundle = if (ZionWrapper.useZion) {
             withContext(Dispatchers.IO) { generateProofWithZion(imageFilePath) }
         } else {
             withContext(Dispatchers.IO) { generateProof(imageFilePath) }
         }
-        Log.d(TAG, "proof bundle: $proofBundle")
+        Log.i(TAG, "proof bundle: $proofBundle")
         Toast.makeText(this@MainActivity, "Uploading via Textile $proofBundle", Toast.LENGTH_SHORT)
             .show()
         TextileWrapper.apply {
-            personalThreadId?.also { addFile(imageFilePath, it, proofBundle.toString()) }
-            publicThreadId?.also { addFile(imageFilePath, it, proofBundle.toString()) }
+            personalThreadId?.also {
+                try {
+                    addFile(imageFilePath, it, proofBundle.toString())
+                } catch (e: Exception) {
+                    Log.e(TAG, Log.getStackTraceString(e))
+                }
+            }
+            publicThreadId?.also {
+                addFile(imageFilePath, it, proofBundle.toString())
+                try {
+                    addFile(imageFilePath, it, proofBundle.toString())
+                } catch (e: Exception) {
+                    Log.e(TAG, Log.getStackTraceString(e))
+                }
+            }
         }
     }
 

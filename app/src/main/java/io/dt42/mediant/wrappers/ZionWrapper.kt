@@ -97,25 +97,15 @@ object ZionWrapper : CoroutineScope by MainScope() {
                 RESULT.SUCCESS -> {
                     Log.i(
                         TAG,
-                        "Eth sendPublicKey: ${zkma.getSendPublicKey(
-                            it,
-                            ETHEREUM_TYPE
-                        ).key}"
+                        "Eth sendPublicKey: ${zkma.getSendPublicKey(it, ETHEREUM_TYPE).key}"
                     )
                     Log.i(
                         TAG,
-                        "Eth receivePublicKey ${zkma.getReceivePublicKey(
-                            it,
-                            ETHEREUM_TYPE
-                        ).key}"
+                        "Eth receivePublicKey ${zkma.getReceivePublicKey(it, ETHEREUM_TYPE).key}"
                     )
                 }
-                RESULT.E_TEEKM_SEED_EXISTS -> {
-                    Log.i(TAG, "Seed has been already generated.")
-                }
-                else -> {
-                    Log.e(TAG, "Create seed result: $result")
-                }
+                RESULT.E_TEEKM_SEED_EXISTS -> Log.i(TAG, "Seed has been already generated.")
+                else -> Log.e(TAG, "Create seed result: $result")
             }
         }
     }
@@ -146,7 +136,6 @@ object ZionWrapper : CoroutineScope by MainScope() {
     }
 
     fun signMessage(hexData: String): ByteArray {
-        Log.d(TAG, hexData)
         val message = JSONObject()
         message.put("version", "45")
         message.put("data", hexData)
@@ -156,10 +145,7 @@ object ZionWrapper : CoroutineScope by MainScope() {
         json.put("message", message)
 
         val signature = ByteArrayHolder()
-        val msgResult = zkma.signMessage(
-            uniqueId!!,
-            ETHEREUM_TYPE, json.toString(), signature
-        )
+        val msgResult = zkma.signMessage(uniqueId!!, ETHEREUM_TYPE, json.toString(), signature)
         Log.i(TAG, "zkma.signMessage result: $msgResult")
         Log.i(TAG, "signature: ${Arrays.toString(signature.byteArray)}")
         return signature.byteArray

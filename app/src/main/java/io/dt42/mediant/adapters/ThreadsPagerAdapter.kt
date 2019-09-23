@@ -9,6 +9,9 @@ import io.dt42.mediant.fragments.PersonalThreadFragment
 import io.dt42.mediant.fragments.PublicThreadFragment
 import io.dt42.mediant.fragments.ThreadFragment
 import io.dt42.mediant.wrappers.TextileWrapper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 
 data class Tab(val title: Int, val instance: () -> ThreadFragment)
 
@@ -18,7 +21,7 @@ private val TABS = listOf(
 )
 
 class ThreadsPagerAdapter(private val context: Context, fm: FragmentManager) :
-    FragmentPagerAdapter(fm) {
+    FragmentPagerAdapter(fm), CoroutineScope by MainScope() {
 
     private val currentFragments = mutableListOf<ThreadFragment>()
 
@@ -31,18 +34,18 @@ class ThreadsPagerAdapter(private val context: Context, fm: FragmentManager) :
             fragment as ThreadFragment
             when (position) {
                 0 -> TextileWrapper.apply {
-                    invokeWhenNodeOnline { publicThreadId?.let { fragment.refreshFeeds(it) } }
+                    invokeWhenNodeOnline { publicThreadId?.let { launch { fragment.refreshFeeds(it) } } }
                     addOnPublicThreadIdChangedListener {
-                        publicThreadId?.let { fragment.refreshFeeds(it) }
+                        publicThreadId?.let { launch { fragment.refreshFeeds(it) } }
                     }
-                    addOnPublicThreadUpdateReceivedListener { fragment.addFeed(it) }
+                    addOnPublicThreadUpdateReceivedListener { launch { fragment.addFeed(it) } }
                 }
                 1 -> TextileWrapper.apply {
-                    invokeWhenNodeOnline { personalThreadId?.let { fragment.refreshFeeds(it) } }
+                    invokeWhenNodeOnline { personalThreadId?.let { launch { fragment.refreshFeeds(it) } } }
                     addOnPersonalThreadIdChangedListener {
-                        personalThreadId?.let { fragment.refreshFeeds(it) }
+                        personalThreadId?.let { launch { fragment.refreshFeeds(it) } }
                     }
-                    addOnPersonalThreadUpdateReceivedListener { fragment.addFeed(it) }
+                    addOnPersonalThreadUpdateReceivedListener { launch { fragment.addFeed(it) } }
                 }
             }
             currentFragments.add(position, fragment)

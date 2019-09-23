@@ -17,7 +17,6 @@ import io.dt42.mediant.models.Feed
 import io.dt42.mediant.wrappers.TextileWrapper
 import io.textile.textile.FeedItemData
 import io.textile.textile.FeedItemType
-import io.textile.textile.Handlers
 import kotlinx.android.synthetic.main.fragment_thread.*
 import kotlinx.coroutines.*
 
@@ -61,56 +60,48 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
                 Log.e(TAG, msg)
                 Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
             } else {
-                refreshFeeds(it)
-
-                // TODO: modify refreshFeeds and addFeed to get the finishing callback
-                swipeRefreshLayout.isRefreshing = false
+                launch {
+                    refreshFeeds(it)
+                    swipeRefreshLayout.isRefreshing = false
+                }
             }
         }
     }
 
-    fun refreshFeeds(threadId: String) = launch(Dispatchers.IO) {
-        Log.d(TAG, "para $threadId | this ${this@ThreadFragment.threadId}")
+    suspend fun refreshFeeds(threadId: String) = withContext(Dispatchers.IO) {
         this@ThreadFragment.threadId = threadId
-        withContext(Dispatchers.Main) { feedsAdapter.feeds.clear() }
+        withContext(Dispatchers.Main) {
+            feedsAdapter.feeds.clear()
+            feedsAdapter.feeds.beginBatchedUpdates()
+        }
         TextileWrapper.listFeeds(threadId).forEachIndexed { index, it ->
             Log.i(TAG, "Feed ($index)\ttype: ${it.type}\tblock: ${it.block}")
             addFeed(it)
         }
+        withContext(Dispatchers.Main) { feedsAdapter.feeds.endBatchedUpdates() }
     }
 
-    fun addFeed(feedItemData: FeedItemData) = launch(Dispatchers.IO) {
+    suspend fun addFeed(feedItemData: FeedItemData) = withContext(Dispatchers.IO) {
         if (feedItemData.type == FeedItemType.FILES) {
             feedItemData.files.apply {
-                val fileIndex =
-                    if (filesList != null && filesList.size > 0 && filesList[0].index != 0) {
-                        filesList[0].index
-                    } else {
-                        0
-                    }
-                TextileWrapper.getImageContent(
-                    "$data/$fileIndex", 300,
-                    object : Handlers.DataHandler {
-                        override fun onComplete(data: ByteArray?, media: String?) {
-                            if (media == "image/jpeg" || media == "image/png") {
-                                addFeed(Feed(user.name, date, data, caption))
-                            } else {
-                                Log.e(TAG, "Unknown media type: $media")
-                            }
-                        }
+                val fileIndex = filesList.let {
+                    if (it != null && it.size > 0 && it[0].index != 0) it[0].index
+                    else 0
+                }
 
-                        override fun onError(e: java.lang.Exception) {
-                            Log.e(TAG, Log.getStackTraceString(e))
-                        }
-                    })
+                try {
+                    TextileWrapper.getImageContent("$data/$fileIndex", 300).also {
+                        addFeed(Feed(user.name, date, it, caption))
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, Log.getStackTraceString(e))
+                }
             }
         }
     }
 
-    private fun addFeed(feed: Feed) = launch(Dispatchers.Main) {
-        if (feedsAdapter.feeds.add(feed) == 0) {
-            smoothScrollToTop()
-        }
+    private suspend fun addFeed(feed: Feed) = withContext(Dispatchers.Main) {
+        if (feedsAdapter.feeds.add(feed) == 0) smoothScrollToTop()
     }
 
     fun smoothScrollToTop() {
