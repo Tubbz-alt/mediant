@@ -8,5 +8,4 @@
     <string name="card_proof_description">Show proof</string>
     <string name="card_delete_description">Delete photo</string>
     <string name="permission_rationale_default">Mediant requires permissions to save the proof (including GPS info) and signature of the pictures you take into device\'s storage. Go to settings to turn on the permissions of this APP.</string>
-    <string name="preference_key_use_zion">useZion</string>
 </resources>

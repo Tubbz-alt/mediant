@@ -45,19 +45,8 @@ private const val CAMERA_REQUEST_CODE = 0
 private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
 
 class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
-    private val threadsPagerAdapter = ThreadsPagerAdapter(this, supportFragmentManager)
     private var currentPhotoPath: String? = null
     private lateinit var defaultSharedPreferences: SharedPreferences
-
-    // TODO: move defaultSharedPreferences, sharedPreferenceChangeListener and useZion to ZionWrapper
-    // To prevent unintended garbage collection, we store a strong reference to the listener.
-    private lateinit var onSharedPreferenceChangeListener: SharedPreferences.OnSharedPreferenceChangeListener
-
-    private val useZion: Boolean
-        get() = defaultSharedPreferences.getBoolean(
-            resources.getString(R.string.preference_key_use_zion),
-            false
-        )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,42 +54,23 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         setSupportActionBar(toolbar)
         defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         TextileWrapper.init(applicationContext, false)
-        initZion()
+        ZionWrapper.init(this, applicationContext)
         initTabs()
         handleIntent(intent)
     }
 
-    private fun initZion() {
-        defaultSharedPreferences.apply {
-            if (useZion) {
-                ZionWrapper.init(this@MainActivity, applicationContext)
-            }
-            onSharedPreferenceChangeListener = createSharedPreferenceChangeListener().also {
-                registerOnSharedPreferenceChangeListener(it)
-            }
-        }
-    }
-
     private fun initTabs() {
-        viewPager.adapter = threadsPagerAdapter
-        tabs.apply {
-            setupWithViewPager(viewPager)
-            addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-                override fun onTabSelected(tab: TabLayout.Tab) {}
-                override fun onTabUnselected(tab: TabLayout.Tab) {}
-                override fun onTabReselected(tab: TabLayout.Tab) {
-                    threadsPagerAdapter.smoothScrollToTop(tab.position)
-                }
-            })
-        }
-    }
-
-    private fun createSharedPreferenceChangeListener(): SharedPreferences.OnSharedPreferenceChangeListener {
-        return SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            when (key) {
-                resources.getString(R.string.preference_key_use_zion) -> {
-                    if (useZion) ZionWrapper.init(this, applicationContext)
-                }
+        ThreadsPagerAdapter(this, supportFragmentManager).also {
+            viewPager.adapter = it
+            tabs.apply {
+                setupWithViewPager(viewPager)
+                addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                    override fun onTabSelected(tab: TabLayout.Tab) {}
+                    override fun onTabUnselected(tab: TabLayout.Tab) {}
+                    override fun onTabReselected(tab: TabLayout.Tab) {
+                        it.smoothScrollToTop(tab.position)
+                    }
+                })
             }
         }
     }
@@ -204,8 +174,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
+    // TODO: try catch Textile.addFile(), if a nil-pointer error occurs, upload again
     private fun uploadFeed(imageFilePath: String) = launch {
-        val proofBundle = if (useZion) {
+        val proofBundle = if (ZionWrapper.useZion) {
             withContext(Dispatchers.IO) { generateProofWithZion(imageFilePath) }
         } else {
             withContext(Dispatchers.IO) { generateProof(imageFilePath) }
@@ -213,13 +184,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         Log.d(TAG, "proof bundle: $proofBundle")
         Toast.makeText(this@MainActivity, "Uploading via Textile $proofBundle", Toast.LENGTH_SHORT)
             .show()
-        TextileWrapper.personalThreadId?.also {
-            Log.d(TAG, "upload to personal: $it")
-            TextileWrapper.addFile(imageFilePath, it, proofBundle.toString())
-        }
-        TextileWrapper.publicThreadId?.also {
-            Log.d(TAG, "upload to public: $it")
-            TextileWrapper.addFile(imageFilePath, it, proofBundle.toString())
+        TextileWrapper.apply {
+            personalThreadId?.also { addFile(imageFilePath, it, proofBundle.toString()) }
+            publicThreadId?.also { addFile(imageFilePath, it, proofBundle.toString()) }
         }
     }
 

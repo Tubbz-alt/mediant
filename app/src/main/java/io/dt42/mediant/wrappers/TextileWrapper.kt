@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.preference.PreferenceManager
 import io.dt42.mediant.BuildConfig
+import io.dt42.mediant.R
 import io.dt42.mediant.activities.TAG
 import io.textile.pb.Model
 import io.textile.pb.Model.Thread.Sharing
@@ -13,8 +14,6 @@ import io.textile.pb.View
 import io.textile.textile.*
 import java.io.File
 
-private const val PREFERENCE_KEY_PUBLIC_THREAD_ID = "PREFERENCE_KEY_PUBLIC_THREAD_ID"
-private const val PREFERENCE_KEY_PERSONAL_THREAD_ID = "PREFERENCE_KEY_PERSONAL_THREAD_ID"
 private const val REQUEST_LIMIT = 999
 
 // TODO: DEVELOPMENT ONLY (we should replace it with private AWS cafe node)
@@ -25,15 +24,18 @@ private const val DEV_CAFE_TOKEN = "uggU4NcVGFSPchULpa2zG2NRjw2bFzaiJo3BYAgaFyzC
 object TextileWrapper {
 
     private lateinit var pref: SharedPreferences
+    // To prevent unintended garbage collection, we store a strong reference to the listener.
     private lateinit var prefChangeListener: SharedPreferences.OnSharedPreferenceChangeListener
+    private lateinit var prefKeyPublicThreadId: String
+    private lateinit var prefKeyPersonalThreadId: String
     private val onPublicThreadIdChangeListeners = mutableListOf<() -> Unit>()
     private val onPersonalThreadIdChangeListeners = mutableListOf<() -> Unit>()
     var publicThreadId: String?
-        get() = pref.getString(PREFERENCE_KEY_PUBLIC_THREAD_ID, null)
-        set(value) = pref.edit().putString(PREFERENCE_KEY_PUBLIC_THREAD_ID, value).apply()
+        get() = pref.getString(prefKeyPublicThreadId, null)
+        set(value) = pref.edit().putString(prefKeyPublicThreadId, value).apply()
     var personalThreadId: String?
-        get() = pref.getString(PREFERENCE_KEY_PERSONAL_THREAD_ID, null)
-        set(value) = pref.edit().putString(PREFERENCE_KEY_PERSONAL_THREAD_ID, value).apply()
+        get() = pref.getString(prefKeyPersonalThreadId, null)
+        set(value) = pref.edit().putString(prefKeyPersonalThreadId, value).apply()
 
     private val isOnline: Boolean
         get() = try {
@@ -42,14 +44,14 @@ object TextileWrapper {
             false
         }
 
-    fun init(context: Context, debug: Boolean) {
-        initializeSharedPreferences(context)
-        val path = File(context.filesDir, "textile-go").absolutePath
+    fun init(applicationContext: Context, debug: Boolean) {
+        initializeSharedPreferences(applicationContext)
+        val path = File(applicationContext.filesDir, "textile-go").absolutePath
         if (!Textile.isInitialized(path)) {
             val phrase = Textile.initializeCreatingNewWalletAndAccount(path, debug, false)
             Log.i(TAG, "Create new wallet: $phrase")
         }
-        Textile.launch(context, path, debug)
+        Textile.launch(applicationContext, path, debug)
         Textile.instance().addEventListener(TextileLoggingListener())
         invokeWhenNodeOnline {
             addCafe(DEV_CAFE_URL, DEV_CAFE_TOKEN)
@@ -58,12 +60,14 @@ object TextileWrapper {
     }
 
     private fun initializeSharedPreferences(context: Context) {
+        prefKeyPublicThreadId = context.resources.getString(R.string.pref_key_public_thread_id)
+        prefKeyPersonalThreadId = context.resources.getString(R.string.pref_key_personal_thread_id)
         pref = PreferenceManager.getDefaultSharedPreferences(context)
         prefChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
             if (pref == this.pref) {
                 when (key) {
-                    PREFERENCE_KEY_PUBLIC_THREAD_ID -> onPublicThreadIdChangeListeners.forEach { it() }
-                    PREFERENCE_KEY_PERSONAL_THREAD_ID -> onPersonalThreadIdChangeListeners.forEach { it() }
+                    prefKeyPublicThreadId -> onPublicThreadIdChangeListeners.forEach { it() }
+                    prefKeyPersonalThreadId -> onPersonalThreadIdChangeListeners.forEach { it() }
                 }
             }
         }
