@@ -16,12 +16,12 @@ import kotlinx.coroutines.launch
 data class Tab(val title: Int, val instance: () -> ThreadFragment)
 
 private val TABS = listOf(
-    Tab(R.string.tab_text_0) { PublicThreadFragment.newInstance() },
-    Tab(R.string.tab_text_1) { PersonalThreadFragment.newInstance() }
+    Tab(R.string.feed) { PublicThreadFragment.newInstance() },
+    Tab(R.string.storage) { PersonalThreadFragment.newInstance() }
 )
 
 class ThreadsPagerAdapter(private val context: Context, fm: FragmentManager) :
-    FragmentPagerAdapter(fm), CoroutineScope by MainScope() {
+    FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT), CoroutineScope by MainScope() {
 
     private val currentFragments = mutableListOf<ThreadFragment>()
 

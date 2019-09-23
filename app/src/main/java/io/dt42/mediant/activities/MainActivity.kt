@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import com.google.android.material.tabs.TabLayout
+import com.google.gson.Gson
 import io.dt42.mediant.R
 import io.dt42.mediant.adapters.ThreadsPagerAdapter
 import io.dt42.mediant.models.ProofBundle
@@ -171,6 +172,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
+    // TODO: retry uploading if catch exception during TextileWrapper.addFile
     private fun uploadFeed(imageFilePath: String) = launch {
         val proofBundle = if (ZionWrapper.useZion) {
             withContext(Dispatchers.IO) { generateProofWithZion(imageFilePath) }
@@ -183,15 +185,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         TextileWrapper.apply {
             personalThreadId?.also {
                 try {
-                    addFile(imageFilePath, it, proofBundle.toString())
+                    addFile(imageFilePath, it, Gson().toJson(proofBundle))
                 } catch (e: Exception) {
                     Log.e(TAG, Log.getStackTraceString(e))
                 }
             }
             publicThreadId?.also {
-                addFile(imageFilePath, it, proofBundle.toString())
                 try {
-                    addFile(imageFilePath, it, proofBundle.toString())
+                    addFile(imageFilePath, it, Gson().toJson(proofBundle))
                 } catch (e: Exception) {
                     Log.e(TAG, Log.getStackTraceString(e))
                 }
@@ -250,7 +251,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun dispatchTakePictureIntent() {
+    private fun dispatchTakePictureIntent() =
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             // Ensure that there's a camera activity to handle the intent
             takePictureIntent.resolveActivity(packageManager)?.also {
@@ -272,7 +273,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 }
             }
         }
-    }
 
     private fun dispatchSettingsActivityIntent() = Intent(this, SettingsActivity::class.java).also {
         startActivity(it)

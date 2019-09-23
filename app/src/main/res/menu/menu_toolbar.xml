@@ -5,7 +5,7 @@
     <item
         android:id="@+id/actionSettings"
         android:icon="@drawable/ic_settings_black_24dp"
-        android:title="@string/title_activity_settings"
+        android:title="@string/settings"
         app:showAsAction="always" />
     <item
         android:id="@+id/actionListThread"

@@ -23,7 +23,7 @@ import kotlinx.coroutines.*
 abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var threadId: String? = null
-    private val feedsAdapter = FeedsAdapter()
+    private lateinit var feedsAdapter: FeedsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +47,7 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
         super.onViewCreated(view, savedInstanceState)
         recyclerView.apply {
             layoutManager = LinearLayoutManager(activity)
-            adapter = feedsAdapter
+            adapter = FeedsAdapter(activity!!).also { feedsAdapter = it }
         }
         swipeRefreshLayout.setOnRefreshListener(createRefreshListener())
     }
@@ -83,6 +83,7 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
 
     suspend fun addFeed(feedItemData: FeedItemData) = withContext(Dispatchers.IO) {
         if (feedItemData.type == FeedItemType.FILES) {
+//            feedItemData.files.filesList[0].file.hash
             feedItemData.files.apply {
                 val fileIndex = filesList.let {
                     if (it != null && it.size > 0 && it[0].index != 0) it[0].index
@@ -90,7 +91,7 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
                 }
 
                 try {
-                    TextileWrapper.getImageContent("$data/$fileIndex", 300).also {
+                    TextileWrapper.getImageContent("$data/$fileIndex", 500).also {
                         addFeed(Feed(user.name, date, it, caption))
                     }
                 } catch (e: Exception) {

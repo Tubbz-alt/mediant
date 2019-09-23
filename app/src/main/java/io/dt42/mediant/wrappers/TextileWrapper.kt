@@ -185,6 +185,10 @@ object TextileWrapper {
                 })
         }
 
+//    fun shareFile() {
+//        Textile.instance().files.shareFiles()
+//    }
+
     /*-------------------------------------------
      * Invites
      *-----------------------------------------*/
