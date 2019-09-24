@@ -1,4 +1,4 @@
-package io.dt42.mediant.ui.settings
+package io.dt42.mediant.fragments
 
 import android.os.Bundle
 import androidx.preference.PreferenceFragmentCompat

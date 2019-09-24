@@ -1,9 +1,8 @@
-package io.dt42.mediant
+package io.dt42.mediant.activities
 
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -16,12 +15,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
-import androidx.preference.PreferenceManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
-import io.dt42.mediant.model.ProofBundle
-import io.dt42.mediant.ui.main.PUBLIC_THREAD_NAME
-import io.dt42.mediant.ui.main.SectionsPagerAdapter
+import com.google.gson.Gson
+import io.dt42.mediant.R
+import io.dt42.mediant.adapters.ThreadsPagerAdapter
+import io.dt42.mediant.models.ProofBundle
+import io.dt42.mediant.wrappers.TextileWrapper
+import io.dt42.mediant.wrappers.ZionWrapper
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import org.witness.proofmode.ProofMode
@@ -30,6 +30,8 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+
+const val TAG = "MEDIANT"
 
 private enum class PermissionCode(val value: Int) { DEFAULT(0) }
 
@@ -40,63 +42,33 @@ private val DEFAULT_PERMISSIONS = listOf(
 
 private const val CAMERA_REQUEST_CODE = 0
 private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
-private const val TAG = "MAIN_ACTIVITY"
 
 class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
+
     private var currentPhotoPath: String? = null
-    private lateinit var defaultSharedPreferences: SharedPreferences
-    // To prevent unintended garbage collection, we store a strong reference to the listener.
-    private lateinit var onSharedPreferenceChangeListener: SharedPreferences.OnSharedPreferenceChangeListener
-    private val useZion: Boolean
-        get() = defaultSharedPreferences.getBoolean(
-            resources.getString(R.string.preference_key_use_zion),
-            false
-        )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        TextileWrapper.init(applicationContext, false)
+        ZionWrapper.init(this, applicationContext)
         initTabs()
         handleIntent(intent)
-        TextileWrapper.init(applicationContext, true)
-        defaultSharedPreferences.apply {
-            if (useZion) {
-                ZionWrapper.init(this@MainActivity, applicationContext)
-            }
-            onSharedPreferenceChangeListener = createSharedPreferenceChangeListener()
-            registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
-        }
     }
 
     private fun initTabs() {
-        val adapter = SectionsPagerAdapter(this, supportFragmentManager)
-        viewPager.adapter = adapter
-        tabs.setupWithViewPager(viewPager)
-        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab) {
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab) {
-                adapter.getItem(tab.position).apply {
-                    view?.findViewById<RecyclerView>(R.id.recyclerView)?.smoothScrollToPosition(0)
-                }
-            }
-        })
-    }
-
-    private fun createSharedPreferenceChangeListener(): SharedPreferences.OnSharedPreferenceChangeListener {
-        return SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            when (key) {
-                resources.getString(R.string.preference_key_use_zion) -> {
-                    if (useZion) {
-                        ZionWrapper.init(this, applicationContext)
+        ThreadsPagerAdapter(this, supportFragmentManager).also {
+            viewPager.adapter = it
+            tabs.apply {
+                setupWithViewPager(viewPager)
+                addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                    override fun onTabSelected(tab: TabLayout.Tab) {}
+                    override fun onTabUnselected(tab: TabLayout.Tab) {}
+                    override fun onTabReselected(tab: TabLayout.Tab) {
+                        it.smoothScrollToTop(tab.position)
                     }
-                }
+                })
             }
         }
     }
@@ -124,29 +96,36 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private fun handleIntent(intent: Intent) {
         if (intent.action == Intent.ACTION_VIEW) {
             intent.data?.also {
-                val invitationUrl = intent.data.toString()
-                Log.d(
-                    TAG,
-                    "Legal invitation: ${invitationUrl.startsWith("https://www.textile.photos/invites/new")}"
-                )
-                if (invitationUrl.startsWith("https://www.textile.photos/invites/new")) {
-                    Toast.makeText(this, "Attempt to accept invitation...", Toast.LENGTH_SHORT)
-                        .show()
+                if (it.toString().startsWith("https://www.textile.photos/invites/new")) {
+                    Toast.makeText(this, "Try to accept invitation", Toast.LENGTH_LONG).show()
                     acceptExternalInvite(it)
-                } else {
-                    Log.e(TAG, "Failed to run invitation acceptance: $invitationUrl")
-                }
+                } else Log.e(TAG, "Failed to parse invitation acceptance: $it")
             }
         }
     }
 
     private fun acceptExternalInvite(uri: Uri) = launch(Dispatchers.IO) {
         val uriWithoutFragment = Uri.parse(uri.toString().replaceFirst('#', '?'))
-        TextileWrapper.invokeAfterNodeOnline {
-            TextileWrapper.acceptExternalInvitation(
-                uriWithoutFragment.getQueryParameter("id")!!,
-                uriWithoutFragment.getQueryParameter("key")!!
-            )
+        var newPublicThreadId: String? = null
+        TextileWrapper.apply {
+            invokeWhenNodeOnline {
+                try {
+                    newPublicThreadId = acceptExternalInvitation(
+                        uriWithoutFragment.getQueryParameter("id")!!,
+                        uriWithoutFragment.getQueryParameter("key")!!
+                    ).id
+                } catch (e: Exception) {
+                    val msg = "Accepting invitation with an error. Try again might help."
+                    Log.e(TAG, Log.getStackTraceString(e))
+                    launch(Dispatchers.Main) {
+                        Toast.makeText(this@MainActivity, msg, Toast.LENGTH_LONG).show()
+                    }
+                } finally {
+                    publicThreadId?.let { removeThread(it) }
+                    publicThreadId = newPublicThreadId
+                    Log.i(TAG, "New public thread ID: $publicThreadId")
+                }
+            }
         }
     }
 
@@ -172,6 +151,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 true
             }
             R.id.actionShowTestingInfo -> {
+                Log.d(TAG, "${TextileWrapper.publicThreadId}")
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -184,7 +164,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     currentPhotoPath?.also {
-                        uploadPost(it)
+                        uploadFeed(it)
                         viewPager.currentItem = 1
                     }
                 }
@@ -192,21 +172,32 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun uploadPost(imageFilePath: String) = launch {
-        val proofBundle = if (useZion) {
+    // TODO: retry uploading if catch exception during TextileWrapper.addFile
+    private fun uploadFeed(imageFilePath: String) = launch {
+        val proofBundle = if (ZionWrapper.useZion) {
             withContext(Dispatchers.IO) { generateProofWithZion(imageFilePath) }
         } else {
             withContext(Dispatchers.IO) { generateProof(imageFilePath) }
         }
-        Log.d(TAG, "proof bundle: $proofBundle")
+        Log.i(TAG, "proof bundle: $proofBundle")
         Toast.makeText(this@MainActivity, "Uploading via Textile $proofBundle", Toast.LENGTH_SHORT)
             .show()
-        TextileWrapper.addImage(
-            imageFilePath,
-            TextileWrapper.profileAddress,
-            proofBundle.toString()
-        )
-        TextileWrapper.addImage(imageFilePath, PUBLIC_THREAD_NAME, proofBundle.toString())
+        TextileWrapper.apply {
+            personalThreadId?.also {
+                try {
+                    addFile(imageFilePath, it, Gson().toJson(proofBundle))
+                } catch (e: Exception) {
+                    Log.e(TAG, Log.getStackTraceString(e))
+                }
+            }
+            publicThreadId?.also {
+                try {
+                    addFile(imageFilePath, it, Gson().toJson(proofBundle))
+                } catch (e: Exception) {
+                    Log.e(TAG, Log.getStackTraceString(e))
+                }
+            }
+        }
     }
 
     private fun generateProof(filePath: String): ProofBundle {
@@ -260,7 +251,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun dispatchTakePictureIntent() {
+    private fun dispatchTakePictureIntent() =
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             // Ensure that there's a camera activity to handle the intent
             takePictureIntent.resolveActivity(packageManager)?.also {
@@ -275,11 +266,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 photoFile?.also {
                     val photoURI = FileProvider.getUriForFile(this, "$packageName.provider", it)
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-                    startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE)
+                    startActivityForResult(
+                        takePictureIntent,
+                        CAMERA_REQUEST_CODE
+                    )
                 }
             }
         }
-    }
 
     private fun dispatchSettingsActivityIntent() = Intent(this, SettingsActivity::class.java).also {
         startActivity(it)
