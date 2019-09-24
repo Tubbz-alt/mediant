@@ -11,7 +11,7 @@ data class Feed(
     override operator fun compareTo(other: Feed): Int {
         if (date.seconds == other.date.seconds && date.nanos == other.date.nanos) return 0
 
-        // For the reverse order feeds in time, the older the feed, the closer to the thread rear.
+        // For the reverse order feeds in time, the older the feed_personal, the closer to the thread rear.
         if (date.seconds > other.date.seconds || (date.seconds == other.date.seconds && date.nanos > other.date.nanos)) return -1
         return 1
     }

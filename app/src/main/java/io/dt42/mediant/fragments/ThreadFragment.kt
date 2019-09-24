@@ -23,6 +23,7 @@ import kotlinx.coroutines.*
 abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var threadId: String? = null
+    abstract val layoutResource: Int
     private lateinit var feedsAdapter: FeedsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,7 +48,7 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
         super.onViewCreated(view, savedInstanceState)
         recyclerView.apply {
             layoutManager = LinearLayoutManager(activity)
-            adapter = FeedsAdapter(activity!!).also { feedsAdapter = it }
+            adapter = FeedsAdapter(activity!!, layoutResource).also { feedsAdapter = it }
         }
         swipeRefreshLayout.setOnRefreshListener(createRefreshListener())
     }

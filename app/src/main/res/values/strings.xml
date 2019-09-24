@@ -1,5 +1,5 @@
 <resources>
-    <string name="string_placeholder">Sample String Here</string>
+    <string name="string_placeholder">Empty</string>
     <string name="app_name">Mediant</string>
     <string name="feed">Feed</string>
     <string name="storage">Storage</string>
@@ -7,6 +7,7 @@
     <string name="card_publish_description">Publish to public thread</string>
     <string name="card_proof_description">Show proof</string>
     <string name="card_delete_description">Delete photo</string>
+    <string name="otherDetails">Other Details</string>
     <string name="media_signature">Media Signature</string>
     <string name="proof_signature">Proof Signature</string>
     <string name="proof">Proof</string>

@@ -120,7 +120,7 @@ object TextileWrapper {
     }
 
     private fun findParentThread(blockId: String): Model.Thread {
-        // TODO: We should use block API instead of feed API after block API has been implemented.
+        // TODO: We should use block API instead of feed_personal API after block API has been implemented.
         // https://github.com/textileio/android-textile/issues/15
         if (blockId == "") throw NoSuchElementException("You have already joined the thread.")
         val threadList = Textile.instance().threads.list()
@@ -132,7 +132,7 @@ object TextileWrapper {
                 }
             }
         }
-        throw NoSuchElementException("Cannot find the block ($blockId) via feed API.")
+        throw NoSuchElementException("Cannot find the block ($blockId) via feed_personal API.")
     }
 
     /*-------------------------------------------

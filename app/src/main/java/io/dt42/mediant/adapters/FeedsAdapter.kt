@@ -9,10 +9,12 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SortedList
 import com.google.protobuf.Timestamp
 import io.dt42.mediant.R
+import io.dt42.mediant.activities.PROOF_BUNDLE_EXTRA
 import io.dt42.mediant.activities.ProofActivity
 import io.dt42.mediant.models.Feed
 import java.time.Instant
@@ -21,7 +23,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.*
 
-class FeedsAdapter(private val context: Context) :
+class FeedsAdapter(private val context: Context, @LayoutRes private val resource: Int) :
     RecyclerView.Adapter<FeedsAdapter.FeedViewHolder>() {
 
     val feeds = SortedList<Feed>(Feed::class.java, object : SortedList.Callback<Feed>() {
@@ -57,8 +59,9 @@ class FeedsAdapter(private val context: Context) :
     override fun getItemCount() = feeds.size()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.feed, parent, false)
-        return FeedViewHolder(view)
+        return LayoutInflater.from(parent.context).inflate(resource, parent, false).let {
+            FeedViewHolder(it)
+        }
     }
 
     override fun onBindViewHolder(holder: FeedViewHolder, position: Int) {
@@ -68,23 +71,20 @@ class FeedsAdapter(private val context: Context) :
             feeds[position].data?.also {
                 image.setImageBitmap(BitmapFactory.decodeByteArray(it, 0, it.size))
             }
-            caption.text = feeds[position].caption
-            showProofButton.setOnClickListener {
-                //Log.d(TAG, feeds[position].caption)
-                dispatchProofActivityIntent()
-            }
+            showProofButton.setOnClickListener { dispatchProofActivityIntent(feeds[position].caption) }
         }
     }
 
-    private fun dispatchProofActivityIntent() = Intent(context, ProofActivity::class.java).also {
-        context.startActivity(it)
-    }
+    private fun dispatchProofActivityIntent(proofBundleJson: String) =
+        Intent(context, ProofActivity::class.java).apply {
+            putExtra(PROOF_BUNDLE_EXTRA, proofBundleJson)
+            context.startActivity(this)
+        }
 
     class FeedViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val username: TextView = itemView.findViewById(R.id.username)
         val date: TextView = itemView.findViewById(R.id.date)
         val image: ImageView = itemView.findViewById(R.id.image)
-        val caption: TextView = itemView.findViewById(R.id.caption)
         val showProofButton: ImageButton = itemView.findViewById(R.id.showProofButton)
     }
 
