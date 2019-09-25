@@ -209,9 +209,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private fun uploadFeed(imageFilePath: String) = launch {
         val proofBundle = if (ZionWrapper.useZion) {
             withContext(Dispatchers.IO) { generateProofWithZion(imageFilePath) }
-        } else {
-            withContext(Dispatchers.IO) { generateProof(imageFilePath) }
-        }
+        } else withContext(Dispatchers.IO) { generateProof(imageFilePath) }
         Log.i(TAG, "proof bundle: $proofBundle")
         Toast.makeText(this@MainActivity, "Uploading via Textile $proofBundle", Toast.LENGTH_SHORT)
             .show()
@@ -222,15 +220,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 } catch (e: Exception) {
                     Log.e(TAG, Log.getStackTraceString(e))
                 }
+                snapshotAllThreads()
             }
-            publicThreadId?.also {
-                try {
-                    addFile(imageFilePath, it, Gson().toJson(proofBundle))
-                } catch (e: Exception) {
-                    Log.e(TAG, Log.getStackTraceString(e))
-                }
-            }
-            snapshotAllThreads()
         }
     }
 

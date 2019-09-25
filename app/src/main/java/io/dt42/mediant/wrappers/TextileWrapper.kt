@@ -124,9 +124,7 @@ object TextileWrapper {
         val threadList = Textile.instance().threads.list()
         for (i in 0 until threadList.itemsCount) {
             val threadItem = threadList.getItems(i)
-            listFeeds(threadItem.id).forEach {
-                if (it.block == blockId) return threadItem
-            }
+            listFeeds(threadItem.id).forEach { if (it.block == blockId) return threadItem }
         }
         throw NoSuchElementException("Cannot find the block ($blockId) via feed_personal API.")
     }
@@ -153,15 +151,8 @@ object TextileWrapper {
         suspendCoroutine<Model.Block> { continuation ->
             Textile.instance().files.addFiles(filePath, threadId, caption,
                 object : Handlers.BlockHandler {
-                    override fun onComplete(block: Model.Block) {
-                        Log.i(TAG, "Add file ($filePath) to thread (${block.thread}) successfully.")
-                        continuation.resume(block)
-                    }
-
-                    override fun onError(e: Exception) {
-                        Log.e(TAG, "Add file ($filePath) to thread ($threadId) with error.")
-                        continuation.resumeWithException(e)
-                    }
+                    override fun onComplete(block: Model.Block) = continuation.resume(block)
+                    override fun onError(e: Exception) = continuation.resumeWithException(e)
                 })
         }
 
@@ -178,15 +169,19 @@ object TextileWrapper {
                         else continuation.resumeWithException(UnsupportedOperationException("Unknown media type"))
                     }
 
-                    override fun onError(e: Exception) {
-                        continuation.resumeWithException(e)
-                    }
+                    override fun onError(e: Exception) = continuation.resumeWithException(e)
                 })
         }
 
-//    fun shareFile() {
-//        Textile.instance().files.shareFiles()
-//    }
+    suspend fun shareFile(hash: String, threadId: String, caption: String) =
+        suspendCoroutine<Model.Block> { continuation ->
+            Textile.instance().files.shareFiles(hash, threadId, caption,
+                object : Handlers.BlockHandler {
+                    override fun onComplete(block: Model.Block) = continuation.resume(block)
+                    override fun onError(e: java.lang.Exception) =
+                        continuation.resumeWithException(e)
+                })
+        }
 
     /*-------------------------------------------
      * Invites

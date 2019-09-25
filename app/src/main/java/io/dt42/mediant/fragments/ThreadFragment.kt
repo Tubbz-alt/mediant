@@ -89,6 +89,7 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
 
                 try {
                     val data = TextileWrapper.getImageContent("$data/$fileIndex", 500)
+                    // TODO: remove Feed class. Use FeedItemData directly.
                     addFeed(Feed(user.name, date, data, caption))
                 } catch (e: Exception) {
                     Log.e(TAG, Log.getStackTraceString(e))
