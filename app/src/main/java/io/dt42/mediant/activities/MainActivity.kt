@@ -33,12 +33,14 @@ import java.util.*
 
 const val TAG = "MEDIANT"
 
-private enum class PermissionCode(val value: Int) { DEFAULT(0) }
+private enum class PermissionCode(val value: Int) { DEFAULT(0), LOGGING(1) }
 
-private val DEFAULT_PERMISSIONS = listOf(
+private val DEFAULT_PERMISSIONS = arrayOf(
     Manifest.permission.WRITE_EXTERNAL_STORAGE,
     Manifest.permission.ACCESS_FINE_LOCATION
 )
+private const val LOGGING_PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE
+private const val LOG_TO_FILE = false
 
 private const val CAMERA_REQUEST_CODE = 0
 private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
@@ -48,6 +50,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var currentPhotoPath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (hasPermissions(LOGGING_PERMISSION)) initLogger(LOG_TO_FILE)
+        else askPermissions(LOGGING_PERMISSION, code = PermissionCode.LOGGING)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
@@ -55,6 +59,23 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         ZionWrapper.init(this, applicationContext)
         initTabs()
         handleIntent(intent)
+    }
+
+    private fun initLogger(logToFile: Boolean) {
+        if (logToFile) {
+            Log.d(TAG, "Initialize logger to file: ${getExternalFilesDir(null)}/log")
+            getExternalFilesDir(null)?.also {
+                val logDir = File(it.absolutePath + "/log")
+                val logFile = File(logDir, "logcat${System.currentTimeMillis()}.txt")
+                if (!logDir.exists()) logDir.mkdir()
+                try {
+                    Runtime.getRuntime().exec("logcat -c")
+                    Runtime.getRuntime().exec("logcat -f $logFile")
+                } catch (e: IOException) {
+                    Log.e(TAG, Log.getStackTraceString(e))
+                }
+            }
+        }
     }
 
     private fun initTabs() {
@@ -110,10 +131,16 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         TextileWrapper.apply {
             invokeWhenNodeOnline {
                 try {
-                    newPublicThreadId = acceptExternalInvitation(
+                    acceptExternalInvitation(
                         uriWithoutFragment.getQueryParameter("id")!!,
                         uriWithoutFragment.getQueryParameter("key")!!
-                    ).id
+                    )?.also { newPublicThreadId = it.id }
+                    // TODO:
+//                        ?: launch(Dispatchers.Main) {
+//                        val msg = "You have already joined the thread"
+//                        Log.i(TAG, msg)
+//                        Toast.makeText(this@MainActivity, msg, Toast.LENGTH_LONG).show()
+//                    }
                 } catch (e: Exception) {
                     val msg = "Accepting invitation with an error. Try again might help."
                     Log.e(TAG, Log.getStackTraceString(e))
@@ -121,9 +148,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                         Toast.makeText(this@MainActivity, msg, Toast.LENGTH_LONG).show()
                     }
                 } finally {
-                    publicThreadId?.let { removeThread(it) }
-                    publicThreadId = newPublicThreadId
-                    Log.i(TAG, "New public thread ID: $publicThreadId")
+                    newPublicThreadId?.also {
+                        publicThreadId?.let { oldPublicThreadId -> removeThread(oldPublicThreadId) }
+                        publicThreadId = it
+                        Log.i(TAG, "New public thread ID: $publicThreadId")
+                    }
                 }
             }
         }
@@ -137,9 +166,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                if (hasPermissions(DEFAULT_PERMISSIONS)) {
-                    dispatchTakePictureIntent()
-                }
+                if (hasPermissions(*DEFAULT_PERMISSIONS)) dispatchTakePictureIntent()
+                else askPermissions(*DEFAULT_PERMISSIONS, code = PermissionCode.DEFAULT)
                 true
             }
             R.id.actionSettings -> {
@@ -242,11 +270,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             PermissionCode.DEFAULT.value -> {
-                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     dispatchTakePictureIntent()
-                } else {
-                    showPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                }
+                } else showPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+            PermissionCode.LOGGING.value -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    initLogger(LOG_TO_FILE)
+                } else showPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }
         }
     }
@@ -264,12 +295,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 }
                 // Continue only if the File was successfully created
                 photoFile?.also {
-                    val photoURI = FileProvider.getUriForFile(this, "$packageName.provider", it)
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-                    startActivityForResult(
-                        takePictureIntent,
-                        CAMERA_REQUEST_CODE
-                    )
+                    val photoUri = FileProvider.getUriForFile(this, "$packageName.provider", it)
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+                    startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE)
                 }
             }
         }
@@ -280,35 +308,29 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun createImageFile(): File {
         // Create an image file name
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.TAIWAN).format(Date())
-        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", filesDir).apply {
+        val timestamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.TAIWAN).format(Date())
+        return File.createTempFile("JPEG_${timestamp}_", ".jpg", filesDir).apply {
             // Save a file: path for use with ACTION_VIEW intents
             currentPhotoPath = absolutePath
         }
     }
 
-    private fun hasPermissions(permissions: List<String>): Boolean {
-        return if (permissions.all {
-                ActivityCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
-            }) {
-            true
-        } else {
-            askPermissions(permissions)
-            false
+    private fun hasPermissions(vararg permissions: String): Boolean {
+        return permissions.all {
+            ActivityCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
         }
     }
 
-    private fun askPermissions(permissions: List<String>) {
+    private fun askPermissions(
+        vararg permissions: String,
+        code: PermissionCode = PermissionCode.DEFAULT
+    ) {
         permissions.forEach {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, it)) {
                 showPermissionRationale(it)
             }
         }
-        ActivityCompat.requestPermissions(
-            this,
-            permissions.toTypedArray(),
-            PermissionCode.DEFAULT.value
-        )
+        ActivityCompat.requestPermissions(this, permissions, code.value)
     }
 
     private fun showPermissionRationale(permission: String) {
@@ -319,9 +341,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     private fun showDefaultPermissionsRationale() = Toast.makeText(
-        this,
-        R.string.permission_rationale_default,
-        Toast.LENGTH_LONG
+        this, R.string.permission_rationale_default, Toast.LENGTH_LONG
     ).apply {
         setGravity(Gravity.CENTER, 0, 0)
         show()

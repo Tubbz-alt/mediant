@@ -25,12 +25,10 @@ class ThreadsPagerAdapter(private val context: Context, fm: FragmentManager) :
 
     private val currentFragments = mutableListOf<ThreadFragment>()
 
-    override fun getItem(position: Int): ThreadFragment {
-        return TABS[position].instance.invoke()
-    }
+    override fun getItem(position: Int): ThreadFragment = TABS[position].instance.invoke()
 
-    override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        return super.instantiateItem(container, position).also { fragment ->
+    override fun instantiateItem(container: ViewGroup, position: Int) =
+        super.instantiateItem(container, position).also { fragment ->
             fragment as ThreadFragment
             when (position) {
                 0 -> TextileWrapper.apply {
@@ -50,22 +48,16 @@ class ThreadsPagerAdapter(private val context: Context, fm: FragmentManager) :
             }
             currentFragments.add(position, fragment)
         }
-    }
 
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
         super.destroyItem(container, position, `object`)
         currentFragments.removeAt(position)
     }
 
-    override fun getPageTitle(position: Int): CharSequence? {
-        return context.resources.getString(TABS[position].title)
-    }
+    override fun getPageTitle(position: Int): CharSequence? =
+        context.resources.getString(TABS[position].title)
 
-    override fun getCount(): Int {
-        return TABS.size
-    }
+    override fun getCount() = TABS.size
 
-    fun smoothScrollToTop(threadIndex: Int) {
-        currentFragments[threadIndex].smoothScrollToTop()
-    }
+    fun smoothScrollToTop(threadIndex: Int) = currentFragments[threadIndex].smoothScrollToTop()
 }

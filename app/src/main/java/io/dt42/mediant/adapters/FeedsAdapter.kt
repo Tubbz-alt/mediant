@@ -3,6 +3,7 @@ package io.dt42.mediant.adapters
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,7 @@ import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SortedList
 import com.google.protobuf.Timestamp
+import com.google.protobuf.util.Timestamps
 import io.dt42.mediant.R
 import io.dt42.mediant.activities.PROOF_BUNDLE_EXTRA
 import io.dt42.mediant.activities.ProofActivity
@@ -27,42 +29,25 @@ class FeedsAdapter(private val context: Context, @LayoutRes private val resource
     RecyclerView.Adapter<FeedsAdapter.FeedViewHolder>() {
 
     val feeds = SortedList<Feed>(Feed::class.java, object : SortedList.Callback<Feed>() {
-        override fun areItemsTheSame(item1: Feed, item2: Feed): Boolean {
-            return item1 == item2
-        }
-
-        override fun areContentsTheSame(oldItem: Feed, newItem: Feed): Boolean {
-            return oldItem == newItem
-        }
-
-        override fun compare(o1: Feed, o2: Feed): Int {
-            return o1.compareTo(o2)
-        }
-
-        override fun onChanged(position: Int, count: Int) {
-            notifyItemRangeChanged(position, count)
-        }
-
-        override fun onInserted(position: Int, count: Int) {
+        override fun areItemsTheSame(item1: Feed, item2: Feed) = item1 == item2
+        override fun areContentsTheSame(oldItem: Feed, newItem: Feed) = oldItem == newItem
+        override fun compare(o1: Feed, o2: Feed) = o1.compareTo(o2)
+        override fun onChanged(position: Int, count: Int) = notifyItemRangeChanged(position, count)
+        override fun onInserted(position: Int, count: Int) =
             notifyItemRangeInserted(position, count)
-        }
 
-        override fun onMoved(fromPosition: Int, toPosition: Int) {
+        override fun onMoved(fromPosition: Int, toPosition: Int) =
             notifyItemMoved(fromPosition, toPosition)
-        }
 
-        override fun onRemoved(position: Int, count: Int) {
-            notifyItemRangeRemoved(position, count)
-        }
+        override fun onRemoved(position: Int, count: Int) = notifyItemRangeRemoved(position, count)
     })
 
     override fun getItemCount() = feeds.size()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedViewHolder {
-        return LayoutInflater.from(parent.context).inflate(resource, parent, false).let {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+        LayoutInflater.from(parent.context).inflate(resource, parent, false).let {
             FeedViewHolder(it)
         }
-    }
 
     override fun onBindViewHolder(holder: FeedViewHolder, position: Int) {
         holder.apply {
@@ -91,10 +76,14 @@ class FeedsAdapter(private val context: Context, @LayoutRes private val resource
 }
 
 fun convertToFormattedString(timestamp: Timestamp): String {
-    val formatter = DateTimeFormatter
-        .ofLocalizedDateTime(FormatStyle.MEDIUM)
-        .withLocale(Locale.getDefault())
-        .withZone(ZoneId.systemDefault())
-    val instant = Instant.ofEpochSecond(timestamp.seconds, timestamp.nanos.toLong())
-    return formatter.format(instant)
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val formatter = DateTimeFormatter
+            .ofLocalizedDateTime(FormatStyle.MEDIUM)
+            .withLocale(Locale.getDefault())
+            .withZone(ZoneId.systemDefault())
+        val instant = Instant.ofEpochSecond(timestamp.seconds, timestamp.nanos.toLong())
+        formatter.format(instant)
+    } else {
+        Timestamps.toString(timestamp)
+    }
 }
