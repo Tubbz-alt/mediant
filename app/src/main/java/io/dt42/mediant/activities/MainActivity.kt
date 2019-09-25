@@ -17,11 +17,13 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import com.google.android.material.tabs.TabLayout
 import com.google.gson.Gson
+import io.dt42.mediant.BuildConfig.LOG_TO_FILE
 import io.dt42.mediant.R
 import io.dt42.mediant.adapters.ThreadsPagerAdapter
 import io.dt42.mediant.models.ProofBundle
 import io.dt42.mediant.wrappers.TextileWrapper
 import io.dt42.mediant.wrappers.ZionWrapper
+import io.textile.pb.Model
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import org.witness.proofmode.ProofMode
@@ -40,7 +42,6 @@ private val DEFAULT_PERMISSIONS = arrayOf(
     Manifest.permission.ACCESS_FINE_LOCATION
 )
 private const val LOGGING_PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE
-private const val LOG_TO_FILE = false
 
 private const val CAMERA_REQUEST_CODE = 0
 private const val CURRENT_PHOTO_PATH = "CURRENT_PHOTO_PATH"
@@ -50,8 +51,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private var currentPhotoPath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (hasPermissions(LOGGING_PERMISSION)) initLogger(LOG_TO_FILE)
-        else askPermissions(LOGGING_PERMISSION, code = PermissionCode.LOGGING)
+        @Suppress("ConstantConditionIf")
+        if (LOG_TO_FILE) {
+            if (hasPermissions(LOGGING_PERMISSION)) initLogger()
+            else askPermissions(LOGGING_PERMISSION, code = PermissionCode.LOGGING)
+        }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
@@ -61,19 +65,17 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         handleIntent(intent)
     }
 
-    private fun initLogger(logToFile: Boolean) {
-        if (logToFile) {
-            Log.d(TAG, "Initialize logger to file: ${getExternalFilesDir(null)}/log")
-            getExternalFilesDir(null)?.also {
-                val logDir = File(it.absolutePath + "/log")
-                val logFile = File(logDir, "logcat${System.currentTimeMillis()}.txt")
-                if (!logDir.exists()) logDir.mkdir()
-                try {
-                    Runtime.getRuntime().exec("logcat -c")
-                    Runtime.getRuntime().exec("logcat -f $logFile")
-                } catch (e: IOException) {
-                    Log.e(TAG, Log.getStackTraceString(e))
-                }
+    private fun initLogger() {
+        Log.d(TAG, "Initialize logger to file: ${getExternalFilesDir(null)}/log")
+        getExternalFilesDir(null)?.also {
+            val logDir = File(it.absolutePath + "/log")
+            val logFile = File(logDir, "logcat${System.currentTimeMillis()}.txt")
+            if (!logDir.exists()) logDir.mkdir()
+            try {
+                Runtime.getRuntime().exec("logcat -c")
+                Runtime.getRuntime().exec("logcat -f $logFile")
+            } catch (e: IOException) {
+                Log.e(TAG, Log.getStackTraceString(e))
             }
         }
     }
@@ -127,34 +129,34 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private fun acceptExternalInvite(uri: Uri) = launch(Dispatchers.IO) {
         val uriWithoutFragment = Uri.parse(uri.toString().replaceFirst('#', '?'))
-        var newPublicThreadId: String? = null
         TextileWrapper.apply {
             invokeWhenNodeOnline {
                 try {
                     acceptExternalInvitation(
                         uriWithoutFragment.getQueryParameter("id")!!,
                         uriWithoutFragment.getQueryParameter("key")!!
-                    )?.also { newPublicThreadId = it.id }
-                    // TODO:
-//                        ?: launch(Dispatchers.Main) {
-//                        val msg = "You have already joined the thread"
-//                        Log.i(TAG, msg)
-//                        Toast.makeText(this@MainActivity, msg, Toast.LENGTH_LONG).show()
-//                    }
+                    ).also { updatePublicThreadId(it) }
                 } catch (e: Exception) {
                     val msg = "Accepting invitation with an error. Try again might help."
                     Log.e(TAG, Log.getStackTraceString(e))
                     launch(Dispatchers.Main) {
                         Toast.makeText(this@MainActivity, msg, Toast.LENGTH_LONG).show()
                     }
-                } finally {
-                    newPublicThreadId?.also {
-                        publicThreadId?.let { oldPublicThreadId -> removeThread(oldPublicThreadId) }
-                        publicThreadId = it
-                        Log.i(TAG, "New public thread ID: $publicThreadId")
-                    }
                 }
             }
+        }
+    }
+
+    private fun updatePublicThreadId(newThread: Model.Thread?) {
+        if (newThread != null) {
+            TextileWrapper.publicThreadId?.also { TextileWrapper.removeThread(it) }
+            TextileWrapper.publicThreadId = newThread.id
+            Log.i(TAG, "New public thread ID: ${TextileWrapper.publicThreadId}")
+            viewPager.currentItem = 0
+        } else launch(Dispatchers.Main) {
+            val msg = "You have already joined the thread"
+            Log.i(TAG, msg)
+            Toast.makeText(this@MainActivity, msg, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -276,7 +278,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
             PermissionCode.LOGGING.value -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    initLogger(LOG_TO_FILE)
+                    initLogger()
                 } else showPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }
         }
