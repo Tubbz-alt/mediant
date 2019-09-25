@@ -40,9 +40,7 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_thread, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_thread, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -71,15 +69,11 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
 
     suspend fun refreshFeeds(threadId: String) = withContext(Dispatchers.IO) {
         this@ThreadFragment.threadId = threadId
-        withContext(Dispatchers.Main) {
-            feedsAdapter.feeds.clear()
-            feedsAdapter.feeds.beginBatchedUpdates()
-        }
+        withContext(Dispatchers.Main) { feedsAdapter.feeds.clear() }
         TextileWrapper.listFeeds(threadId).forEachIndexed { index, it ->
             Log.i(TAG, "Feed ($index)\ttype: ${it.type}\tblock: ${it.block}")
             addFeed(it)
         }
-        withContext(Dispatchers.Main) { feedsAdapter.feeds.endBatchedUpdates() }
     }
 
     suspend fun addFeed(feedItemData: FeedItemData) = withContext(Dispatchers.IO) {
@@ -92,9 +86,8 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
                 }
 
                 try {
-                    TextileWrapper.getImageContent("$data/$fileIndex", 500).also {
-                        addFeed(Feed(user.name, date, it, caption))
-                    }
+                    val data = TextileWrapper.getImageContent("$data/$fileIndex", 500)
+                    addFeed(Feed(user.name, date, data, caption))
                 } catch (e: Exception) {
                     Log.e(TAG, Log.getStackTraceString(e))
                 }
@@ -106,10 +99,8 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
         if (feedsAdapter.feeds.add(feed) == 0) smoothScrollToTop()
     }
 
-    fun smoothScrollToTop() {
-        recyclerView.layoutManager?.startSmoothScroll(object :
-            LinearSmoothScroller(context) {
-            override fun getVerticalSnapPreference() = SNAP_TO_START
-        }.apply { targetPosition = 0 })
-    }
+    fun smoothScrollToTop() = recyclerView.layoutManager?.startSmoothScroll(object :
+        LinearSmoothScroller(context) {
+        override fun getVerticalSnapPreference() = SNAP_TO_START
+    }.apply { targetPosition = 0 })
 }

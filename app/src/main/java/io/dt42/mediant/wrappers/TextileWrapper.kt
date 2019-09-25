@@ -81,9 +81,10 @@ object TextileWrapper {
      * Threads
      *-----------------------------------------*/
     fun logThreads() {
-        val threadList = Textile.instance().threads.list()
-        for (i in 0 until threadList.itemsCount) {
-            Log.i(TAG, "${threadList.getItems(i).id}: ${threadList.getItems(i).blockCount}")
+        Textile.instance().threads.list().apply {
+            for (i in 0 until itemsCount) {
+                Log.i(TAG, "Thread ${getItems(i).id}: ${getItems(i).blockCount}")
+            }
         }
     }
 
@@ -115,21 +116,16 @@ object TextileWrapper {
         return Textile.instance().threads.add(config)
     }
 
-    fun removeThread(threadId: String) {
-        Textile.instance().threads.remove(threadId)
-    }
+    fun removeThread(threadId: String): String = Textile.instance().threads.remove(threadId)
 
     private fun findParentThread(blockId: String): Model.Thread {
         // TODO: We should use block API instead of feed_personal API after block API has been implemented.
         // https://github.com/textileio/android-textile/issues/15
-        if (blockId == "") throw NoSuchElementException("You have already joined the thread.")
         val threadList = Textile.instance().threads.list()
         for (i in 0 until threadList.itemsCount) {
             val threadItem = threadList.getItems(i)
             listFeeds(threadItem.id).forEach {
-                if (it.block == blockId) {
-                    return threadItem
-                }
+                if (it.block == blockId) return threadItem
             }
         }
         throw NoSuchElementException("Cannot find the block ($blockId) via feed_personal API.")
@@ -140,11 +136,11 @@ object TextileWrapper {
      *-----------------------------------------*/
 
     fun listFeeds(threadId: String): ArrayList<FeedItemData> {
-        val request = View.FeedRequest.newBuilder()
+        return View.FeedRequest.newBuilder()
             .setThread(threadId)
             .setLimit(REQUEST_LIMIT)
             .build()
-        return Textile.instance().feed.list(request)
+            .let { Textile.instance().feed.list(it) }
     }
 
     /*-------------------------------------------
@@ -196,12 +192,11 @@ object TextileWrapper {
     /**
      * Accept invitation sent from Textile Photo
      */
-    fun acceptExternalInvitation(inviteId: String, key: String): Model.Thread {
+    fun acceptExternalInvitation(inviteId: String, key: String): Model.Thread? {
         Log.i(TAG, "Accepting invitation: $inviteId with key $key")
         val newBlockHash = Textile.instance().invites.acceptExternal(inviteId, key)
-        return findParentThread(newBlockHash).apply {
-            Log.i(TAG, "Join to thread: $id")
-        }
+        if (newBlockHash == "") return null
+        return findParentThread(newBlockHash).apply { Log.i(TAG, "Join to thread: $id") }
     }
 
     /*-------------------------------------------
@@ -231,9 +226,8 @@ object TextileWrapper {
      * @param callback the callback function
      */
     fun invokeWhenNodeOnline(callback: () -> Unit) {
-        if (isOnline) {
-            callback.invoke()
-        } else {
+        if (isOnline) callback.invoke()
+        else {
             Textile.instance().addEventListener(object : BaseTextileEventListener() {
                 override fun nodeOnline() {
                     super.nodeOnline()
@@ -247,9 +241,7 @@ object TextileWrapper {
         Textile.instance().addEventListener(object : BaseTextileEventListener() {
             override fun threadUpdateReceived(threadId: String, feedItemData: FeedItemData) {
                 super.threadUpdateReceived(threadId, feedItemData)
-                if (threadId == personalThreadId) {
-                    callback.invoke(feedItemData)
-                }
+                if (threadId == personalThreadId) callback.invoke(feedItemData)
             }
         })
     }
@@ -258,18 +250,14 @@ object TextileWrapper {
         Textile.instance().addEventListener(object : BaseTextileEventListener() {
             override fun threadUpdateReceived(threadId: String, feedItemData: FeedItemData) {
                 super.threadUpdateReceived(threadId, feedItemData)
-                if (threadId == publicThreadId) {
-                    callback.invoke(feedItemData)
-                }
+                if (threadId == publicThreadId) callback.invoke(feedItemData)
             }
         })
     }
 
-    fun addOnPersonalThreadIdChangedListener(callback: () -> Unit) {
+    fun addOnPersonalThreadIdChangedListener(callback: () -> Unit) =
         onPersonalThreadIdChangeListeners.add(callback)
-    }
 
-    fun addOnPublicThreadIdChangedListener(callback: () -> Unit) {
+    fun addOnPublicThreadIdChangedListener(callback: () -> Unit) =
         onPublicThreadIdChangeListeners.add(callback)
-    }
 }

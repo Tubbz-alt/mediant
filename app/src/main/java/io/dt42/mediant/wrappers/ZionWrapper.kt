@@ -95,10 +95,7 @@ object ZionWrapper : CoroutineScope by MainScope() {
         uniqueId?.also {
             when (val result = zkma.createSeed(it)) {
                 RESULT.SUCCESS -> {
-                    Log.i(
-                        TAG,
-                        "Eth sendPublicKey: ${zkma.getSendPublicKey(it, ETHEREUM_TYPE).key}"
-                    )
+                    Log.i(TAG, "Eth sendPublicKey: ${zkma.getSendPublicKey(it, ETHEREUM_TYPE).key}")
                     Log.i(
                         TAG,
                         "Eth receivePublicKey ${zkma.getReceivePublicKey(it, ETHEREUM_TYPE).key}"
@@ -111,9 +108,8 @@ object ZionWrapper : CoroutineScope by MainScope() {
     }
 
     fun getHashFromString(str: String): String {
-        val bytes = str.toByteArray()
         val messageDigest = MessageDigest.getInstance("SHA-256")
-        val digest = messageDigest.digest(bytes)
+        val digest = messageDigest.digest(str.toByteArray())
         return digest.fold("", { s, it -> s + "%02x".format(it) })
     }
 
