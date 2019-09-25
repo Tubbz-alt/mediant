@@ -24,7 +24,7 @@ class ProofActivity : AppCompatActivity() {
     private fun handleIntent(intent: Intent) {
         intent.extras?.getString(PROOF_BUNDLE_EXTRA)?.also { proofBundleJson ->
             try {
-                Gson().fromJson(proofBundleJson, ProofBundle::class.java).also {
+                Gson().fromJson(proofBundleJson, ProofBundle::class.java)?.also {
                     proof.text = it.proof
                     mediaSignature.text = it.mediaSignature
                     proofSignature.text = it.proofSignature

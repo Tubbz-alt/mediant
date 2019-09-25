@@ -3,7 +3,6 @@ package io.dt42.mediant.adapters
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,16 +12,12 @@ import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SortedList
-import com.google.protobuf.Timestamp
-import com.google.protobuf.util.Timestamps
 import io.dt42.mediant.R
 import io.dt42.mediant.activities.PROOF_BUNDLE_EXTRA
 import io.dt42.mediant.activities.ProofActivity
 import io.dt42.mediant.models.Feed
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
+import io.textile.textile.Util.timestampToDate
+import java.text.SimpleDateFormat
 import java.util.*
 
 class FeedsAdapter(private val context: Context, @LayoutRes private val resource: Int) :
@@ -52,7 +47,9 @@ class FeedsAdapter(private val context: Context, @LayoutRes private val resource
     override fun onBindViewHolder(holder: FeedViewHolder, position: Int) {
         holder.apply {
             username.text = feeds[position].username
-            date.text = convertToFormattedString(feeds[position].date)
+            date.text = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(
+                timestampToDate(feeds[position].date)
+            )
             feeds[position].data?.also {
                 image.setImageBitmap(BitmapFactory.decodeByteArray(it, 0, it.size))
             }
@@ -73,17 +70,4 @@ class FeedsAdapter(private val context: Context, @LayoutRes private val resource
         val showProofButton: ImageButton = itemView.findViewById(R.id.showProofButton)
     }
 
-}
-
-fun convertToFormattedString(timestamp: Timestamp): String {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val formatter = DateTimeFormatter
-            .ofLocalizedDateTime(FormatStyle.MEDIUM)
-            .withLocale(Locale.getDefault())
-            .withZone(ZoneId.systemDefault())
-        val instant = Instant.ofEpochSecond(timestamp.seconds, timestamp.nanos.toLong())
-        formatter.format(instant)
-    } else {
-        Timestamps.toString(timestamp)
-    }
 }

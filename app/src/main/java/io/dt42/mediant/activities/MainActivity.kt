@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     override fun onCreate(savedInstanceState: Bundle?) {
         @Suppress("ConstantConditionIf")
         if (LOG_TO_FILE) {
-            if (hasPermissions(LOGGING_PERMISSION)) initLogger()
+            if (hasPermissions(LOGGING_PERMISSION)) initFileLogger()
             else askPermissions(LOGGING_PERMISSION, code = PermissionCode.LOGGING)
         }
         super.onCreate(savedInstanceState)
@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         handleIntent(intent)
     }
 
-    private fun initLogger() {
+    private fun initFileLogger() {
         Log.d(TAG, "Initialize logger to file: ${getExternalFilesDir(null)}/log")
         getExternalFilesDir(null)?.also {
             val logDir = File(it.absolutePath + "/log")
@@ -278,7 +278,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
             PermissionCode.LOGGING.value -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    initLogger()
+                    initFileLogger()
                 } else showPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }
         }
