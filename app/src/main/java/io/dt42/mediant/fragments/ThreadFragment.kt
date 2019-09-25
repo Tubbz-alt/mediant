@@ -69,6 +69,8 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
 
     suspend fun refreshFeeds(threadId: String) = withContext(Dispatchers.IO) {
         this@ThreadFragment.threadId = threadId
+        TextileWrapper.snapshotAllThreads()
+        TextileWrapper.checkCafeMessagesAsync()
         withContext(Dispatchers.Main) { feedsAdapter.feeds.clear() }
         TextileWrapper.listFeeds(threadId).forEachIndexed { index, it ->
             Log.i(TAG, "Feed ($index)\ttype: ${it.type}\tblock: ${it.block}")

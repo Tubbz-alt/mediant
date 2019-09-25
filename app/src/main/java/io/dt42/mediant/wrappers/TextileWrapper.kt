@@ -131,6 +131,9 @@ object TextileWrapper {
         throw NoSuchElementException("Cannot find the block ($blockId) via feed_personal API.")
     }
 
+    // TODO: Snapshot all threads and sync them to registered cafes, but it seems to be useless...
+    fun snapshotAllThreads() = Textile.instance().threads.snapshot()
+
     /*-------------------------------------------
      * Feeds
      *-----------------------------------------*/
@@ -202,19 +205,28 @@ object TextileWrapper {
     /*-------------------------------------------
      * Cafes
      *-----------------------------------------*/
-    private fun addCafe(url: String, token: String) {
-        Textile.instance().cafes.register(
-            url, token,
-            object : Handlers.ErrorHandler {
-                override fun onComplete() {
-                    Log.i(TAG, "Add Cafe ($url) successfully.")
-                }
+    private fun addCafe(url: String, token: String) = Textile.instance().cafes.register(
+        url, token, object : Handlers.ErrorHandler {
+            override fun onComplete() {
+                Log.i(TAG, "Add Cafe ($url) successfully.")
+            }
 
-                override fun onError(e: Exception?) {
-                    Log.e(TAG, "Add Cafe with error: " + Log.getStackTraceString(e))
-                }
-            })
-    }
+            override fun onError(e: Exception?) {
+                Log.e(TAG, "Add Cafe with error: " + Log.getStackTraceString(e))
+            }
+        })
+
+    // TODO: Check all registered cafe for messages, but it seems to be useless...
+    fun checkCafeMessagesAsync() =
+        Textile.instance().cafes.checkMessages(object : Handlers.ErrorHandler {
+            override fun onComplete() {
+                Log.i(TAG, "Checking all registered cafes successfully completes.")
+            }
+
+            override fun onError(e: java.lang.Exception?) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        })
 
     /*-------------------------------------------
      * Utils

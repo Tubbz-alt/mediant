@@ -121,6 +121,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             intent.data?.also {
                 if (it.toString().startsWith("https://www.textile.photos/invites/new")) {
                     Toast.makeText(this, "Try to accept invitation", Toast.LENGTH_LONG).show()
+                    TextileWrapper.checkCafeMessagesAsync()
                     acceptExternalInvite(it)
                 } else Log.e(TAG, "Failed to parse invitation acceptance: $it")
             }
@@ -147,12 +148,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         }
     }
 
+
     private fun updatePublicThreadId(newThread: Model.Thread?) {
         if (newThread != null) {
             TextileWrapper.publicThreadId?.also { TextileWrapper.removeThread(it) }
             TextileWrapper.publicThreadId = newThread.id
             Log.i(TAG, "New public thread ID: ${TextileWrapper.publicThreadId}")
-            viewPager.currentItem = 0
+            TextileWrapper.snapshotAllThreads()
+            launch(Dispatchers.Main) { viewPager.currentItem = 0 }
         } else launch(Dispatchers.Main) {
             val msg = "You have already joined the thread"
             Log.i(TAG, msg)
@@ -227,6 +230,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     Log.e(TAG, Log.getStackTraceString(e))
                 }
             }
+            snapshotAllThreads()
         }
     }
 
