@@ -20,10 +20,12 @@ import io.textile.textile.FeedItemType
 import kotlinx.android.synthetic.main.fragment_thread.*
 import kotlinx.coroutines.*
 
-abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
+class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var threadId: String? = null
-    abstract val layoutResource: Int
+    private val layoutResource = R.layout.feed_personal
+
+    // TODO: use DI
     private lateinit var feedsAdapter: FeedsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,4 +108,9 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
         LinearSmoothScroller(context) {
         override fun getVerticalSnapPreference() = SNAP_TO_START
     }.apply { targetPosition = 0 })
+
+    companion object {
+        @JvmStatic
+        fun newInstance() = ThreadFragment()
+    }
 }

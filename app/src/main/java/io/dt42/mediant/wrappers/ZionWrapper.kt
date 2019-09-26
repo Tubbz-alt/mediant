@@ -24,6 +24,7 @@ import java.util.*
 private const val DEV_WALLET_NAME = "DEV_WALLET_NAME"
 private const val ETHEREUM_TYPE = 60
 
+// TODO: use DI?
 object ZionWrapper : CoroutineScope by MainScope() {
 
     private lateinit var pref: SharedPreferences

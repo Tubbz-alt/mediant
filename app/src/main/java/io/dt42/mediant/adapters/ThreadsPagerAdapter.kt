@@ -5,8 +5,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import io.dt42.mediant.R
-import io.dt42.mediant.fragments.PersonalThreadFragment
-import io.dt42.mediant.fragments.PublicThreadFragment
 import io.dt42.mediant.fragments.ThreadFragment
 import io.dt42.mediant.wrappers.TextileWrapper
 import kotlinx.coroutines.CoroutineScope
@@ -16,8 +14,8 @@ import kotlinx.coroutines.launch
 data class Tab(val title: Int, val instance: () -> ThreadFragment)
 
 private val TABS = listOf(
-    Tab(R.string.feed) { PublicThreadFragment.newInstance() },
-    Tab(R.string.storage) { PersonalThreadFragment.newInstance() }
+    Tab(R.string.feed) { ThreadFragment.newInstance() },
+    Tab(R.string.storage) { ThreadFragment.newInstance() }
 )
 
 class ThreadsPagerAdapter(private val context: Context, fm: FragmentManager) :

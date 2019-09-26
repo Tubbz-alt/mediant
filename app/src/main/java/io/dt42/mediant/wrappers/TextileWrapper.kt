@@ -24,6 +24,7 @@ private const val REQUEST_LIMIT = 999
 private const val DEV_CAFE_URL = "https://us-west-dev.textile.cafe"
 private const val DEV_CAFE_TOKEN = "uggU4NcVGFSPchULpa2zG2NRjw2bFzaiJo3BYAgaFyzCUPRLuAgToE3HXPyo"
 
+// TODO: use DI?
 object TextileWrapper {
 
     private lateinit var pref: SharedPreferences

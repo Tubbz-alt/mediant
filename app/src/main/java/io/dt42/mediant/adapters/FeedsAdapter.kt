@@ -23,6 +23,8 @@ import java.util.*
 class FeedsAdapter(private val context: Context, @LayoutRes private val resource: Int) :
     RecyclerView.Adapter<FeedsAdapter.FeedViewHolder>() {
 
+    // TODO: replace Feed with FeedItemData
+    // TODO: use DI
     val feeds = SortedList<Feed>(Feed::class.java, object : SortedList.Callback<Feed>() {
         override fun areItemsTheSame(item1: Feed, item2: Feed) = item1 == item2
         override fun areContentsTheSame(oldItem: Feed, newItem: Feed) = oldItem == newItem
@@ -63,6 +65,7 @@ class FeedsAdapter(private val context: Context, @LayoutRes private val resource
             context.startActivity(this)
         }
 
+    // TODO: use DI
     class FeedViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val username: TextView = itemView.findViewById(R.id.username)
         val date: TextView = itemView.findViewById(R.id.date)
