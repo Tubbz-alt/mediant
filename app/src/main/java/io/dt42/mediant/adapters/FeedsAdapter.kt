@@ -53,7 +53,6 @@ class FeedsAdapter(private val context: Context, @LayoutRes private val resource
             feeds[position].data?.also {
                 image.setImageBitmap(BitmapFactory.decodeByteArray(it, 0, it.size))
             }
-            publishButton.setOnClickListener { }
             showProofButton.setOnClickListener { dispatchProofActivityIntent(feeds[position].caption) }
         }
     }
@@ -68,7 +67,6 @@ class FeedsAdapter(private val context: Context, @LayoutRes private val resource
         val username: TextView = itemView.findViewById(R.id.username)
         val date: TextView = itemView.findViewById(R.id.date)
         val image: ImageView = itemView.findViewById(R.id.image)
-        val publishButton: ImageButton = itemView.findViewById(R.id.publishButton)
         val showProofButton: ImageButton = itemView.findViewById(R.id.showProofButton)
     }
 
