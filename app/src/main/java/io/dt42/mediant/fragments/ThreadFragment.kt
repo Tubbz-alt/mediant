@@ -13,7 +13,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import io.dt42.mediant.R
 import io.dt42.mediant.activities.TAG
 import io.dt42.mediant.adapters.FeedsAdapter
-import io.dt42.mediant.models.Feed
 import io.dt42.mediant.wrappers.TextileWrapper
 import io.textile.textile.FeedItemData
 import io.textile.textile.FeedItemType
@@ -78,28 +77,10 @@ abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
         }
     }
 
-    suspend fun addFeed(feedItemData: FeedItemData) = withContext(Dispatchers.IO) {
+    suspend fun addFeed(feedItemData: FeedItemData) = withContext(Dispatchers.Main) {
         if (feedItemData.type == FeedItemType.FILES) {
-//            feedItemData.files.filesList[0].file.hash
-            feedItemData.files.apply {
-                val fileIndex = filesList.let {
-                    if (it != null && it.size > 0 && it[0].index != 0) it[0].index
-                    else 0
-                }
-
-                try {
-                    val data = TextileWrapper.getImageContent("$data/$fileIndex", 500)
-                    // TODO: remove Feed class. Use FeedItemData directly.
-                    addFeed(Feed(user.name, date, data, caption))
-                } catch (e: Exception) {
-                    Log.e(TAG, Log.getStackTraceString(e))
-                }
-            }
+            if (feedsAdapter.feeds.add(feedItemData) == 0) smoothScrollToTop()
         }
-    }
-
-    private suspend fun addFeed(feed: Feed) = withContext(Dispatchers.Main) {
-        if (feedsAdapter.feeds.add(feed) == 0) smoothScrollToTop()
     }
 
     fun smoothScrollToTop() = recyclerView.layoutManager?.startSmoothScroll(object :

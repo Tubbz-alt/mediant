@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             TextileWrapper.publicThreadId = newThread.id
             Log.i(TAG, "New public thread ID: ${TextileWrapper.publicThreadId}")
             TextileWrapper.snapshotAllThreads()
-            launch(Dispatchers.Main) { viewPager.currentItem = 0 }
+            launch(Dispatchers.Main) { showPublicThread() }
         } else launch(Dispatchers.Main) {
             val msg = "You have already joined the thread"
             Log.i(TAG, msg)
@@ -198,7 +198,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 if (resultCode == Activity.RESULT_OK) {
                     currentPhotoPath?.also {
                         uploadFeed(it)
-                        viewPager.currentItem = 1
+                        showPersonalThread()
                     }
                 }
             }
@@ -342,5 +342,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     ).apply {
         setGravity(Gravity.CENTER, 0, 0)
         show()
+    }
+
+    fun showPublicThread() {
+        viewPager.currentItem = 0
+    }
+
+    fun showPersonalThread() {
+        viewPager.currentItem = 1
     }
 }

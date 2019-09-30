@@ -24,7 +24,6 @@ private const val REQUEST_LIMIT = 999
 private const val DEV_CAFE_URL = "https://us-west-dev.textile.cafe"
 private const val DEV_CAFE_TOKEN = "uggU4NcVGFSPchULpa2zG2NRjw2bFzaiJo3BYAgaFyzCUPRLuAgToE3HXPyo"
 
-// TODO: use DI?
 object TextileWrapper {
 
     private lateinit var pref: SharedPreferences
@@ -157,12 +156,17 @@ object TextileWrapper {
                 })
         }
 
-    suspend fun getImageContent(path: String, minWidth: Long) =
+    suspend fun getImageContent(files: View.Files, minWidth: Long = 500) =
         suspendCoroutine<ByteArray?> { continuation ->
+            val fileIndex = files.filesList.let {
+                if (it != null && it.size > 0 && it[0].index != 0) it[0].index
+                else 0
+            }
+
             // imageContentForMinWidth usage: (Textile has not documented)
             // https://github.com/textileio/photos/blob/master/App/Components/authoring-input.tsx#L184
             Textile.instance().files.imageContentForMinWidth(
-                path,
+                "${files.data}/$fileIndex",
                 minWidth,
                 object : Handlers.DataHandler {
                     override fun onComplete(data: ByteArray?, media: String?) {
@@ -174,15 +178,18 @@ object TextileWrapper {
                 })
         }
 
-    suspend fun shareFile(hash: String, threadId: String, caption: String) =
+    suspend fun publishFile(hash: String, caption: String) =
         suspendCoroutine<Model.Block> { continuation ->
-            Textile.instance().files.shareFiles(hash, threadId, caption,
+            Textile.instance().files.shareFiles(
+                hash, publicThreadId, caption,
                 object : Handlers.BlockHandler {
                     override fun onComplete(block: Model.Block) = continuation.resume(block)
                     override fun onError(e: java.lang.Exception) =
                         continuation.resumeWithException(e)
                 })
         }
+
+    fun deleteFile(blockId: String) = Textile.instance().ignores.add(blockId)
 
     /*-------------------------------------------
      * Invites

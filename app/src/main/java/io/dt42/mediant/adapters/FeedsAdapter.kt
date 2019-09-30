@@ -3,6 +3,7 @@ package io.dt42.mediant.adapters
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,30 +16,41 @@ import androidx.recyclerview.widget.SortedList
 import io.dt42.mediant.R
 import io.dt42.mediant.activities.PROOF_BUNDLE_EXTRA
 import io.dt42.mediant.activities.ProofActivity
-import io.dt42.mediant.models.Feed
+import io.dt42.mediant.activities.TAG
+import io.dt42.mediant.wrappers.TextileWrapper
+import io.textile.textile.FeedItemData
 import io.textile.textile.Util.timestampToDate
+import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 class FeedsAdapter(@LayoutRes private val resource: Int) :
-    RecyclerView.Adapter<FeedsAdapter.FeedViewHolder>() {
+    RecyclerView.Adapter<FeedsAdapter.FeedViewHolder>(), CoroutineScope by MainScope() {
 
     var context: Context? = null
 
-    // TODO: replace Feed with FeedItemData
-    val feeds = SortedList<Feed>(Feed::class.java, object : SortedList.Callback<Feed>() {
-        override fun areItemsTheSame(item1: Feed, item2: Feed) = item1 == item2
-        override fun areContentsTheSame(oldItem: Feed, newItem: Feed) = oldItem == newItem
-        override fun compare(o1: Feed, o2: Feed) = o1.compareTo(o2)
-        override fun onChanged(position: Int, count: Int) = notifyItemRangeChanged(position, count)
-        override fun onInserted(position: Int, count: Int) =
-            notifyItemRangeInserted(position, count)
+    val feeds = SortedList<FeedItemData>(
+        FeedItemData::class.java,
+        object : SortedList.Callback<FeedItemData>() {
+            override fun areItemsTheSame(item1: FeedItemData, item2: FeedItemData) = item1 == item2
+            override fun areContentsTheSame(oldItem: FeedItemData, newItem: FeedItemData) =
+                oldItem == newItem
 
-        override fun onMoved(fromPosition: Int, toPosition: Int) =
-            notifyItemMoved(fromPosition, toPosition)
+            override fun compare(o1: FeedItemData, o2: FeedItemData) =
+                -timestampToDate(o1.files.date).compareTo(timestampToDate(o2.files.date))
 
-        override fun onRemoved(position: Int, count: Int) = notifyItemRangeRemoved(position, count)
-    })
+            override fun onChanged(position: Int, count: Int) =
+                notifyItemRangeChanged(position, count)
+
+            override fun onInserted(position: Int, count: Int) =
+                notifyItemRangeInserted(position, count)
+
+            override fun onMoved(fromPosition: Int, toPosition: Int) =
+                notifyItemMoved(fromPosition, toPosition)
+
+            override fun onRemoved(position: Int, count: Int) =
+                notifyItemRangeRemoved(position, count)
+        })
 
     override fun getItemCount() = feeds.size()
 
@@ -52,21 +64,41 @@ class FeedsAdapter(@LayoutRes private val resource: Int) :
     }
 
     override fun onBindViewHolder(holder: FeedViewHolder, position: Int) {
-        holder.apply {
-            username.text = feeds[position].username
-            date.text = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(
-                timestampToDate(feeds[position].date)
+        feeds[position].files.apply {
+            holder.username.text = user.name
+            holder.date.text = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(
+                timestampToDate(date)
             )
-            feeds[position].data?.also {
-                image.setImageBitmap(BitmapFactory.decodeByteArray(it, 0, it.size))
+            holder.showProofButton.setOnClickListener { dispatchProofActivityIntent(caption) }
+
+            launch(Dispatchers.IO) {
+                try {
+                    TextileWrapper.getImageContent(this@apply)?.also {
+                        withContext(Dispatchers.Main) {
+                            holder.image.setImageBitmap(
+                                BitmapFactory.decodeByteArray(it, 0, it.size)
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, Log.getStackTraceString(e))
+                }
             }
-            showProofButton.setOnClickListener { dispatchProofActivityIntent(feeds[position].caption) }
-        }
-        if (holder.itemViewType == R.layout.feed_personal) {
-            holder as PersonalFeedViewHolder
-            holder.apply {
-                publishButton.setOnClickListener { }
-                deleteButton.setOnClickListener { }
+
+            if (holder.itemViewType == R.layout.feed_personal) {
+                holder as PersonalFeedViewHolder
+                holder.publishButton.setOnClickListener {
+                    launch { filesList?.also { TextileWrapper.publishFile(data, caption) } }
+                }
+                holder.deleteButton.setOnClickListener {
+                    TextileWrapper.deleteFile(block)
+                    for (i in 0 until feeds.size()) {
+                        if (feeds[i].block == block) {
+                            feeds.remove(feeds[i])
+                            break
+                        }
+                    }
+                }
             }
         }
     }
