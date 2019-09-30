@@ -20,13 +20,10 @@ import io.textile.textile.FeedItemType
 import kotlinx.android.synthetic.main.fragment_thread.*
 import kotlinx.coroutines.*
 
-class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
+abstract class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
 
     private var threadId: String? = null
-    private val layoutResource = R.layout.feed_personal
-
-    // TODO: use DI
-    private lateinit var feedsAdapter: FeedsAdapter
+    abstract val feedsAdapter: FeedsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,9 +43,10 @@ class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        feedsAdapter.context = activity
         recyclerView.apply {
             layoutManager = LinearLayoutManager(activity)
-            adapter = FeedsAdapter(activity!!, layoutResource).also { feedsAdapter = it }
+            adapter = feedsAdapter
         }
         swipeRefreshLayout.setOnRefreshListener(createRefreshListener())
     }
@@ -108,9 +106,4 @@ class ThreadFragment : Fragment(), CoroutineScope by MainScope() {
         LinearSmoothScroller(context) {
         override fun getVerticalSnapPreference() = SNAP_TO_START
     }.apply { targetPosition = 0 })
-
-    companion object {
-        @JvmStatic
-        fun newInstance() = ThreadFragment()
-    }
 }

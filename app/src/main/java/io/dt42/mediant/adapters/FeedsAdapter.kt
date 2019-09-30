@@ -20,11 +20,12 @@ import io.textile.textile.Util.timestampToDate
 import java.text.SimpleDateFormat
 import java.util.*
 
-class FeedsAdapter(private val context: Context, @LayoutRes private val resource: Int) :
+class FeedsAdapter(@LayoutRes private val resource: Int) :
     RecyclerView.Adapter<FeedsAdapter.FeedViewHolder>() {
 
+    var context: Context? = null
+
     // TODO: replace Feed with FeedItemData
-    // TODO: use DI
     val feeds = SortedList<Feed>(Feed::class.java, object : SortedList.Callback<Feed>() {
         override fun areItemsTheSame(item1: Feed, item2: Feed) = item1 == item2
         override fun areContentsTheSame(oldItem: Feed, newItem: Feed) = oldItem == newItem
@@ -41,10 +42,14 @@ class FeedsAdapter(private val context: Context, @LayoutRes private val resource
 
     override fun getItemCount() = feeds.size()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        LayoutInflater.from(parent.context).inflate(resource, parent, false).let {
-            FeedViewHolder(it)
+    override fun getItemViewType(position: Int) = resource
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedViewHolder {
+        return LayoutInflater.from(parent.context).inflate(viewType, parent, false).let {
+            if (viewType == R.layout.feed_personal) PersonalFeedViewHolder(it)
+            else FeedViewHolder(it)
         }
+    }
 
     override fun onBindViewHolder(holder: FeedViewHolder, position: Int) {
         holder.apply {
@@ -57,20 +62,30 @@ class FeedsAdapter(private val context: Context, @LayoutRes private val resource
             }
             showProofButton.setOnClickListener { dispatchProofActivityIntent(feeds[position].caption) }
         }
+        if (holder.itemViewType == R.layout.feed_personal) {
+            holder as PersonalFeedViewHolder
+            holder.apply {
+                publishButton.setOnClickListener { }
+                deleteButton.setOnClickListener { }
+            }
+        }
     }
 
     private fun dispatchProofActivityIntent(proofBundleJson: String) =
         Intent(context, ProofActivity::class.java).apply {
             putExtra(PROOF_BUNDLE_EXTRA, proofBundleJson)
-            context.startActivity(this)
+            context?.startActivity(this)
         }
 
-    // TODO: use DI
-    class FeedViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    open class FeedViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val username: TextView = itemView.findViewById(R.id.username)
         val date: TextView = itemView.findViewById(R.id.date)
         val image: ImageView = itemView.findViewById(R.id.image)
         val showProofButton: ImageButton = itemView.findViewById(R.id.showProofButton)
     }
 
+    class PersonalFeedViewHolder(itemView: View) : FeedViewHolder(itemView) {
+        val publishButton: ImageButton = itemView.findViewById(R.id.publishButton)
+        val deleteButton: ImageButton = itemView.findViewById(R.id.deleteButton)
+    }
 }
