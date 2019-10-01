@@ -1,6 +1,5 @@
 # Mediant
 
-## Information
+Photo-sharing app with only verifiable photos and videos.
 
-* [Project book](https://docs.google.com/spreadsheets/d/1Bnnn1sVpDvghmtKWnTXVusBP_wekR_1J38quPwPTqGQ/edit#gid=0)
-* [Trello Index Card](https://trello.com/c/7Ccg3kam)
+Photos and videos are signed and uploaded to the decentralized storage with their fingerprint. Users can create groups and share the content with friends.
