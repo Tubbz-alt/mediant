@@ -1,14 +1,14 @@
-package io.dt42.mediant.adapters
+package io.numbers.mediant.adapters
 
 import android.content.Context
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
-import io.dt42.mediant.R
-import io.dt42.mediant.fragments.PersonalThreadFragment
-import io.dt42.mediant.fragments.PublicThreadFragment
-import io.dt42.mediant.fragments.ThreadFragment
-import io.dt42.mediant.wrappers.TextileWrapper
+import io.numbers.mediant.R
+import io.numbers.mediant.fragments.PersonalThreadFragment
+import io.numbers.mediant.fragments.PublicThreadFragment
+import io.numbers.mediant.fragments.ThreadFragment
+import io.numbers.mediant.wrappers.TextileWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch

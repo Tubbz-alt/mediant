@@ -1,4 +1,4 @@
-package io.dt42.mediant.fragments
+package io.numbers.mediant.fragments
 
 import android.os.Bundle
 import android.util.Log
@@ -10,10 +10,10 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import io.dt42.mediant.R
-import io.dt42.mediant.activities.TAG
-import io.dt42.mediant.adapters.FeedsAdapter
-import io.dt42.mediant.wrappers.TextileWrapper
+import io.numbers.mediant.R
+import io.numbers.mediant.activities.TAG
+import io.numbers.mediant.adapters.FeedsAdapter
+import io.numbers.mediant.wrappers.TextileWrapper
 import io.textile.textile.FeedItemData
 import io.textile.textile.FeedItemType
 import kotlinx.android.synthetic.main.fragment_thread.*

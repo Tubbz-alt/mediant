@@ -22,7 +22,7 @@
 
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="io.dt42.mediant.fragments.SettingsFragment"
+        android:name="io.numbers.mediant.fragments.SettingsFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />

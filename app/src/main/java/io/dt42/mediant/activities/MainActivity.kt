@@ -1,4 +1,4 @@
-package io.dt42.mediant.activities
+package io.numbers.mediant.activities
 
 import android.Manifest
 import android.app.Activity
@@ -17,12 +17,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import com.google.android.material.tabs.TabLayout
 import com.google.gson.Gson
-import io.dt42.mediant.BuildConfig.LOG_TO_FILE
-import io.dt42.mediant.R
-import io.dt42.mediant.adapters.ThreadsPagerAdapter
-import io.dt42.mediant.models.ProofBundle
-import io.dt42.mediant.wrappers.TextileWrapper
-import io.dt42.mediant.wrappers.ZionWrapper
+import io.numbers.mediant.BuildConfig.LOG_TO_FILE
+import io.numbers.mediant.R
+import io.numbers.mediant.adapters.ThreadsPagerAdapter
+import io.numbers.mediant.models.ProofBundle
+import io.numbers.mediant.wrappers.TextileWrapper
+import io.numbers.mediant.wrappers.ZionWrapper
 import io.textile.pb.Model
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*

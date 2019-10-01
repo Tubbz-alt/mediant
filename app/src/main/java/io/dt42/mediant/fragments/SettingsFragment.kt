@@ -1,8 +1,8 @@
-package io.dt42.mediant.fragments
+package io.numbers.mediant.fragments
 
 import android.os.Bundle
 import androidx.preference.PreferenceFragmentCompat
-import io.dt42.mediant.R
+import io.numbers.mediant.R
 
 class SettingsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) =

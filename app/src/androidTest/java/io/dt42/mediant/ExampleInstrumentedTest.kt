@@ -1,4 +1,4 @@
-package io.dt42.mediant
+package io.numbers.mediant
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -17,6 +17,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("io.dt42.mediant", appContext.packageName)
+        assertEquals("io.numbers.mediant", appContext.packageName)
     }
 }

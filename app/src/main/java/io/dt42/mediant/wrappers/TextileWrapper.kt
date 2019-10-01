@@ -1,12 +1,12 @@
-package io.dt42.mediant.wrappers
+package io.numbers.mediant.wrappers
 
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.preference.PreferenceManager
-import io.dt42.mediant.BuildConfig
-import io.dt42.mediant.R
-import io.dt42.mediant.activities.TAG
+import io.numbers.mediant.BuildConfig
+import io.numbers.mediant.R
+import io.numbers.mediant.activities.TAG
 import io.textile.pb.Model
 import io.textile.pb.Model.Thread.Sharing
 import io.textile.pb.Model.Thread.Type

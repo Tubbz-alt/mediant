@@ -1,7 +1,7 @@
-package io.dt42.mediant.fragments
+package io.numbers.mediant.fragments
 
-import io.dt42.mediant.R
-import io.dt42.mediant.adapters.FeedsAdapter
+import io.numbers.mediant.R
+import io.numbers.mediant.adapters.FeedsAdapter
 
 class PublicThreadFragment : ThreadFragment() {
     override val feedsAdapter = FeedsAdapter(R.layout.feed_public)

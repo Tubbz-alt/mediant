@@ -1,12 +1,12 @@
-package io.dt42.mediant.activities
+package io.numbers.mediant.activities
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.google.gson.JsonParseException
-import io.dt42.mediant.R
-import io.dt42.mediant.models.ProofBundle
+import io.numbers.mediant.R
+import io.numbers.mediant.models.ProofBundle
 import kotlinx.android.synthetic.main.activity_proof.*
 
 const val PROOF_BUNDLE_EXTRA = "PROOF_BUNDLE_EXTRA"

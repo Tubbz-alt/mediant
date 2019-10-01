@@ -1,4 +1,4 @@
-package io.dt42.mediant.adapters
+package io.numbers.mediant.adapters
 
 import android.content.Context
 import android.content.Intent
@@ -13,11 +13,11 @@ import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SortedList
-import io.dt42.mediant.R
-import io.dt42.mediant.activities.PROOF_BUNDLE_EXTRA
-import io.dt42.mediant.activities.ProofActivity
-import io.dt42.mediant.activities.TAG
-import io.dt42.mediant.wrappers.TextileWrapper
+import io.numbers.mediant.R
+import io.numbers.mediant.activities.PROOF_BUNDLE_EXTRA
+import io.numbers.mediant.activities.ProofActivity
+import io.numbers.mediant.activities.TAG
+import io.numbers.mediant.wrappers.TextileWrapper
 import io.textile.textile.FeedItemData
 import io.textile.textile.Util.timestampToDate
 import kotlinx.coroutines.*

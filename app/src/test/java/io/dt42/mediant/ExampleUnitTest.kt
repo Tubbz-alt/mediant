@@ -1,4 +1,4 @@
-package io.dt42.mediant
+package io.numbers.mediant
 
 import org.junit.Test
 

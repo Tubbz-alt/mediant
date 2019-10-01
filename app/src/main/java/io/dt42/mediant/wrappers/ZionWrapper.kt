@@ -1,4 +1,4 @@
-package io.dt42.mediant.wrappers
+package io.numbers.mediant.wrappers
 
 import android.app.AlertDialog
 import android.content.Context
@@ -11,8 +11,8 @@ import androidx.preference.PreferenceManager
 import com.htc.htcwalletsdk.Export.HtcWalletSdkManager
 import com.htc.htcwalletsdk.Export.RESULT
 import com.htc.htcwalletsdk.Native.Type.ByteArrayHolder
-import io.dt42.mediant.R
-import io.dt42.mediant.activities.TAG
+import io.numbers.mediant.R
+import io.numbers.mediant.activities.TAG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope

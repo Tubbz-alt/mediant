@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.dt42.mediant">
+    package="io.numbers.mediant">
 
     <application
         android:allowBackup="true"
@@ -39,7 +39,7 @@
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.dt42.mediant.activities.MainActivity" />
+                android:value="io.numbers.mediant.activities.MainActivity" />
         </activity>
         <activity
             android:name=".activities.ProofActivity"
@@ -48,7 +48,7 @@
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.dt42.mediant.activities.MainActivity" />
+                android:value="io.numbers.mediant.activities.MainActivity" />
         </activity>
 
         <provider
