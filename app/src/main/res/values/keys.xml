@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="pref_key_public_thread_id">publicThreadId</string>
-    <string name="pref_key_personal_thread_id">personalThreadId</string>
-    <string name="pref_key_use_zion">useZion</string>
-</resources>

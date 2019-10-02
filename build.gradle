@@ -5,7 +5,7 @@ buildscript {
     repositories {
         google()
         jcenter()
-
+        
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.0'
@@ -19,9 +19,7 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven { url "https://raw.githubusercontent.com/guardianproject/gpmaven/master" }
-        maven { url 'https://dl.bintray.com/textile/maven' }
-        maven { url 'https://jitpack.io' }
+        
     }
 }
 
