@@ -11,10 +11,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val model = ViewModelProviders.of(this)[MainViewModel::class.java]
+        val viewModel = ViewModelProviders.of(this)[MainViewModel::class.java]
         val binding: ActivityMainBinding =
             DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.lifecycleOwner = this
-        binding.model = model
+        binding.viewModel = viewModel
     }
 }
