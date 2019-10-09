@@ -6,7 +6,9 @@ import dagger.Component
 import dagger.android.AndroidInjectionModule
 import dagger.android.AndroidInjector
 import io.numbers.mediant.App
+import javax.inject.Singleton
 
+@Singleton // AppComponent owns the @Singleton scope.
 @Component(
     modules = [AndroidInjectionModule::class, // required for all Dagger for Android application
         AppModule::class,
