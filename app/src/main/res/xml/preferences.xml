@@ -14,4 +14,10 @@
     <SwitchPreferenceCompat
         app:key="@string/pref_key_use_zion"
         app:title="@string/pref_key_use_zion" />
+    <EditTextPreference
+        app:key="@string/pref_key_public_thread_id"
+        app:title="@string/pref_key_public_thread_id" />
+    <EditTextPreference
+        app:key="@string/pref_key_personal_thread_id"
+        app:title="@string/pref_key_personal_thread_id" />
 </PreferenceScreen>
