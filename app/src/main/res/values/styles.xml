@@ -1,1 +1,7 @@
-<resources />
+<resources>
+
+    <style name="Theme.MyApp" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">#1A1A1A</item>
+        <item name="colorPrimaryDark">#000000</item>
+    </style>
+</resources>

@@ -7,13 +7,13 @@
 
         <variable
             name="viewModel"
-            type="io.numbers.mediant.ui.main.MainViewModel" />
+            type="io.numbers.mediant.ui.main.InitializationViewModel" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.main.MainActivity">
+        tools:context=".ui.main.InitializationActivity">
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
@@ -23,7 +23,6 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
                 app:title="@string/app_name" />
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -32,7 +31,7 @@
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <TextView
                 android:id="@+id/text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -42,7 +41,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <androidx.appcompat.widget.AppCompatButton
+            <Button
                 android:id="@+id/button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

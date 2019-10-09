@@ -3,10 +3,10 @@ package io.numbers.mediant.ui.main
 import androidx.lifecycle.ViewModel
 import io.numbers.mediant.repo.TextileRepository
 import timber.log.Timber
-import javax.inject.Inject
 
-class MainViewModel @Inject constructor(textileRepository: TextileRepository) : ViewModel() {
+class InitializationViewModel : ViewModel() {
 
+    private val textileRepository: TextileRepository = TextileRepository()
     var name = textileRepository.nodeOnline
 
     fun onClick() {
