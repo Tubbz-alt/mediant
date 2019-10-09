@@ -1,4 +1,5 @@
 <resources>
+    <dimen name="default_padding">24dp</dimen>
     <dimen name="default_elevation">4dp</dimen>
     <dimen name="logo_size">70dp</dimen>
 </resources>
