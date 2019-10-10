@@ -13,12 +13,16 @@ import javax.inject.Inject
 // in InitializationActivity.onCreate() method.
 class InitializationActivity : DaggerAppCompatActivity() {
 
+    private lateinit var viewModel: InitializationViewModel
+
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProviderFactory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val viewModel = ViewModelProviders.of(this)[InitializationViewModel::class.java]
+        viewModel = ViewModelProviders.of(
+            this, viewModelProviderFactory
+        )[InitializationViewModel::class.java]
         val binding: ActivityInitializationBinding =
             DataBindingUtil.setContentView(this, R.layout.activity_initialization)
         binding.lifecycleOwner = this
