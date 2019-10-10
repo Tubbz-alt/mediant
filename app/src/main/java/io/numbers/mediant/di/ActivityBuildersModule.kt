@@ -2,7 +2,7 @@ package io.numbers.mediant.di
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
-import io.numbers.mediant.ui.main.InitializationActivity
+import io.numbers.mediant.ui.initialization.InitializationActivity
 
 // Provides all activities as Dagger client.
 

@@ -1,4 +1,4 @@
-package io.numbers.mediant.ui.main
+package io.numbers.mediant.ui.initialization
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

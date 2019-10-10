@@ -1,4 +1,4 @@
-package io.numbers.mediant.ui.main
+package io.numbers.mediant.ui.initialization
 
 import android.os.Bundle
 import androidx.databinding.DataBindingUtil
