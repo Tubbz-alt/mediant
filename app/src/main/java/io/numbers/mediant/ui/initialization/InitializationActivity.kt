@@ -6,10 +6,15 @@ import androidx.lifecycle.ViewModelProviders
 import dagger.android.support.DaggerAppCompatActivity
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.ActivityInitializationBinding
+import io.numbers.mediant.viewmodel.ViewModelProviderFactory
+import javax.inject.Inject
 
 // Extends from DaggerAppCompatActivity so we do NOT need to write `AndroidInjection.inject(this)`
 // in InitializationActivity.onCreate() method.
 class InitializationActivity : DaggerAppCompatActivity() {
+
+    @Inject
+    lateinit var viewModelProviderFactory: ViewModelProviderFactory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -10,9 +10,12 @@ import javax.inject.Singleton
 
 @Singleton // AppComponent owns the @Singleton scope.
 @Component(
-    modules = [AndroidInjectionModule::class, // required for all Dagger for Android application
+    modules = [
+        AndroidInjectionModule::class, // required for all Dagger for Android application
         AppModule::class,
-        ActivityBuildersModule::class]
+        ActivityBuildersModule::class,
+        ViewModelFactoryModule::class
+    ]
 )
 interface AppComponent : AndroidInjector<App> {  // App is a client of AppComponent service
 
