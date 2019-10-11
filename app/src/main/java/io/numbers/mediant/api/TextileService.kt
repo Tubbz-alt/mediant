@@ -1,3 +1,7 @@
 package io.numbers.mediant.api
 
-class TextileService
+import androidx.lifecycle.MutableLiveData
+
+class TextileService {
+    val name = MutableLiveData("hello")
+}

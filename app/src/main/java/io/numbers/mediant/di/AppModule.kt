@@ -1,6 +1,9 @@
 package io.numbers.mediant.di
 
 import dagger.Module
+import dagger.Provides
+import io.numbers.mediant.api.TextileService
+import javax.inject.Singleton
 
 // Provides all application-level dependencies, such as Retrofit, Textile, etc.
 
@@ -15,4 +18,8 @@ class AppModule {
     // @Provides
     // fun provideSomeString() = "some string"
     // ```
+
+    @Singleton
+    @Provides
+    fun provideTextileService() = TextileService()
 }
