@@ -57,6 +57,7 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:enabled="@{viewModel.areInputsEnabled}"
                     android:singleLine="true"
                     android:text="@={viewModel.userName}" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -65,6 +66,7 @@
                 android:id="@+id/button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:enabled="@{viewModel.areInputsEnabled &amp;&amp; viewModel.userNameLength &gt; 0}"
                 android:onClick="@{() -> viewModel.onCreateAccount()}"
                 android:text="@string/create_account"
                 app:layout_constraintBottom_toBottomOf="parent"

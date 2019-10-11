@@ -40,26 +40,19 @@
                 android:layout_height="@dimen/logo_size"
                 android:contentDescription="@string/logo"
                 android:elevation="@dimen/default_elevation"
-                app:layout_constraintBottom_toTopOf="@id/nameInput"
+                app:layout_constraintBottom_toTopOf="@id/userName"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_launcher" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/nameInput"
+            <TextView
+                android:id="@+id/userName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/user_name"
+                android:text="@{viewModel.userName}"
                 app:layout_constraintBottom_toTopOf="@+id/button"
-                app:layout_constraintTop_toBottomOf="@+id/logo">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:singleLine="true"
-                    android:text="@={viewModel.userName}" />
-            </com.google.android.material.textfield.TextInputLayout>
+                app:layout_constraintTop_toBottomOf="@+id/logo" />
 
             <Button
                 android:id="@+id/button"
@@ -70,7 +63,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/nameInput" />
+                app:layout_constraintTop_toBottomOf="@id/userName" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
