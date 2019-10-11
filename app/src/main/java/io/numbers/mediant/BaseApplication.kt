@@ -4,7 +4,7 @@ import dagger.android.DaggerApplication
 import io.numbers.mediant.di.DaggerAppComponent
 import timber.log.Timber
 
-class App : DaggerApplication() {
+class BaseApplication : DaggerApplication() {
 
     // bind application instance `this` to our app component
     override fun applicationInjector() = DaggerAppComponent.builder().application(this).build()

@@ -3,7 +3,10 @@ package io.numbers.mediant.di
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import io.numbers.mediant.di.initialization.InitializationViewModelsModule
+import io.numbers.mediant.di.main.MainModule
+import io.numbers.mediant.di.main.MainViewModelsModule
 import io.numbers.mediant.ui.initialization.InitializationActivity
+import io.numbers.mediant.ui.main.MainActivity
 
 // Provides all activities as Dagger client.
 
@@ -21,6 +24,6 @@ abstract class ActivityBuildersModule {
     // Add new Activities as Dagger client here. Dagger will automatically generate
     // XXXActivitySubcomponents.
 
-//    @ContributesAndroidInjector(modules = [MainViewModelsModule::class, MainModule::class])
-//    abstract fun contributeMainActivity(): MainActivity
+    @ContributesAndroidInjector(modules = [MainViewModelsModule::class, MainModule::class])
+    abstract fun contributeMainActivity(): MainActivity
 }

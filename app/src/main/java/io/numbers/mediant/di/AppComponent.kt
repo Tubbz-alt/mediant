@@ -5,7 +5,7 @@ import dagger.BindsInstance
 import dagger.Component
 import dagger.android.AndroidInjectionModule
 import dagger.android.AndroidInjector
-import io.numbers.mediant.App
+import io.numbers.mediant.BaseApplication
 import javax.inject.Singleton
 
 @Singleton // AppComponent owns the @Singleton scope.
@@ -17,12 +17,13 @@ import javax.inject.Singleton
         ViewModelFactoryModule::class
     ]
 )
-interface AppComponent : AndroidInjector<App> {  // App is a client of AppComponent service
+interface AppComponent :
+    AndroidInjector<BaseApplication> {  // BaseApplication is a client of AppComponent service
 
     @Component.Builder
     interface Builder {
 
-        // use BindsInstance because we want AppComponent to exist across the entire lifetime of the App
+        // use BindsInstance because we want AppComponent to exist across the entire lifetime of the BaseApplication
         @BindsInstance
         fun application(application: Application): Builder
 
