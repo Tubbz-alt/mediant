@@ -20,4 +20,7 @@ abstract class ActivityBuildersModule {
 
     // Add new Activities as Dagger client here. Dagger will automatically generate
     // XXXActivitySubcomponents.
+
+//    @ContributesAndroidInjector(modules = [MainViewModelsModule::class, MainModule::class])
+//    abstract fun contributeMainActivity(): MainActivity
 }

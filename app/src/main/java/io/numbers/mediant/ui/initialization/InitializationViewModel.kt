@@ -1,14 +1,14 @@
 package io.numbers.mediant.ui.initialization
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import io.numbers.mediant.api.TextileService
 import timber.log.Timber
 import javax.inject.Inject
 
-class InitializationViewModel @Inject constructor(textileService: TextileService) :
+class InitializationViewModel @Inject constructor() :
     ViewModel() {
 
-    val userName = textileService.name
+    val userName = MutableLiveData("your name")
 
     fun onCreateAccount() = Timber.d(userName.value)
 }
