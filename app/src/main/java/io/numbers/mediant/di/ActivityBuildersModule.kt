@@ -14,8 +14,10 @@ abstract class ActivityBuildersModule {
     // write `AndroidInjection.inject(this)` in InitializationActivity.onCreate() method.
 
     // Scope InitializationViewModelsModule only within InitializationActivity instead of whole app.
+    // Also, Dagger will generate InitializationActivitySubcomponent under the hook with the following method.
     @ContributesAndroidInjector(modules = [InitializationViewModelsModule::class])
     abstract fun contributeInitializationActivity(): InitializationActivity
 
-    // Add new Activities as Dagger client here.
+    // Add new Activities as Dagger client here. Dagger will automatically generate
+    // XXXActivitySubcomponents.
 }
