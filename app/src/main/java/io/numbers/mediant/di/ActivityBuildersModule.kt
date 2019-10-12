@@ -2,7 +2,6 @@ package io.numbers.mediant.di
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
-import io.numbers.mediant.di.base.BaseViewModelsModule
 import io.numbers.mediant.ui.BaseActivity
 
 // Provides all activities as Dagger client.
@@ -15,7 +14,7 @@ abstract class ActivityBuildersModule {
 
     // Scope BaseViewModelsModule only within BaseActivity instead of whole app.
     // Also, Dagger will generate BaseActivitySubcomponent under the hook with the following method.
-    @ContributesAndroidInjector(modules = [BaseViewModelsModule::class])
+    @ContributesAndroidInjector
     abstract fun contributeBaseActivity(): BaseActivity
 
     // Add new Activities as Dagger client here. Dagger will automatically generate
