@@ -1,4 +1,4 @@
-package io.numbers.mediant.di.initialization
+package io.numbers.mediant.di.base
 
 import androidx.lifecycle.ViewModel
 import dagger.Binds
@@ -8,7 +8,7 @@ import io.numbers.mediant.di.ViewModelKey
 import io.numbers.mediant.ui.initialization.InitializationViewModel
 
 @Module
-abstract class InitializationViewModelsModule {
+abstract class BaseViewModelsModule {
 
     @Binds
     @IntoMap
