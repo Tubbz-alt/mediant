@@ -7,13 +7,13 @@
 
         <variable
             name="viewModel"
-            type="io.numbers.mediant.ui.MainViewModel" />
+            type="io.numbers.mediant.ui.BaseViewModel" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.MainActivity">
+        tools:context=".ui.BaseActivity">
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"

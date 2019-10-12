@@ -6,16 +6,16 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import dagger.android.support.DaggerAppCompatActivity
 import io.numbers.mediant.R
-import io.numbers.mediant.databinding.ActivityMainBinding
+import io.numbers.mediant.databinding.ActivityBaseBinding
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import timber.log.Timber
 import javax.inject.Inject
 
 // Extends from DaggerAppCompatActivity so we do NOT need to write `AndroidInjection.inject(this)`
-// in MainActivity.onCreate() method.
-class MainActivity : DaggerAppCompatActivity() {
+// in BaseActivity.onCreate() method.
+class BaseActivity : DaggerAppCompatActivity() {
 
-    private lateinit var viewModel: MainViewModel
+    private lateinit var viewModel: BaseViewModel
 
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProviderFactory
@@ -24,9 +24,9 @@ class MainActivity : DaggerAppCompatActivity() {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProviders.of(
             this, viewModelProviderFactory
-        )[MainViewModel::class.java]
-        val binding: ActivityMainBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_main)
+        )[BaseViewModel::class.java]
+        val binding: ActivityBaseBinding =
+            DataBindingUtil.setContentView(this, R.layout.activity_base)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 

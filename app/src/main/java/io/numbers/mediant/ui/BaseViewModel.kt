@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 private const val TEXTILE_FOLDER_NAME = "textile"
 
-class MainViewModel @Inject constructor(
+class BaseViewModel @Inject constructor(
     application: Application,
     private val textile: Textile
 ) : AndroidViewModel(application) {
