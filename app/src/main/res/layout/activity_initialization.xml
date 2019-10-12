@@ -40,39 +40,35 @@
                 android:layout_height="@dimen/logo_size"
                 android:contentDescription="@string/logo"
                 android:elevation="@dimen/default_elevation"
-                app:layout_constraintBottom_toTopOf="@id/nameInput"
+                app:layout_constraintBottom_toTopOf="@id/loading"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_launcher" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/nameInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/user_name"
-                app:layout_constraintBottom_toTopOf="@+id/button"
-                app:layout_constraintTop_toBottomOf="@+id/logo">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="@{viewModel.areInputsEnabled}"
-                    android:singleLine="true"
-                    android:text="@={viewModel.userName}" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <Button
-                android:id="@+id/button"
+            <LinearLayout
+                android:id="@+id/loading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:enabled="@{viewModel.areInputsEnabled &amp;&amp; viewModel.userNameLength &gt; 0}"
-                android:onClick="@{() -> viewModel.onCreateAccount()}"
-                android:text="@string/create_account"
+                android:gravity="center"
+                android:orientation="vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/nameInput" />
+                app:layout_constraintTop_toBottomOf="@id/logo">
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/default_margin" />
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/connect_to_ipfs" />
+            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

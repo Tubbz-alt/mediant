@@ -2,6 +2,7 @@
     <string name="app_name">MediAnt</string>
     <string name="logo">Logo</string>
     <string name="placeholder">Placeholder</string>
+    <string name="connect_to_ipfs">Connecting to IPFS</string>
     <string name="user_name">User Name</string>
     <string name="create_account">Create Account</string>
 </resources>

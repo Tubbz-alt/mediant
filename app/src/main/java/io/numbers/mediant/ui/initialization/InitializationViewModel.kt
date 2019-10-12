@@ -2,8 +2,6 @@ package io.numbers.mediant.ui.initialization
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import io.numbers.mediant.SingleLiveEvent
 import io.numbers.mediant.util.safelyInvokeIfNodeOnline
 import io.textile.textile.Textile
@@ -21,22 +19,16 @@ class InitializationViewModel @Inject constructor(
     private val textilePath by lazy {
         File(application.applicationContext.filesDir, TEXTILE_FOLDER_NAME).absolutePath
     }
-    val userName = MutableLiveData("")
-    val userNameLength = Transformations.map(userName) { it.length }
-    val areInputsEnabled = MutableLiveData(false)
     val startMainActivityEvent = SingleLiveEvent<Boolean>()
 
     init {
         if (Textile.isInitialized(textilePath)) launchTextile()
-        else areInputsEnabled.value = true
     }
 
-    private fun launchTextile(new: Boolean = false) {
+    private fun launchTextile() {
         Textile.launch(getApplication<Application>().applicationContext, textilePath, false)
         textile.addEventListener(TextileLoggingListener())
         textile.safelyInvokeIfNodeOnline {
-            // TODO: move profile setting to AccountCreateActivity
-            if (new) textile.profile.setName(userName.value)
             // fire the single live event by setting arbitrary value
             startMainActivityEvent.postValue(true)
         }
@@ -47,7 +39,6 @@ class InitializationViewModel @Inject constructor(
         // TODO: save phrase to shared preference
         val phrase = Textile.initializeCreatingNewWalletAndAccount(textilePath, false, false)
         Timber.i("Create new wallet: $phrase")
-        areInputsEnabled.value = false
-        launchTextile(new = true)
+        launchTextile()
     }
 }
