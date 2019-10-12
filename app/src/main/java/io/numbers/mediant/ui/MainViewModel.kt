@@ -1,4 +1,4 @@
-package io.numbers.mediant.ui.initialization
+package io.numbers.mediant.ui
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 private const val TEXTILE_FOLDER_NAME = "textile"
 
-class InitializationViewModel @Inject constructor(
+class MainViewModel @Inject constructor(
     application: Application,
     private val textile: Textile
 ) : AndroidViewModel(application) {

@@ -7,13 +7,13 @@
 
         <variable
             name="viewModel"
-            type="io.numbers.mediant.ui.main.MainViewModel" />
+            type="io.numbers.mediant.ui.MainViewModel" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.main.MainActivity">
+        tools:context=".ui.MainActivity">
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
@@ -40,30 +40,35 @@
                 android:layout_height="@dimen/logo_size"
                 android:contentDescription="@string/logo"
                 android:elevation="@dimen/default_elevation"
-                app:layout_constraintBottom_toTopOf="@id/userName"
+                app:layout_constraintBottom_toTopOf="@id/loading"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_launcher" />
 
-            <TextView
-                android:id="@+id/userName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@{viewModel.userName}"
-                app:layout_constraintBottom_toTopOf="@+id/button"
-                app:layout_constraintTop_toBottomOf="@+id/logo" />
-
-            <Button
-                android:id="@+id/button"
+            <LinearLayout
+                android:id="@+id/loading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="@{() -> viewModel.onCreateAccount()}"
-                android:text="@string/create_account"
+                android:gravity="center"
+                android:orientation="vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/userName" />
+                app:layout_constraintTop_toBottomOf="@id/logo">
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/default_margin" />
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/connect_to_ipfs" />
+            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
