@@ -1,13 +1,42 @@
 package io.numbers.mediant.ui.initialization
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import io.numbers.mediant.R
 import io.numbers.mediant.SingleLiveEvent
+import io.numbers.mediant.util.safelyInvokeIfNodeOnline
+import io.textile.textile.Textile
+import io.textile.textile.TextileLoggingListener
+import timber.log.Timber
+import java.io.File
 import javax.inject.Inject
 
-class InitializationViewModel @Inject constructor() : ViewModel() {
+private const val TEXTILE_FOLDER_NAME = "textile"
+
+class InitializationViewModel @Inject constructor(
+    application: Application,
+    textile: Textile
+) : AndroidViewModel(application) {
 
     val loadingText = MutableLiveData(R.string.connect_to_ipfs)
     val navToMainFragmentEvent = SingleLiveEvent<Unit>()
+
+    private val textilePath by lazy {
+        File(application.applicationContext.filesDir, TEXTILE_FOLDER_NAME).absolutePath
+    }
+
+    init {
+        if (!Textile.isInitialized(textilePath)) {
+            // TODO: save phrase to shared preference
+            val phrase = Textile.initializeCreatingNewWalletAndAccount(textilePath, false, false)
+            Timber.i("Create new wallet: $phrase")
+        }
+        Textile.launch(getApplication<Application>().applicationContext, textilePath, false)
+        textile.addEventListener(TextileLoggingListener())
+        textile.safelyInvokeIfNodeOnline {
+            // fire the single live event by posting an arbitrary value at worker thread
+            navToMainFragmentEvent.postValue(null)
+        }
+    }
 }
