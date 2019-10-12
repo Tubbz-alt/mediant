@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/initializationFragment">
+    app:startDestination="@+id/initializationFragment">
     <fragment
         android:id="@+id/initializationFragment"
         android:name="io.numbers.mediant.ui.initialization.InitializationFragment"
@@ -11,7 +11,9 @@
         tools:layout="@layout/fragment_initialization">
         <action
             android:id="@+id/action_initializationFragment_to_mainFragment"
-            app:destination="@id/mainFragment" />
+            app:destination="@id/mainFragment"
+            app:popUpTo="@id/initializationFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/mainFragment"
