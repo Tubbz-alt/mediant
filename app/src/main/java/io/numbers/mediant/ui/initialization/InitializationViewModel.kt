@@ -28,10 +28,12 @@ class InitializationViewModel @Inject constructor(
 
     init {
         if (!Textile.isInitialized(textilePath)) {
+            loadingText.value = R.string.create_wallet
             // TODO: save phrase to shared preference
             val phrase = Textile.initializeCreatingNewWalletAndAccount(textilePath, false, false)
             Timber.i("Create new wallet: $phrase")
         }
+        loadingText.value = R.string.connect_to_ipfs
         Textile.launch(getApplication<Application>().applicationContext, textilePath, false)
         textile.addEventListener(TextileLoggingListener())
         textile.safelyInvokeIfNodeOnline {
