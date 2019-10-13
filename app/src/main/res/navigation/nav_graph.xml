@@ -7,7 +7,7 @@
     <fragment
         android:id="@+id/initializationFragment"
         android:name="io.numbers.mediant.ui.initialization.InitializationFragment"
-        android:label="InitializationFragment"
+        android:label="@string/app_name"
         tools:layout="@layout/fragment_initialization">
         <action
             android:id="@+id/action_initializationFragment_to_mainFragment"
@@ -22,6 +22,6 @@
     <fragment
         android:id="@+id/mainFragment"
         android:name="io.numbers.mediant.ui.main.MainFragment"
-        android:label="MainFragment"
+        android:label="@string/app_name"
         tools:layout="@layout/fragment_main" />
 </navigation>
