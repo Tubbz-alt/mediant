@@ -14,4 +14,9 @@ class BaseApplication : DaggerApplication() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
     }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        Timber.d("onTerminate")
+    }
 }

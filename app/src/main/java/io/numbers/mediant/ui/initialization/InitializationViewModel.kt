@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import io.numbers.mediant.R
 import io.numbers.mediant.SingleLiveEvent
+import io.numbers.mediant.util.isNodeOnline
 import io.numbers.mediant.util.safelyInvokeIfNodeOnline
 import io.textile.textile.Textile
 import io.textile.textile.TextileLoggingListener
@@ -16,7 +17,7 @@ private const val TEXTILE_FOLDER_NAME = "textile"
 
 class InitializationViewModel @Inject constructor(
     application: Application,
-    textile: Textile
+    private val textile: Textile
 ) : AndroidViewModel(application) {
 
     val loadingText = MutableLiveData(R.string.connect_to_ipfs)
@@ -36,9 +37,18 @@ class InitializationViewModel @Inject constructor(
         loadingText.value = R.string.connect_to_ipfs
         Textile.launch(getApplication<Application>().applicationContext, textilePath, false)
         textile.addEventListener(TextileLoggingListener())
+        Timber.d("${textile.isNodeOnline}")
         textile.safelyInvokeIfNodeOnline {
             // fire the single live event by posting an arbitrary value at worker thread
             navToMainFragmentEvent.postValue(null)
+        }
+    }
+
+    fun onClick() {
+        try {
+            Timber.d("${textile.profile.get()}")
+        } catch (e: Exception) {
+            Timber.e(e)
         }
     }
 }
