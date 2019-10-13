@@ -12,7 +12,6 @@ import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentInitializationBinding
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
-import timber.log.Timber
 import javax.inject.Inject
 
 class InitializationFragment : DaggerFragment() {
@@ -46,15 +45,5 @@ class InitializationFragment : DaggerFragment() {
         viewModel.navToMainFragmentEvent.observe(this, Observer {
             findNavController().navigate(R.id.action_initializationFragment_to_mainFragment)
         })
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Timber.d("onDestroyView")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Timber.d("onDestroy")
     }
 }

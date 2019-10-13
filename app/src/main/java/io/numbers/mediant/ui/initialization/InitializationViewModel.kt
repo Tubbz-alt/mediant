@@ -28,27 +28,25 @@ class InitializationViewModel @Inject constructor(
     }
 
     init {
-        if (!Textile.isInitialized(textilePath)) {
-            loadingText.value = R.string.create_wallet
-            // TODO: save phrase to shared preference
-            val phrase = Textile.initializeCreatingNewWalletAndAccount(textilePath, false, false)
-            Timber.i("Create new wallet: $phrase")
-        }
-        loadingText.value = R.string.connect_to_ipfs
-        Textile.launch(getApplication<Application>().applicationContext, textilePath, false)
-        textile.addEventListener(TextileLoggingListener())
-        Timber.d("${textile.isNodeOnline}")
+        Timber.d("init")
+        if (!textile.isNodeOnline) initializeTextile()
         textile.safelyInvokeIfNodeOnline {
             // fire the single live event by posting an arbitrary value at worker thread
             navToMainFragmentEvent.postValue(null)
         }
     }
 
-    fun onClick() {
-        try {
-            Timber.d("${textile.profile.get()}")
-        } catch (e: Exception) {
-            Timber.e(e)
+    private fun initializeTextile() {
+        Timber.d("textile init")
+        if (!Textile.isInitialized(textilePath)) {
+            loadingText.value = R.string.create_wallet
+            // TODO: save phrase to shared preference
+            val phrase =
+                Textile.initializeCreatingNewWalletAndAccount(textilePath, false, false)
+            Timber.i("Create new wallet: $phrase")
         }
+        loadingText.value = R.string.connect_to_ipfs
+        Textile.launch(getApplication<Application>().applicationContext, textilePath, false)
+        textile.addEventListener(TextileLoggingListener())
     }
 }
