@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <data />
+    <data>
+
+        <variable
+            name="viewModel"
+            type="io.numbers.mediant.ui.main.MainViewModel" />
+    </data>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,6 +16,8 @@
         <Button
             android:id="@+id/btn"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:onClick="@{() -> viewModel.onClick()}"
+            android:text="@{viewModel.text}" />
     </LinearLayout>
 </layout>

@@ -6,6 +6,7 @@ import dagger.Module
 import dagger.multibindings.IntoMap
 import io.numbers.mediant.di.ViewModelKey
 import io.numbers.mediant.ui.initialization.InitializationViewModel
+import io.numbers.mediant.ui.main.MainViewModel
 
 @Module
 abstract class BaseViewModelsModule {
@@ -14,4 +15,9 @@ abstract class BaseViewModelsModule {
     @IntoMap
     @ViewModelKey(InitializationViewModel::class)
     abstract fun bindInitializationViewModel(viewModel: InitializationViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(MainViewModel::class)
+    abstract fun bindMainViewModel(viewModel: MainViewModel): ViewModel
 }
