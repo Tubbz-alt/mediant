@@ -1,18 +1,16 @@
 package io.numbers.mediant.ui.main
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentMainBinding
-import io.numbers.mediant.util.isNodeOnline
+import io.numbers.mediant.util.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import io.textile.textile.Textile
-import timber.log.Timber
 import javax.inject.Inject
 
 class MainFragment : DaggerFragment() {
@@ -30,6 +28,7 @@ class MainFragment : DaggerFragment() {
         viewModel = ViewModelProviders.of(
             this, viewModelProviderFactory
         )[MainViewModel::class.java]
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(
@@ -46,6 +45,19 @@ class MainFragment : DaggerFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Timber.d("Main: ${textile.isNodeOnline}")
+        viewModel.navToSettingsFragmentEvent.observe(this, EventObserver {
+            findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
+        })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        menu.clear()
+        inflater.inflate(R.menu.main_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        viewModel.selectedOptionsItem.value = item.itemId
+        return true
     }
 }

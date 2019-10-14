@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import io.numbers.mediant.R
-import io.numbers.mediant.SingleLiveEvent
+import io.numbers.mediant.util.Event
 import io.numbers.mediant.util.isNodeOnline
 import io.numbers.mediant.util.safelyInvokeIfNodeOnline
 import io.textile.textile.Textile
@@ -21,23 +21,21 @@ class InitializationViewModel @Inject constructor(
 ) : AndroidViewModel(application) {
 
     val loadingText = MutableLiveData(R.string.connect_to_ipfs)
-    val navToMainFragmentEvent = SingleLiveEvent<Unit>()
+    val navToMainFragmentEvent = MutableLiveData<Event<Unit>>()
 
     private val textilePath by lazy {
         File(application.applicationContext.filesDir, TEXTILE_FOLDER_NAME).absolutePath
     }
 
     init {
-        Timber.d("init")
         if (!textile.isNodeOnline) initializeTextile()
         textile.safelyInvokeIfNodeOnline {
             // fire the single live event by posting an arbitrary value at worker thread
-            navToMainFragmentEvent.postValue(null)
+            navToMainFragmentEvent.postValue(Event(Unit))
         }
     }
 
     private fun initializeTextile() {
-        Timber.d("textile init")
         if (!Textile.isInitialized(textilePath)) {
             loadingText.value = R.string.create_wallet
             // TODO: save phrase to shared preference

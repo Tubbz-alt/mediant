@@ -15,6 +15,7 @@ class BaseActivity : DaggerAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_base)
+        setSupportActionBar(toolbar)
         val navController = findNavController(R.id.nav_host_fragment)
         val appBarConfiguration =
             AppBarConfiguration(setOf(R.id.initializationFragment, R.id.mainFragment))

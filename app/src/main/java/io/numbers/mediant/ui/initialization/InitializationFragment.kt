@@ -5,12 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentInitializationBinding
+import io.numbers.mediant.util.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import javax.inject.Inject
 
@@ -42,7 +42,7 @@ class InitializationFragment : DaggerFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.navToMainFragmentEvent.observe(this, Observer {
+        viewModel.navToMainFragmentEvent.observe(this, EventObserver {
             findNavController().navigate(R.id.action_initializationFragment_to_mainFragment)
         })
     }

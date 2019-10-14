@@ -5,4 +5,5 @@
     <string name="connect_to_ipfs">Connecting to IPFS…</string>
     <string name="create_wallet">Creating Textile wallet…</string>
     <string name="user_name">User Name</string>
+    <string name="settings">Settings</string>
 </resources>
