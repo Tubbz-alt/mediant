@@ -1,5 +1,8 @@
 package io.numbers.mediant.di
 
+import android.app.Application
+import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
 import dagger.Module
 import dagger.Provides
 import io.textile.textile.Textile
@@ -18,6 +21,11 @@ class AppModule {
     // @Provides
     // fun provideSomeString() = "some string"
     // ```
+
+    @Singleton
+    @Provides
+    fun provideSharedPreferences(application: Application): SharedPreferences =
+        PreferenceManager.getDefaultSharedPreferences(application.applicationContext)
 
     @Singleton
     @Provides

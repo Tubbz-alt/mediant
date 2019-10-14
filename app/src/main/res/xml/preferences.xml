@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <EditTextPreference
+        app:icon="@drawable/ic_receipt_black_24dp"
+        app:key="@string/key_wallet_recovery_phrase"
+        app:selectable="false"
+        app:title="@string/wallet_recovery_phrase"
+        app:useSimpleSummaryProvider="true" />
+
+</PreferenceScreen>

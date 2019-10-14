@@ -1,6 +1,7 @@
 package io.numbers.mediant.ui.initialization
 
 import android.app.Application
+import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import io.numbers.mediant.R
@@ -17,6 +18,7 @@ private const val TEXTILE_FOLDER_NAME = "textile"
 
 class InitializationViewModel @Inject constructor(
     application: Application,
+    private val sharedPreferences: SharedPreferences,
     private val textile: Textile
 ) : AndroidViewModel(application) {
 
@@ -42,6 +44,10 @@ class InitializationViewModel @Inject constructor(
             val phrase =
                 Textile.initializeCreatingNewWalletAndAccount(textilePath, false, false)
             Timber.i("Create new wallet: $phrase")
+            sharedPreferences.edit().putString(
+                getApplication<Application>().resources.getString(R.string.key_wallet_recovery_phrase),
+                phrase
+            ).apply()
         }
         loadingText.value = R.string.connect_to_ipfs
         Textile.launch(getApplication<Application>().applicationContext, textilePath, false)

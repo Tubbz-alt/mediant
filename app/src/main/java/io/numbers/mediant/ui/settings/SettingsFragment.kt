@@ -42,6 +42,9 @@ class SettingsFragment : DaggerFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel.navToSharedPreferencesFragmentEvent.observe(viewLifecycleOwner, EventObserver {
+            findNavController().navigate(R.id.action_settingsFragment_to_sharedPreferencesFragment)
+        })
         viewModel.navToTextileSettingsFragmentEvent.observe(viewLifecycleOwner, EventObserver {
             findNavController().navigate(R.id.action_settingsFragment_to_textileSettingsFragment)
         })

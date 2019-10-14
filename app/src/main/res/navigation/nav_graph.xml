@@ -26,7 +26,11 @@
         tools:layout="@layout/fragment_main">
         <action
             android:id="@+id/action_mainFragment_to_settingsFragment"
-            app:destination="@id/settingsFragment" />
+            app:destination="@id/settingsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -40,10 +44,21 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_settingsFragment_to_sharedPreferencesFragment"
+            app:destination="@id/sharedPreferencesFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/textileSettingsFragment"
         android:name="io.numbers.mediant.ui.settings.textile.TextileSettingsFragment"
         android:label="@string/textile_settings"
         tools:layout="@layout/fragment_textile_settings" />
+    <fragment
+        android:id="@+id/sharedPreferencesFragment"
+        android:name="io.numbers.mediant.ui.settings.preferences.SharedPreferencesFragment"
+        android:label="@string/general_settings" />
 </navigation>
