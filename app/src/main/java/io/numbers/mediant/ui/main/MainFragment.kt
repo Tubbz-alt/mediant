@@ -46,7 +46,7 @@ class MainFragment : DaggerFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.navToSettingsFragmentEvent.observe(this, EventObserver {
-            findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
+            if (it) findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
         })
     }
 
