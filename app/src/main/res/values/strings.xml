@@ -6,6 +6,8 @@
     <string name="create_wallet">Creating Textile wallet…</string>
     <string name="user_name">User Name</string>
     <string name="camera">Camera</string>
+    <string name="feeds">Feeds</string>
+    <string name="storage">Storage</string>
     <string name="settings">Settings</string>
     <string name="general">General</string>
     <string name="textile">Textile</string>

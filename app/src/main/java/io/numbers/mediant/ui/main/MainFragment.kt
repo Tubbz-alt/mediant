@@ -10,7 +10,7 @@ import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentMainBinding
 import io.numbers.mediant.util.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
-import io.textile.textile.Textile
+import kotlinx.android.synthetic.main.fragment_main.*
 import javax.inject.Inject
 
 class MainFragment : DaggerFragment() {
@@ -20,8 +20,7 @@ class MainFragment : DaggerFragment() {
 
     lateinit var viewModel: MainViewModel
 
-    @Inject
-    lateinit var textile: Textile
+    private lateinit var mainPagerAdapter: MainPagerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +44,11 @@ class MainFragment : DaggerFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activity?.also {
+            mainPagerAdapter = MainPagerAdapter(viewModel.tabs, it, childFragmentManager)
+        } ?: run { throw RuntimeException("Illegal activity") }
+        tabLayout.setupWithViewPager(viewPager)
+        viewPager.adapter = mainPagerAdapter
         viewModel.navToSettingsFragmentEvent.observe(this, EventObserver {
             if (it) findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
         })

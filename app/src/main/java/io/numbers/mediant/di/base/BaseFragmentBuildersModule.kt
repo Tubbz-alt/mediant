@@ -2,8 +2,17 @@ package io.numbers.mediant.di.base
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
+import io.numbers.mediant.di.base.initialization.InitializationViewModelsModule
+import io.numbers.mediant.di.base.main.MainModule
+import io.numbers.mediant.di.base.main.MainViewModelsModule
+import io.numbers.mediant.di.base.settings.SettingsViewModelsModule
+import io.numbers.mediant.di.base.textile_settings.TextileSettingsViewModelsModule
+import io.numbers.mediant.di.base.thread.ThreadViewModelsModule
+import io.numbers.mediant.di.base.thread_list.ThreadListViewModelsModule
 import io.numbers.mediant.ui.initialization.InitializationFragment
 import io.numbers.mediant.ui.main.MainFragment
+import io.numbers.mediant.ui.main.thread.ThreadFragment
+import io.numbers.mediant.ui.main.thread_list.ThreadListFragment
 import io.numbers.mediant.ui.settings.SettingsFragment
 import io.numbers.mediant.ui.settings.textile.TextileSettingsFragment
 
@@ -17,16 +26,22 @@ abstract class BaseFragmentBuildersModule {
     //    write `AndroidInjection.inject(this)` in InitializationFragment.onCreate() method.
     // 2. Dagger will generate InitializationFragmentSubcomponent under the hook with the following
     //    method.
-    @ContributesAndroidInjector
+    @ContributesAndroidInjector(modules = [InitializationViewModelsModule::class])
     abstract fun contributeInitializationFragment(): InitializationFragment
 
-    @ContributesAndroidInjector
+    @ContributesAndroidInjector(modules = [MainViewModelsModule::class, MainModule::class])
     abstract fun contributeMainFragment(): MainFragment
 
-    @ContributesAndroidInjector
+    @ContributesAndroidInjector(modules = [ThreadViewModelsModule::class])
+    abstract fun contributeThreadFragment(): ThreadFragment
+
+    @ContributesAndroidInjector(modules = [ThreadListViewModelsModule::class])
+    abstract fun contributeThreadListFragment(): ThreadListFragment
+
+    @ContributesAndroidInjector(modules = [SettingsViewModelsModule::class])
     abstract fun contributeSettingsFragment(): SettingsFragment
 
-    @ContributesAndroidInjector
+    @ContributesAndroidInjector(modules = [TextileSettingsViewModelsModule::class])
     abstract fun contributeTextileSettingsFragment(): TextileSettingsFragment
 
     // Add new Fragments as Dagger client here. Dagger will automatically generate
