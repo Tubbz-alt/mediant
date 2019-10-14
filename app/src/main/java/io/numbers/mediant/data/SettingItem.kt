@@ -1,4 +1,4 @@
-package io.numbers.mediant.ui.settings
+package io.numbers.mediant.data
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes

@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModelProvider
 import dagger.Binds
 import dagger.Module
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
+import javax.inject.Singleton
 
+@Suppress("UNUSED")
 @Module
 abstract class ViewModelFactoryModule {
 
@@ -13,6 +15,7 @@ abstract class ViewModelFactoryModule {
     // ```
     // @Providers fun bindViewModelFactory(factory: ViewModelProviderFactory) = factory
     // ```
+    @Singleton // scope the ViewModelProviderFactory as it only needs to be instantiated one time
     @Binds
     abstract fun bindViewModelFactory(factory: ViewModelProviderFactory): ViewModelProvider.Factory
 }

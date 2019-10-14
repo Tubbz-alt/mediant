@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import io.numbers.mediant.R
+import io.numbers.mediant.data.SettingItem
 
 class SettingsRecyclerViewAdapter(private val data: List<SettingItem>) :
     RecyclerView.Adapter<SettingsRecyclerViewAdapter.ViewHolder>() {
