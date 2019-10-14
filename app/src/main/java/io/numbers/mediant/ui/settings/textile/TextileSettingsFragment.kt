@@ -32,8 +32,9 @@ class TextileSettingsFragment : DaggerFragment() {
         savedInstanceState: Bundle?
     ): View? {
         val binding: FragmentTextileSettingsBinding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_settings, container, false)
+            DataBindingUtil.inflate(inflater, R.layout.fragment_textile_settings, container, false)
         binding.lifecycleOwner = this
+        binding.viewModel = viewModel
         return binding.root
     }
 }

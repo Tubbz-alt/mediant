@@ -2,12 +2,10 @@ package io.numbers.mediant.di.base
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
-import io.numbers.mediant.di.base.settings.SettingsFragmentBuildersModule
-import io.numbers.mediant.di.base.settings.SettingsModule
-import io.numbers.mediant.di.base.settings.SettingsViewModelsModule
 import io.numbers.mediant.ui.initialization.InitializationFragment
 import io.numbers.mediant.ui.main.MainFragment
 import io.numbers.mediant.ui.settings.SettingsFragment
+import io.numbers.mediant.ui.settings.textile.TextileSettingsFragment
 
 // Provides all fragments extending from DaggerFragment in BaseActivity scope as Dagger client.
 
@@ -25,8 +23,11 @@ abstract class BaseFragmentBuildersModule {
     @ContributesAndroidInjector
     abstract fun contributeMainFragment(): MainFragment
 
-    @ContributesAndroidInjector(modules = [SettingsFragmentBuildersModule::class, SettingsViewModelsModule::class, SettingsModule::class])
-    abstract fun contributeSettingsBaseFragment(): SettingsFragment
+    @ContributesAndroidInjector
+    abstract fun contributeSettingsFragment(): SettingsFragment
+
+    @ContributesAndroidInjector
+    abstract fun contributeTextileSettingsFragment(): TextileSettingsFragment
 
     // Add new Fragments as Dagger client here. Dagger will automatically generate
     // XXXFragmentSubcomponents.
