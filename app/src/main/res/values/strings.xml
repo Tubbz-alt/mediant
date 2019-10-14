@@ -6,4 +6,10 @@
     <string name="create_wallet">Creating Textile wallet…</string>
     <string name="user_name">User Name</string>
     <string name="settings">Settings</string>
+    <string name="general">General</string>
+    <string name="textile">Textile</string>
+    <string name="general_settings_summary">"General preferences"</string>
+    <string name="textile_settings_summary">Settings for Textile API</string>
+    <string name="general_settings_icon_description">General preferences icon</string>
+    <string name="textile_settings_icon_description">Textile settings icon</string>
 </resources>

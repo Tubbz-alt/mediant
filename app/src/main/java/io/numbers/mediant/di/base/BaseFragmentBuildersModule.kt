@@ -3,6 +3,7 @@ package io.numbers.mediant.di.base
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import io.numbers.mediant.di.base.settings.SettingsFragmentBuildersModule
+import io.numbers.mediant.di.base.settings.SettingsViewModelsModule
 import io.numbers.mediant.ui.initialization.InitializationFragment
 import io.numbers.mediant.ui.main.MainFragment
 import io.numbers.mediant.ui.settings.SettingsFragment
@@ -23,7 +24,7 @@ abstract class BaseFragmentBuildersModule {
     @ContributesAndroidInjector
     abstract fun contributeMainFragment(): MainFragment
 
-    @ContributesAndroidInjector(modules = [SettingsFragmentBuildersModule::class])
+    @ContributesAndroidInjector(modules = [SettingsFragmentBuildersModule::class, SettingsViewModelsModule::class])
     abstract fun contributeSettingsBaseFragment(): SettingsFragment
 
     // Add new Fragments as Dagger client here. Dagger will automatically generate
