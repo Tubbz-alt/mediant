@@ -13,7 +13,10 @@ import io.textile.textile.BaseTextileEventListener
 import io.textile.textile.Textile
 import io.textile.textile.TextileEventListener
 import timber.log.Timber
+import java.io.File
 import javax.inject.Inject
+
+private const val TEXTILE_FOLDER_NAME = "textile"
 
 class TextileService @Inject constructor(
     private val textile: Textile,
@@ -21,14 +24,55 @@ class TextileService @Inject constructor(
     private val application: Application
 ) {
 
-    val isNodeOnline = MutableLiveData(textile.isNodeOnline)
-
     init {
+        initNodeStatusApi()
         initThreadApi()
     }
 
     /**
-     * Thread API
+     * Initialization
+     */
+
+    private val textilePath by lazy {
+        File(application.applicationContext.filesDir, TEXTILE_FOLDER_NAME).absolutePath
+    }
+
+    val hasLaunched = MutableLiveData(false)
+    val isNodeOnline = MutableLiveData(textile.isNodeOnline)
+
+    fun launch() {
+        hasLaunched.value = true
+        Textile.launch(application.applicationContext, textilePath, false)
+    }
+
+    fun hasInitialized(): Boolean = Textile.isInitialized(textilePath)
+
+    fun createNewWalletAndAccount(): String {
+        val phrase = Textile.initializeCreatingNewWalletAndAccount(textilePath, false, false)
+        sharedPreferences.edit().putString(
+            application.resources.getString(R.string.key_wallet_recovery_phrase),
+            phrase
+        ).apply()
+        Timber.i("Create new wallet: $phrase")
+        return phrase
+    }
+
+    private fun initNodeStatusApi() {
+        addEventListener(object : BaseTextileEventListener() {
+            override fun nodeOnline() {
+                super.nodeOnline()
+                isNodeOnline.postValue(true)
+            }
+
+            override fun nodeStopped() {
+                super.nodeStopped()
+                isNodeOnline.postValue(false)
+            }
+        })
+    }
+
+    /**
+     * Thread
      */
 
     private val threadList = MutableLiveData<List<Model.Thread>>()

@@ -13,7 +13,6 @@ import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import kotlinx.android.synthetic.main.fragment_main.*
 import javax.inject.Inject
 
-// TODO: Textile node may be stopped but should not relaunch when inactivity
 class MainFragment : DaggerFragment() {
 
     @Inject
