@@ -30,5 +30,8 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideTextileService(): TextileService = TextileService(Textile.instance())
+    fun provideTextileService(
+        sharedPreferences: SharedPreferences,
+        application: Application
+    ): TextileService = TextileService(Textile.instance(), sharedPreferences, application)
 }

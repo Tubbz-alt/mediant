@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="key_wallet_recovery_phrase">walletRecoveryPhrase</string>
+    <string name="key_personal_thread_id">personalThreadId</string>
 </resources>

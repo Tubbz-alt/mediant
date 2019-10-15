@@ -8,4 +8,11 @@
         app:title="@string/wallet_recovery_phrase"
         app:useSimpleSummaryProvider="true" />
 
+    <EditTextPreference
+        app:icon="@drawable/ic_account_box_black_24dp"
+        app:key="@string/key_personal_thread_id"
+        app:selectable="false"
+        app:title="@string/personal_thread_id"
+        app:useSimpleSummaryProvider="true" />
+
 </PreferenceScreen>

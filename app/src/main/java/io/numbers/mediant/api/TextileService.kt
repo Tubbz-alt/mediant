@@ -1,15 +1,25 @@
 package io.numbers.mediant.api
 
+import android.app.Application
+import android.content.SharedPreferences
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import io.numbers.mediant.BuildConfig
+import io.numbers.mediant.R
 import io.textile.pb.Model
 import io.textile.pb.View
 import io.textile.textile.BaseTextileEventListener
 import io.textile.textile.Textile
 import io.textile.textile.TextileEventListener
+import timber.log.Timber
 import javax.inject.Inject
 
-class TextileService @Inject constructor(private val textile: Textile) {
+class TextileService @Inject constructor(
+    private val textile: Textile,
+    private val sharedPreferences: SharedPreferences,
+    private val application: Application
+) {
 
     val isNodeOnline = MutableLiveData(textile.isNodeOnline)
 
@@ -21,7 +31,14 @@ class TextileService @Inject constructor(private val textile: Textile) {
      * Thread API
      */
 
-    val threadList = MutableLiveData<List<Model.Thread>>()
+    private val threadList = MutableLiveData<List<Model.Thread>>()
+    val publicThreadList: LiveData<List<Model.Thread>> = Transformations.map(threadList) { list ->
+        list.filter {
+            it.id != sharedPreferences.getString(
+                application.resources.getString(R.string.key_personal_thread_id), null
+            )
+        }
+    }
 
     private fun initThreadApi() {
         addEventListener(object : BaseTextileEventListener() {
@@ -35,14 +52,32 @@ class TextileService @Inject constructor(private val textile: Textile) {
                 threadList.postValue(textile.threads.list().itemsList)
             }
         })
-        safelyInvokeIfNodeOnline { loadThreadList() }
+        safelyInvokeIfNodeOnline {
+            initPersonalThread()
+            loadThreadList()
+        }
     }
 
-    fun loadThreadList() {
-        threadList.postValue(textile.threads.list().itemsList)
+    private fun initPersonalThread() {
+        try {
+            val personalThreadId = sharedPreferences.getString(
+                application.resources.getString(R.string.key_personal_thread_id), null
+            )
+            textile.threads.get(personalThreadId)
+            Timber.i("Personal thread has already been created: $personalThreadId")
+        } catch (e: Exception) {
+            addThread(Model.Thread.Type.PRIVATE, Model.Thread.Sharing.NOT_SHARED).also {
+                sharedPreferences.edit().putString(
+                    application.resources.getString(R.string.key_personal_thread_id), it.id
+                ).apply()
+                Timber.i("Create personal thread: ${it.id}")
+            }
+        }
     }
 
-    fun addThread() {
+    fun loadThreadList() = threadList.postValue(textile.threads.list().itemsList)
+
+    fun addThread(type: Model.Thread.Type, sharing: Model.Thread.Sharing): Model.Thread {
         val name = "placeholder"
         val schema = View.AddThreadConfig.Schema.newBuilder()
             .setPreset(View.AddThreadConfig.Schema.Preset.MEDIA)
@@ -50,11 +85,11 @@ class TextileService @Inject constructor(private val textile: Textile) {
         val config = View.AddThreadConfig.newBuilder()
             .setKey(generateThreadKey(name))
             .setName(name)
-            .setType(Model.Thread.Type.OPEN)
-            .setSharing(Model.Thread.Sharing.SHARED)
+            .setType(type)
+            .setSharing(sharing)
             .setSchema(schema)
             .build()
-        textile.threads.add(config)
+        return textile.threads.add(config)
     }
 
     private fun generateThreadKey(name: String): String {
