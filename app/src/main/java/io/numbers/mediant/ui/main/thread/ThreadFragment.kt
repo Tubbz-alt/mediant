@@ -1,5 +1,6 @@
 package io.numbers.mediant.ui.main.thread
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,6 +20,9 @@ class ThreadFragment : DaggerFragment() {
 
     lateinit var viewModel: ThreadViewModel
 
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProviders.of(
@@ -36,5 +40,10 @@ class ThreadFragment : DaggerFragment() {
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel.threadId.value = arguments?.let { ThreadFragmentArgs.fromBundle(it).threadId }
     }
 }

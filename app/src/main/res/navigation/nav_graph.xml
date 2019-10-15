@@ -31,6 +31,9 @@
             app:exitAnim="@android:anim/fade_out"
             app:popEnterAnim="@android:anim/fade_in"
             app:popExitAnim="@android:anim/fade_out" />
+        <action
+            android:id="@+id/action_mainFragment_to_threadFragment"
+            app:destination="@id/threadFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -61,4 +64,14 @@
         android:id="@+id/sharedPreferencesFragment"
         android:name="io.numbers.mediant.ui.settings.preferences.SharedPreferencesFragment"
         android:label="@string/general_settings" />
+    <fragment
+        android:id="@+id/threadFragment"
+        android:name="io.numbers.mediant.ui.main.thread.ThreadFragment"
+        android:label="{threadId}"
+        tools:layout="@layout/fragment_thread">
+        <argument
+            android:name="threadId"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
 </navigation>

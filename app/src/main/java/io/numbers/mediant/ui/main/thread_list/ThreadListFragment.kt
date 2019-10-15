@@ -8,13 +8,14 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentThreadListBinding
 import io.numbers.mediant.ui.OnItemClickListener
 import io.numbers.mediant.ui.OnItemMenuClickListener
+import io.numbers.mediant.ui.main.MainFragmentDirections
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
-import timber.log.Timber
 import javax.inject.Inject
 
 class ThreadListFragment : DaggerFragment(), OnItemClickListener, OnItemMenuClickListener {
@@ -54,7 +55,10 @@ class ThreadListFragment : DaggerFragment(), OnItemClickListener, OnItemMenuClic
     }
 
     override fun onItemClick(position: Int) {
-        Timber.i("onClick $position")
+        MainFragmentDirections.actionMainFragmentToThreadFragment(adapter.data[position].id)
+            .also {
+                findNavController().navigate(it)
+            }
     }
 
     override fun onItemMenuClick(position: Int, menuItem: MenuItem): Boolean {
