@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import dagger.Module
 import dagger.Provides
+import io.numbers.mediant.api.TextileService
 import io.textile.textile.Textile
 import javax.inject.Singleton
 
@@ -29,5 +30,5 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideTextileInstance(): Textile = Textile.instance()
+    fun provideTextileService(): TextileService = TextileService(Textile.instance())
 }

@@ -5,9 +5,8 @@ import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import io.numbers.mediant.R
+import io.numbers.mediant.api.TextileService
 import io.numbers.mediant.util.Event
-import io.numbers.mediant.util.isNodeOnline
-import io.numbers.mediant.util.safelyInvokeIfNodeOnline
 import io.textile.textile.Textile
 import io.textile.textile.TextileLoggingListener
 import timber.log.Timber
@@ -19,7 +18,7 @@ private const val TEXTILE_FOLDER_NAME = "textile"
 class InitializationViewModel @Inject constructor(
     application: Application,
     private val sharedPreferences: SharedPreferences,
-    private val textile: Textile
+    private val textileService: TextileService
 ) : AndroidViewModel(application) {
 
     val loadingText = MutableLiveData(R.string.connect_to_ipfs)
@@ -30,8 +29,8 @@ class InitializationViewModel @Inject constructor(
     }
 
     init {
-        if (!textile.isNodeOnline) initializeTextile()
-        textile.safelyInvokeIfNodeOnline {
+        if (!textileService.isNodeOnline.value!!) initializeTextile()
+        textileService.safelyInvokeIfNodeOnline {
             // fire the single live event by posting an arbitrary value at worker thread
             navToMainFragmentEvent.postValue(Event(Unit))
         }
@@ -51,6 +50,6 @@ class InitializationViewModel @Inject constructor(
         }
         loadingText.value = R.string.connect_to_ipfs
         Textile.launch(getApplication<Application>().applicationContext, textilePath, false)
-        textile.addEventListener(TextileLoggingListener())
+        textileService.addEventListener(TextileLoggingListener())
     }
 }
