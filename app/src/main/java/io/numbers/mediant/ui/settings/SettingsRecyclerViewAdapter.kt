@@ -6,17 +6,38 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SortedList
 import io.numbers.mediant.R
 import io.numbers.mediant.data.SettingItem
 import io.numbers.mediant.ui.OnItemClickListener
 
-class SettingsRecyclerViewAdapter(
-    private val data: List<SettingItem>,
-    private val onItemClickListener: OnItemClickListener
-) :
+class SettingsRecyclerViewAdapter(private val onItemClickListener: OnItemClickListener) :
     RecyclerView.Adapter<SettingsRecyclerViewAdapter.ViewHolder>() {
 
-    override fun getItemCount() = data.size
+    val data = SortedList<SettingItem>(
+        SettingItem::class.java,
+        object : SortedList.Callback<SettingItem>() {
+
+            override fun areItemsTheSame(item1: SettingItem, item2: SettingItem) = item1 == item2
+            override fun areContentsTheSame(oldItem: SettingItem, newItem: SettingItem) =
+                oldItem == newItem
+
+            override fun onMoved(fromPosition: Int, toPosition: Int) =
+                notifyItemMoved(fromPosition, toPosition)
+
+            override fun onChanged(position: Int, count: Int) =
+                notifyItemRangeChanged(position, count)
+
+            override fun onInserted(position: Int, count: Int) =
+                notifyItemRangeInserted(position, count)
+
+            override fun onRemoved(position: Int, count: Int) =
+                notifyItemRangeRemoved(position, count)
+
+            override fun compare(o1: SettingItem, o2: SettingItem) = o1.title.compareTo(o2.title)
+        })
+
+    override fun getItemCount() = data.size()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder.from(parent, onItemClickListener)
