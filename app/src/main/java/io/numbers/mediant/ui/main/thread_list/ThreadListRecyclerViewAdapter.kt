@@ -5,8 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SortedList
 import io.numbers.mediant.R
 import io.numbers.mediant.ui.OnItemClickListener
 import io.numbers.mediant.ui.OnItemMenuClickListener
@@ -18,34 +18,23 @@ class ThreadListRecyclerViewAdapter(
 ) :
     RecyclerView.Adapter<ThreadListRecyclerViewAdapter.ViewHolder>() {
 
-    val data = SortedList<Model.Thread>(
-        Model.Thread::class.java, object : SortedList.Callback<Model.Thread>() {
+    var data = listOf<Model.Thread>()
+        set(value) {
+            DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+                override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) =
+                    field[oldItemPosition].id == value[newItemPosition].id
 
-            override fun areContentsTheSame(oldItem: Model.Thread, newItem: Model.Thread) =
-                oldItem == newItem
+                override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int) =
+                    field[oldItemPosition].id == value[newItemPosition].id
 
-            override fun areItemsTheSame(item1: Model.Thread, item2: Model.Thread) =
-                item1.id == item2.id
+                override fun getOldListSize() = field.size
 
-            override fun onMoved(fromPosition: Int, toPosition: Int) =
-                notifyItemMoved(fromPosition, toPosition)
+                override fun getNewListSize() = value.size
+            }, true).apply { dispatchUpdatesTo(this@ThreadListRecyclerViewAdapter) }
+            field = value
+        }
 
-            override fun onChanged(position: Int, count: Int) =
-                notifyItemRangeChanged(position, count)
-
-            override fun onInserted(position: Int, count: Int) =
-                notifyItemRangeInserted(position, count)
-
-            override fun onRemoved(position: Int, count: Int) =
-                notifyItemRangeRemoved(position, count)
-
-            override fun compare(o1: Model.Thread, o2: Model.Thread): Int {
-                // Head blocks might not be initialize right after the thread creation.
-                return o1.name.compareTo(o2.name)
-            }
-        })
-
-    override fun getItemCount() = data.size()
+    override fun getItemCount() = data.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder.from(parent, onItemClickListener, onItemMenuClickListener)

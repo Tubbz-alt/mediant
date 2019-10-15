@@ -49,7 +49,7 @@ class ThreadListFragment : DaggerFragment(), OnItemClickListener, OnItemMenuClic
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.threadList.observe(viewLifecycleOwner, Observer {
-            adapter.data.replaceAll(it)
+            adapter.data = it
         })
     }
 
