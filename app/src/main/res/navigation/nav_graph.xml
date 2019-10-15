@@ -67,10 +67,14 @@
     <fragment
         android:id="@+id/threadFragment"
         android:name="io.numbers.mediant.ui.main.thread.ThreadFragment"
-        android:label="{threadId}"
+        android:label="{threadName}"
         tools:layout="@layout/fragment_thread">
         <argument
             android:name="threadId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="threadName"
             app:argType="string"
             app:nullable="true" />
     </fragment>

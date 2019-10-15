@@ -49,16 +49,14 @@ class ThreadListFragment : DaggerFragment(), OnItemClickListener, OnItemMenuClic
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.threadList.observe(viewLifecycleOwner, Observer {
-            adapter.data = it
-        })
+        viewModel.threadList.observe(viewLifecycleOwner, Observer { adapter.data = it })
     }
 
     override fun onItemClick(position: Int) {
-        MainFragmentDirections.actionMainFragmentToThreadFragment(adapter.data[position].id)
-            .also {
-                findNavController().navigate(it)
-            }
+        MainFragmentDirections.actionMainFragmentToThreadFragment(
+            adapter.data[position].id,
+            adapter.data[position].name
+        ).also { findNavController().navigate(it) }
     }
 
     override fun onItemMenuClick(position: Int, menuItem: MenuItem): Boolean {
