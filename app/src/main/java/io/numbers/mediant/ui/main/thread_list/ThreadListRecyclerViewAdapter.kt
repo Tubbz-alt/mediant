@@ -8,13 +8,13 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.numbers.mediant.R
-import io.numbers.mediant.ui.OnItemClickListener
-import io.numbers.mediant.ui.OnItemMenuClickListener
+import io.numbers.mediant.ui.ItemClickListener
+import io.numbers.mediant.ui.ItemMenuClickListener
 import io.textile.pb.Model
 
 class ThreadListRecyclerViewAdapter(
-    private val onItemClickListener: OnItemClickListener,
-    private val onItemMenuClickListener: OnItemMenuClickListener
+    private val itemClickListener: ItemClickListener,
+    private val itemMenuClickListener: ItemMenuClickListener
 ) :
     RecyclerView.Adapter<ThreadListRecyclerViewAdapter.ViewHolder>() {
 
@@ -37,7 +37,7 @@ class ThreadListRecyclerViewAdapter(
     override fun getItemCount() = data.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder.from(parent, onItemClickListener, onItemMenuClickListener)
+        return ViewHolder.from(parent, itemClickListener, itemMenuClickListener)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -46,8 +46,8 @@ class ThreadListRecyclerViewAdapter(
 
     class ViewHolder(
         itemView: View,
-        private val onItemClickListener: OnItemClickListener,
-        private val onItemMenuClickListener: OnItemMenuClickListener
+        private val itemClickListener: ItemClickListener,
+        private val itemMenuClickListener: ItemMenuClickListener
     ) :
         RecyclerView.ViewHolder(itemView), View.OnClickListener, View.OnLongClickListener {
 
@@ -64,12 +64,12 @@ class ThreadListRecyclerViewAdapter(
             threadIdTextView.text = item.id
         }
 
-        override fun onClick(view: View) = onItemClickListener.onItemClick(adapterPosition)
+        override fun onClick(view: View) = itemClickListener.onItemClick(adapterPosition)
 
         override fun onLongClick(view: View): Boolean {
             PopupMenu(view.context, view).apply {
                 setOnMenuItemClickListener {
-                    onItemMenuClickListener.onItemMenuClick(adapterPosition, it)
+                    itemMenuClickListener.onItemMenuClick(adapterPosition, it)
                 }
                 inflate(R.menu.thread_actions)
                 show()
@@ -80,12 +80,12 @@ class ThreadListRecyclerViewAdapter(
         companion object {
             fun from(
                 parent: ViewGroup,
-                onItemClickListener: OnItemClickListener,
-                onItemMenuClickListener: OnItemMenuClickListener
+                itemClickListener: ItemClickListener,
+                itemMenuClickListener: ItemMenuClickListener
             ): ViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 val view = layoutInflater.inflate(R.layout.layout_thread_item, parent, false)
-                return ViewHolder(view, onItemClickListener, onItemMenuClickListener)
+                return ViewHolder(view, itemClickListener, itemMenuClickListener)
             }
         }
     }

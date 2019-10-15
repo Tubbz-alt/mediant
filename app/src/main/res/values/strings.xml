@@ -9,6 +9,10 @@
 
     <string name="feeds">Feeds</string>
     <string name="storage">Storage</string>
+    <string name="create_thread">Create Thread</string>
+    <string name="thread_name">Thread Name</string>
+    <string name="create">Create</string>
+    <string name="cancel">Cancel</string>
     <string name="info">Information</string>
     <string name="leave">Leave</string>
 

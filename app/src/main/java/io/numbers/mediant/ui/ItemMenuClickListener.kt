@@ -2,7 +2,7 @@ package io.numbers.mediant.ui
 
 import android.view.MenuItem
 
-interface OnItemMenuClickListener {
+interface ItemMenuClickListener {
 
     fun onItemMenuClick(position: Int, menuItem: MenuItem): Boolean
 }

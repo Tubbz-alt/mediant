@@ -1,5 +1,5 @@
 package io.numbers.mediant.ui
 
-interface OnItemClickListener {
+interface ItemClickListener {
     fun onItemClick(position: Int)
 }

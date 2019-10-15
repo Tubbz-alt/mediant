@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
             android:layout_margin="16dp"
-            android:onClick="@{() -> viewModel.addThread()}"
+            android:onClick="@{() -> viewModel.createThread()}"
             android:src="@drawable/ic_add_black_24dp" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

@@ -9,9 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SortedList
 import io.numbers.mediant.R
 import io.numbers.mediant.data.SettingItem
-import io.numbers.mediant.ui.OnItemClickListener
+import io.numbers.mediant.ui.ItemClickListener
 
-class SettingsRecyclerViewAdapter(private val onItemClickListener: OnItemClickListener) :
+class SettingsRecyclerViewAdapter(private val itemClickListener: ItemClickListener) :
     RecyclerView.Adapter<SettingsRecyclerViewAdapter.ViewHolder>() {
 
     val data = SortedList<SettingItem>(
@@ -40,14 +40,14 @@ class SettingsRecyclerViewAdapter(private val onItemClickListener: OnItemClickLi
     override fun getItemCount() = data.size()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder.from(parent, onItemClickListener)
+        return ViewHolder.from(parent, itemClickListener)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(data[position])
     }
 
-    class ViewHolder(itemView: View, private val onItemClickListener: OnItemClickListener) :
+    class ViewHolder(itemView: View, private val itemClickListener: ItemClickListener) :
         RecyclerView.ViewHolder(itemView), View.OnClickListener {
 
         init {
@@ -64,13 +64,13 @@ class SettingsRecyclerViewAdapter(private val onItemClickListener: OnItemClickLi
             iconImageView.setImageResource(item.icon)
         }
 
-        override fun onClick(view: View) = onItemClickListener.onItemClick(adapterPosition)
+        override fun onClick(view: View) = itemClickListener.onItemClick(adapterPosition)
 
         companion object {
-            fun from(parent: ViewGroup, onItemClickListener: OnItemClickListener): ViewHolder {
+            fun from(parent: ViewGroup, itemClickListener: ItemClickListener): ViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 val view = layoutInflater.inflate(R.layout.layout_setting_item, parent, false)
-                return ViewHolder(view, onItemClickListener)
+                return ViewHolder(view, itemClickListener)
             }
         }
     }

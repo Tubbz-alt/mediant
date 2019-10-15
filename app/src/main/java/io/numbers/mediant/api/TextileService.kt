@@ -110,7 +110,11 @@ class TextileService @Inject constructor(
             textile.threads.get(personalThreadId)
             Timber.i("Personal thread has already been created: $personalThreadId")
         } catch (e: Exception) {
-            addThread(Model.Thread.Type.PRIVATE, Model.Thread.Sharing.NOT_SHARED).also {
+            addThread(
+                textile.profile.name(),
+                Model.Thread.Type.PRIVATE,
+                Model.Thread.Sharing.NOT_SHARED
+            ).also {
                 sharedPreferences.edit().putString(
                     application.resources.getString(R.string.key_personal_thread_id), it.id
                 ).apply()
@@ -121,14 +125,17 @@ class TextileService @Inject constructor(
 
     fun loadThreadList() = threadList.postValue(textile.threads.list().itemsList)
 
-    fun addThread(type: Model.Thread.Type, sharing: Model.Thread.Sharing): Model.Thread {
-        val name = "placeholder"
+    fun addThread(
+        threadName: String,
+        type: Model.Thread.Type,
+        sharing: Model.Thread.Sharing
+    ): Model.Thread {
         val schema = View.AddThreadConfig.Schema.newBuilder()
             .setPreset(View.AddThreadConfig.Schema.Preset.MEDIA)
             .build()
         val config = View.AddThreadConfig.newBuilder()
-            .setKey(generateThreadKey(name))
-            .setName(name)
+            .setKey(generateThreadKey(threadName))
+            .setName(threadName)
             .setType(type)
             .setSharing(sharing)
             .setSchema(schema)

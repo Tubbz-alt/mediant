@@ -11,11 +11,11 @@ import androidx.navigation.fragment.findNavController
 import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentSettingsBinding
-import io.numbers.mediant.ui.OnItemClickListener
+import io.numbers.mediant.ui.ItemClickListener
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import javax.inject.Inject
 
-class SettingsFragment : DaggerFragment(), OnItemClickListener {
+class SettingsFragment : DaggerFragment(), ItemClickListener {
 
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProviderFactory
