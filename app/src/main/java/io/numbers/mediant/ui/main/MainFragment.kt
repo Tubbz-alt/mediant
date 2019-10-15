@@ -13,6 +13,7 @@ import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import kotlinx.android.synthetic.main.fragment_main.*
 import javax.inject.Inject
 
+// TODO: Textile node may be stopped but should not relaunch when inactivity
 class MainFragment : DaggerFragment() {
 
     @Inject
@@ -57,7 +58,7 @@ class MainFragment : DaggerFragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         menu.clear()
-        inflater.inflate(R.menu.menu_main, menu)
+        inflater.inflate(R.menu.main_toolbar, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

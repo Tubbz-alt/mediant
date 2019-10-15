@@ -24,7 +24,6 @@ class ThreadFragment : DaggerFragment() {
         viewModel = ViewModelProviders.of(
             this, viewModelProviderFactory
         )[ThreadViewModel::class.java]
-        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(

@@ -8,24 +8,25 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import io.numbers.mediant.R
 import io.numbers.mediant.data.SettingItem
+import io.numbers.mediant.ui.OnItemClickListener
 
 class SettingsRecyclerViewAdapter(
     private val data: List<SettingItem>,
-    private val onItemListener: OnItemListener
+    private val onItemClickListener: OnItemClickListener
 ) :
     RecyclerView.Adapter<SettingsRecyclerViewAdapter.ViewHolder>() {
 
     override fun getItemCount() = data.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder.from(parent, onItemListener)
+        return ViewHolder.from(parent, onItemClickListener)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(data[position])
     }
 
-    class ViewHolder(itemView: View, private val onItemListener: OnItemListener) :
+    class ViewHolder(itemView: View, private val onItemClickListener: OnItemClickListener) :
         RecyclerView.ViewHolder(itemView), View.OnClickListener {
 
         init {
@@ -42,20 +43,14 @@ class SettingsRecyclerViewAdapter(
             iconImageView.setImageResource(item.icon)
         }
 
-        override fun onClick(view: View) {
-            onItemListener.onItemClick(adapterPosition)
-        }
+        override fun onClick(view: View) = onItemClickListener.onItemClick(adapterPosition)
 
         companion object {
-            fun from(parent: ViewGroup, onItemListener: OnItemListener): ViewHolder {
+            fun from(parent: ViewGroup, onItemClickListener: OnItemClickListener): ViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 val view = layoutInflater.inflate(R.layout.layout_setting_item, parent, false)
-                return ViewHolder(view, onItemListener)
+                return ViewHolder(view, onItemClickListener)
             }
         }
-    }
-
-    interface OnItemListener {
-        fun onItemClick(position: Int)
     }
 }

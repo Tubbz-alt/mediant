@@ -4,11 +4,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.numbers.mediant.R
 import io.numbers.mediant.data.SettingItem
+import io.numbers.mediant.ui.OnItemClickListener
 import io.numbers.mediant.util.Event
 import javax.inject.Inject
 
-class SettingsViewModel @Inject constructor() : ViewModel(),
-    SettingsRecyclerViewAdapter.OnItemListener {
+class SettingsViewModel @Inject constructor() : ViewModel(), OnItemClickListener {
 
     val navToSharedPreferencesFragmentEvent = MutableLiveData<Event<Unit>>()
     val navToTextileSettingsFragmentEvent = MutableLiveData<Event<Unit>>()
