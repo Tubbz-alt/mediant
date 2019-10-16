@@ -95,7 +95,7 @@ class TextileService @Inject constructor(
                 threadList.postValue(textile.threads.list().itemsList)
             }
 
-            override fun threadRemoved(threadId: String?) {
+            override fun threadRemoved(threadId: String) {
                 super.threadRemoved(threadId)
                 threadList.postValue(textile.threads.list().itemsList)
             }
@@ -162,13 +162,17 @@ class TextileService @Inject constructor(
      * Feeds
      */
 
-    val feedMap: LiveData<Map<String, MutableLiveData<out List<FeedItemData>>>> =
+    val feedMap: LiveData<Map<String, MutableLiveData<ArrayList<FeedItemData>>>> =
         Transformations.map(threadList) { list ->
             list.map { it.id to MutableLiveData(listFeeds(it.id)) }.toMap()
         }
 
     private fun initFeedLiveDataListeners() {
         textile.addEventListener(object : BaseTextileEventListener() {
+            override fun threadUpdateReceived(threadId: String, feedItemData: FeedItemData) {
+                super.threadUpdateReceived(threadId, feedItemData)
+                feedMap.value?.get(threadId)?.postValue(listFeeds(threadId))
+            }
         })
     }
 
