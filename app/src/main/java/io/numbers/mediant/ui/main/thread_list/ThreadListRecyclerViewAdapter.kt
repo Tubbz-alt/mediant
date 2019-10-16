@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.TextView
+import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.numbers.mediant.R
@@ -18,38 +19,31 @@ class ThreadListRecyclerViewAdapter(
 ) :
     RecyclerView.Adapter<ThreadListRecyclerViewAdapter.ViewHolder>() {
 
-    var data = listOf<Model.Thread>()
-        set(value) {
-            DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-                override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) =
-                    field[oldItemPosition].id == value[newItemPosition].id
+    var data: List<Model.Thread>
+        get() = differ.currentList
+        set(value) = differ.submitList(value)
 
-                override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int) =
-                    field[oldItemPosition].id == value[newItemPosition].id
+    private val differ = AsyncListDiffer(this, object : DiffUtil.ItemCallback<Model.Thread>() {
 
-                override fun getOldListSize() = field.size
+        override fun areItemsTheSame(oldItem: Model.Thread, newItem: Model.Thread) =
+            oldItem.id == newItem.id
 
-                override fun getNewListSize() = value.size
-            }, true).apply { dispatchUpdatesTo(this@ThreadListRecyclerViewAdapter) }
-            field = value
-        }
+        override fun areContentsTheSame(oldItem: Model.Thread, newItem: Model.Thread) =
+            oldItem == newItem
+    })
 
     override fun getItemCount() = data.size
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder.from(parent, itemClickListener, itemMenuClickListener)
-    }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+        ViewHolder.from(parent, itemClickListener, itemMenuClickListener)
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(data[position])
-    }
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
     class ViewHolder(
         itemView: View,
         private val itemClickListener: ItemClickListener,
         private val itemMenuClickListener: ItemMenuClickListener
-    ) :
-        RecyclerView.ViewHolder(itemView), View.OnClickListener, View.OnLongClickListener {
+    ) : RecyclerView.ViewHolder(itemView), View.OnClickListener, View.OnLongClickListener {
 
         init {
             itemView.setOnClickListener(this)

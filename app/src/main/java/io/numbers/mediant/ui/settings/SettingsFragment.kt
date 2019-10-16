@@ -46,9 +46,7 @@ class SettingsFragment : DaggerFragment(), ItemClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.settingList.observe(viewLifecycleOwner, Observer {
-            adapter.data.replaceAll(it)
-        })
+        viewModel.settingList.observe(viewLifecycleOwner, Observer { adapter.data = it })
     }
 
     override fun onItemClick(position: Int) {
