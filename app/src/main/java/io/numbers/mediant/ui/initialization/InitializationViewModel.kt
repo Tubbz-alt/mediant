@@ -3,9 +3,9 @@ package io.numbers.mediant.ui.initialization
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.numbers.mediant.R
+import io.numbers.mediant.api.TextileInfoListener
 import io.numbers.mediant.api.TextileService
 import io.numbers.mediant.viewmodel.Event
-import io.textile.textile.TextileLoggingListener
 import javax.inject.Inject
 
 class InitializationViewModel @Inject constructor(private val textileService: TextileService) :
@@ -29,6 +29,6 @@ class InitializationViewModel @Inject constructor(private val textileService: Te
         }
         loadingText.value = R.string.connect_to_ipfs
         textileService.launch()
-        textileService.addEventListener(TextileLoggingListener())
+        textileService.addEventListener(TextileInfoListener())
     }
 }
