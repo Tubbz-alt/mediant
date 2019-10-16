@@ -17,7 +17,7 @@ import io.numbers.mediant.ui.ItemClickListener
 import io.numbers.mediant.ui.ItemMenuClickListener
 import io.numbers.mediant.ui.main.MainFragmentDirections
 import io.numbers.mediant.ui.main.thread_list.thread_creation_dialog.ThreadCreationDialogFragment
-import io.numbers.mediant.util.EventObserver
+import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import javax.inject.Inject
 
@@ -54,12 +54,13 @@ class ThreadListFragment : DaggerFragment(), ItemClickListener, ItemMenuClickLis
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.threadList.observe(viewLifecycleOwner, Observer { adapter.data = it })
-        viewModel.openDialog.observe(viewLifecycleOwner, EventObserver {
-            ThreadCreationDialogFragment().show(
-                childFragmentManager,
-                ThreadCreationDialogFragment::javaClass.name
-            )
-        })
+        viewModel.openDialog.observe(viewLifecycleOwner,
+            EventObserver {
+                ThreadCreationDialogFragment().show(
+                    childFragmentManager,
+                    ThreadCreationDialogFragment::javaClass.name
+                )
+            })
     }
 
     override fun onAttachFragment(childFragment: Fragment) {

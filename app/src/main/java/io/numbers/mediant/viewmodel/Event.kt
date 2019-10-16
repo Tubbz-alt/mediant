@@ -1,4 +1,4 @@
-package io.numbers.mediant.util
+package io.numbers.mediant.viewmodel
 
 import androidx.lifecycle.Observer
 

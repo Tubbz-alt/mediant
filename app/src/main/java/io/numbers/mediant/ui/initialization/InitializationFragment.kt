@@ -10,7 +10,7 @@ import androidx.navigation.fragment.findNavController
 import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentInitializationBinding
-import io.numbers.mediant.util.EventObserver
+import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import javax.inject.Inject
 
@@ -42,8 +42,9 @@ class InitializationFragment : DaggerFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.navToMainFragmentEvent.observe(viewLifecycleOwner, EventObserver {
-            findNavController().navigate(R.id.action_initializationFragment_to_mainFragment)
-        })
+        viewModel.navToMainFragmentEvent.observe(viewLifecycleOwner,
+            EventObserver {
+                findNavController().navigate(R.id.action_initializationFragment_to_mainFragment)
+            })
     }
 }

@@ -6,7 +6,7 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import io.numbers.mediant.R
 import io.numbers.mediant.data.Tab
-import io.numbers.mediant.util.Event
+import io.numbers.mediant.viewmodel.Event
 import javax.inject.Inject
 
 class MainViewModel @Inject constructor(val tabs: List<Tab>) : ViewModel() {

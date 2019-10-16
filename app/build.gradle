@@ -34,7 +34,7 @@ android {
 }
 
 dependencies {
-    implementation 'io.textile:textile:2.0.8'
+    implementation 'io.textile:textile:2.0.9'
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
