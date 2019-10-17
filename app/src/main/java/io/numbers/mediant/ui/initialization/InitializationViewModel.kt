@@ -3,8 +3,8 @@ package io.numbers.mediant.ui.initialization
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.numbers.mediant.R
-import io.numbers.mediant.api.TextileInfoListener
-import io.numbers.mediant.api.TextileService
+import io.numbers.mediant.api.textile.TextileInfoListener
+import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.viewmodel.Event
 import javax.inject.Inject
 

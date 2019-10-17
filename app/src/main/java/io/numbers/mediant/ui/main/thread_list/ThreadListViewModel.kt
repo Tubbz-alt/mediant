@@ -2,7 +2,7 @@ package io.numbers.mediant.ui.main.thread_list
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import io.numbers.mediant.api.TextileService
+import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.viewmodel.Event
 import io.textile.pb.Model
 import javax.inject.Inject

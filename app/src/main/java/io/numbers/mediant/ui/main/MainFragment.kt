@@ -8,7 +8,6 @@ import androidx.navigation.fragment.findNavController
 import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentMainBinding
-import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import kotlinx.android.synthetic.main.fragment_main.*
 import javax.inject.Inject
@@ -49,10 +48,6 @@ class MainFragment : DaggerFragment() {
         } ?: run { throw RuntimeException("Illegal activity") }
         tabLayout.setupWithViewPager(viewPager)
         viewPager.adapter = mainPagerAdapter
-        viewModel.navToSettingsFragmentEvent.observe(this,
-            EventObserver {
-                if (it) findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
-            })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -63,6 +58,9 @@ class MainFragment : DaggerFragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         viewModel.selectedOptionsItem.value = item.itemId
+        when (item.itemId) {
+            R.id.menuItemNavToSettings -> findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
+        }
         return true
     }
 }

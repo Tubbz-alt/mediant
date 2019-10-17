@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import dagger.Module
 import dagger.Provides
-import io.numbers.mediant.api.TextileService
+import io.numbers.mediant.api.textile.TextileService
 import io.textile.textile.Textile
 import javax.inject.Singleton
 
