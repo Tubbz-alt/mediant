@@ -1,11 +1,10 @@
 package io.numbers.mediant.di
 
 import android.app.Application
-import android.content.SharedPreferences
-import androidx.preference.PreferenceManager
 import dagger.Module
 import dagger.Provides
 import io.numbers.mediant.api.textile.TextileService
+import io.numbers.mediant.util.PreferenceHelper
 import io.textile.textile.Textile
 import javax.inject.Singleton
 
@@ -25,13 +24,12 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideSharedPreferences(application: Application): SharedPreferences =
-        PreferenceManager.getDefaultSharedPreferences(application.applicationContext)
+    fun providePreferenceHelper(application: Application) = PreferenceHelper(application)
 
     @Singleton
     @Provides
     fun provideTextileService(
-        sharedPreferences: SharedPreferences,
+        preferenceHelper: PreferenceHelper,
         application: Application
-    ): TextileService = TextileService(Textile.instance(), sharedPreferences, application)
+    ) = TextileService(Textile.instance(), preferenceHelper, application)
 }

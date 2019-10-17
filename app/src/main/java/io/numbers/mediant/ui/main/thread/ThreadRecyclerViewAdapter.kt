@@ -5,13 +5,15 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.api.textile.hasSameContentsTo
 import io.textile.textile.FeedItemData
 import io.textile.textile.FeedItemType
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ThreadRecyclerViewAdapter : RecyclerView.Adapter<ThreadRecyclerViewAdapter.ViewHolder>() {
+class ThreadRecyclerViewAdapter(private val textileService: TextileService) :
+    RecyclerView.Adapter<ThreadRecyclerViewAdapter.ViewHolder>() {
 
     var data: List<FeedItemData>
         get() = differ.currentList
@@ -33,7 +35,7 @@ class ThreadRecyclerViewAdapter : RecyclerView.Adapter<ThreadRecyclerViewAdapter
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return when (feedItemTypeValues[viewType]) {
-            FeedItemType.FILES -> ImageCardViewHolder.from(parent)
+            FeedItemType.FILES -> ImageCardViewHolder.from(parent, textileService)
             FeedItemType.JOIN -> JoinMessageViewHolder.from(parent)
             else -> throw IllegalStateException("Cannot display the feed item type: ${feedItemTypeValues[viewType]}")
         }

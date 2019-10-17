@@ -23,6 +23,7 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:singleLine="true"
                 android:text="@={viewModel.threadName}" />
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>

@@ -1,13 +1,19 @@
 package io.numbers.mediant.ui.main
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.*
+import androidx.core.content.FileProvider
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import dagger.android.support.DaggerFragment
+import io.numbers.mediant.BuildConfig.APPLICATION_ID
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentMainBinding
+import io.numbers.mediant.util.ActivityRequestCodes
 import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import kotlinx.android.synthetic.main.fragment_main.*
@@ -49,10 +55,15 @@ class MainFragment : DaggerFragment() {
         } ?: run { throw RuntimeException("Illegal activity") }
         tabLayout.setupWithViewPager(viewPager)
         viewPager.adapter = mainPagerAdapter
-        viewModel.navToPermissionRationaleFragmentEvent.observe(viewLifecycleOwner, EventObserver {
-            MainFragmentDirections.actionMainFragmentToPermissionRationaleFragment(it)
-                .also { findNavController().navigate(it) }
+        viewModel.openCameraEvent.observe(viewLifecycleOwner, EventObserver {
+            dispatchTakePhotoIntent()
         })
+        viewModel.navToPermissionRationaleFragmentEvent.observe(
+            viewLifecycleOwner,
+            EventObserver { rationale ->
+                MainFragmentDirections.actionMainFragmentToPermissionRationaleFragment(rationale)
+                    .also { findNavController().navigate(it) }
+            })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -69,4 +80,29 @@ class MainFragment : DaggerFragment() {
         }
         return true
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            ActivityRequestCodes.CAMERA.value -> if (resultCode == Activity.RESULT_OK) viewModel.uploadPhoto()
+        }
+    }
+
+    private fun dispatchTakePhotoIntent() {
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        activity?.also { fragmentActivity ->
+            // Ensure that there's a camera activity to handle the intent.
+            intent.resolveActivity(fragmentActivity.packageManager)?.also {
+                // Create the File where the photo should go.
+                val photoFile = viewModel.createPhotoFile(fragmentActivity.filesDir)
+                val photoUri = FileProvider.getUriForFile(
+                    fragmentActivity, "$APPLICATION_ID.provider", photoFile
+                )
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+                startActivityForResult(intent, ActivityRequestCodes.CAMERA.value)
+            }
+        }
+    }
+
+
 }

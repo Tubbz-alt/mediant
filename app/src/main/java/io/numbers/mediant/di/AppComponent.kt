@@ -16,9 +16,8 @@ import javax.inject.Singleton
         ActivityBuildersModule::class,
         ViewModelFactoryModule::class
     ]
-)
-interface AppComponent :
-    AndroidInjector<BaseApplication> {  // BaseApplication is a client of AppComponent service
+) // BaseApplication is a client of AppComponent service
+interface AppComponent : AndroidInjector<BaseApplication> {
 
     @Component.Builder
     interface Builder {

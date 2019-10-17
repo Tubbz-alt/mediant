@@ -1,6 +1,5 @@
 package io.numbers.mediant.ui.main.thread
 
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +9,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
+import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.databinding.FragmentThreadBinding
+import io.numbers.mediant.util.PreferenceHelper
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import javax.inject.Inject
 
@@ -22,9 +23,12 @@ class ThreadFragment : DaggerFragment() {
     lateinit var viewModel: ThreadViewModel
 
     @Inject
-    lateinit var sharedPreferences: SharedPreferences
+    lateinit var preferenceHelper: PreferenceHelper
 
-    private val adapter = ThreadRecyclerViewAdapter()
+    @Inject
+    lateinit var textileService: TextileService
+
+    private lateinit var adapter: ThreadRecyclerViewAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,16 +46,17 @@ class ThreadFragment : DaggerFragment() {
             DataBindingUtil.inflate(inflater, R.layout.fragment_thread, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
+
         setThreadIdToViewModel()
+
+        adapter = ThreadRecyclerViewAdapter(textileService)
         binding.recyclerView.adapter = adapter
         return binding.root
     }
 
     private fun setThreadIdToViewModel() {
         val threadId = arguments?.let { ThreadFragmentArgs.fromBundle(it).threadId }
-            ?: sharedPreferences.getString(
-                resources.getString(R.string.key_personal_thread_id), null
-            )
+            ?: preferenceHelper.personalThreadId
         threadId?.also { viewModel.setThreadId(it) }
     }
 

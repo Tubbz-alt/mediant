@@ -1,12 +1,11 @@
 package io.numbers.mediant.api.textile
 
 import android.app.Application
-import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import io.numbers.mediant.BuildConfig
-import io.numbers.mediant.R
+import io.numbers.mediant.util.PreferenceHelper
 import io.textile.pb.Model
 import io.textile.pb.View
 import io.textile.textile.*
@@ -21,7 +20,7 @@ private const val REQUEST_LIMIT = 999
 
 class TextileService @Inject constructor(
     private val textile: Textile,
-    private val sharedPreferences: SharedPreferences,
+    private val preferenceHelper: PreferenceHelper,
     private val application: Application
 ) {
 
@@ -30,11 +29,7 @@ class TextileService @Inject constructor(
 
     val threadList = MutableLiveData<List<Model.Thread>>()
     val publicThreadList: LiveData<List<Model.Thread>> = Transformations.map(threadList) { list ->
-        list.filter {
-            it.id != sharedPreferences.getString(
-                application.resources.getString(R.string.key_personal_thread_id), null
-            )
-        }
+        list.filter { it.id != preferenceHelper.personalThreadId }
     }
 
     val feedItemSubtype: EnumSet<FeedItemType> = EnumSet.of(FeedItemType.FILES, FeedItemType.JOIN)
@@ -64,10 +59,7 @@ class TextileService @Inject constructor(
 
     fun createNewWalletAndAccount(): String {
         val phrase = Textile.initializeCreatingNewWalletAndAccount(textilePath, false, false)
-        sharedPreferences.edit().putString(
-            application.resources.getString(R.string.key_wallet_recovery_phrase),
-            phrase
-        ).apply()
+        preferenceHelper.walletRecoveryPhrase = phrase
         Timber.i("Create new wallet: $phrase")
         return phrase
     }
@@ -110,9 +102,7 @@ class TextileService @Inject constructor(
 
     private fun initPersonalThread() {
         try {
-            val personalThreadId = sharedPreferences.getString(
-                application.resources.getString(R.string.key_personal_thread_id), null
-            )
+            val personalThreadId = preferenceHelper.personalThreadId
             textile.threads.get(personalThreadId)
             Timber.i("Personal thread has already been created: $personalThreadId")
         } catch (e: Exception) {
@@ -121,9 +111,7 @@ class TextileService @Inject constructor(
                 Model.Thread.Type.PRIVATE,
                 Model.Thread.Sharing.NOT_SHARED
             ).also {
-                sharedPreferences.edit().putString(
-                    application.resources.getString(R.string.key_personal_thread_id), it.id
-                ).apply()
+                preferenceHelper.personalThreadId = it.id
                 Timber.i("Create personal thread: ${it.id}")
             }
         }
@@ -165,13 +153,54 @@ class TextileService @Inject constructor(
      */
 
     fun listFeeds(threadId: String): ArrayList<FeedItemData> {
-        val request = View.FeedRequest.newBuilder()
+        return View.FeedRequest.newBuilder()
             .setThread(threadId)
             .setLimit(REQUEST_LIMIT)
             .build()
-        val list = textile.feed.list(request)
-        Timber.d("$threadId: $list")
-        return list
+            .let { textile.feed.list(it) }
+    }
+
+    /**
+     * Files
+     */
+
+    fun addFile(filePath: String) {
+        textile.files.addFiles(
+            filePath,
+            preferenceHelper.personalThreadId,
+            "caption",
+            object : Handlers.BlockHandler {
+
+                override fun onComplete(block: Model.Block) =
+                    Timber.d("upload complete: ${block.id}")
+
+                override fun onError(e: java.lang.Exception) {
+                    Timber.e("error: add file callback")
+                    Timber.e(e)
+                }
+            })
+    }
+
+    fun getImageContent(files: View.Files, minWidth: Long = 500, callback: (ByteArray) -> Unit) {
+        val fileIndex = files.filesList.let {
+            if (it != null && it.size > 0 && it[0].index != 0) it[0].index
+            else 0
+        }
+
+        // imageContentForMinWidth usage: (Textile has not documented)
+        // https://github.com/textileio/photos/blob/master/App/Components/authoring-input.tsx#L184
+        textile.files.imageContentForMinWidth(
+            "${files.data}/$fileIndex", minWidth, object : Handlers.DataHandler {
+
+                override fun onComplete(data: ByteArray, media: String) =
+                    if (media == "image/jpeg" || media == "image/png") callback(data)
+                    else Timber.e("Unknown data type: $media")
+
+                override fun onError(e: java.lang.Exception?) {
+                    Timber.e("error: get image content callback")
+                    Timber.e(e)
+                }
+            })
     }
 
     /**
