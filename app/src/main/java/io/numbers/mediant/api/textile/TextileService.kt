@@ -42,7 +42,6 @@ class TextileService @Inject constructor(
     init {
         initNodeStatusLiveDataListeners()
         initThreadLiveDataListeners()
-        initFeedLiveDataListeners()
     }
 
     /**
@@ -164,22 +163,6 @@ class TextileService @Inject constructor(
     /**
      * Feeds
      */
-
-    private fun initFeedLiveDataListeners() {
-//        feedMap.addSource(threadList) { list ->
-//            Timber.d("---------update")
-//            list.map { it.id to MutableLiveData(listFeeds(it.id).toList()) }.toMap()
-//        }
-
-//        textile.addEventListener(object : BaseTextileEventListener() {
-//            override fun threadUpdateReceived(threadId: String, feedItemData: FeedItemData) {
-//                super.threadUpdateReceived(threadId, feedItemData)
-//                feedMap.value?.get(threadId)?.postValue(listFeeds(threadId).filter {
-//                    feedItemSubtype.contains(it.type)
-//                })
-//            }
-//        })
-    }
 
     fun listFeeds(threadId: String): ArrayList<FeedItemData> {
         val request = View.FeedRequest.newBuilder()

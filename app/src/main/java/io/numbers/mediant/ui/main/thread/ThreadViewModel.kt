@@ -25,7 +25,9 @@ class ThreadViewModel @Inject constructor(private val textileService: TextileSer
             override fun threadUpdateReceived(threadId: String, feedItemData: FeedItemData) {
                 super.threadUpdateReceived(threadId, feedItemData)
                 if (threadId == this@ThreadViewModel.threadId) {
-                    feedList.postValue(textileService.listFeeds(threadId))
+                    feedList.postValue(textileService.listFeeds(threadId).filter {
+                        textileService.feedItemSubtype.contains(it.type)
+                    })
                 }
             }
         })
