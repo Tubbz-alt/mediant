@@ -5,6 +5,7 @@ import dagger.android.ContributesAndroidInjector
 import io.numbers.mediant.di.base.initialization.InitializationViewModelsModule
 import io.numbers.mediant.di.base.main.MainModule
 import io.numbers.mediant.di.base.main.MainViewModelsModule
+import io.numbers.mediant.di.base.permission_rationale.PermissionRationaleViewModelsModule
 import io.numbers.mediant.di.base.settings.SettingsViewModelsModule
 import io.numbers.mediant.di.base.textile_settings.TextileSettingsViewModelsModule
 import io.numbers.mediant.di.base.thread.ThreadViewModelsModule
@@ -15,6 +16,7 @@ import io.numbers.mediant.ui.main.MainFragment
 import io.numbers.mediant.ui.main.thread.ThreadFragment
 import io.numbers.mediant.ui.main.thread_list.ThreadListFragment
 import io.numbers.mediant.ui.main.thread_list.thread_creation_dialog.ThreadCreationDialogFragment
+import io.numbers.mediant.ui.permission_rationale.PermissionRationaleFragment
 import io.numbers.mediant.ui.settings.SettingsFragment
 import io.numbers.mediant.ui.settings.textile.TextileSettingsFragment
 
@@ -48,6 +50,9 @@ abstract class BaseFragmentBuildersModule {
 
     @ContributesAndroidInjector(modules = [ThreadCreationDialogViewModelsModule::class])
     abstract fun contributeThreadCreationDialogFragment(): ThreadCreationDialogFragment
+
+    @ContributesAndroidInjector(modules = [PermissionRationaleViewModelsModule::class])
+    abstract fun contributePermissionRationaleFragment(): PermissionRationaleFragment
 
     // Add new Fragments as Dagger client here. Dagger will automatically generate
     // XXXFragmentSubcomponents.

@@ -8,6 +8,7 @@ import androidx.navigation.fragment.findNavController
 import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentMainBinding
+import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import kotlinx.android.synthetic.main.fragment_main.*
 import javax.inject.Inject
@@ -48,6 +49,10 @@ class MainFragment : DaggerFragment() {
         } ?: run { throw RuntimeException("Illegal activity") }
         tabLayout.setupWithViewPager(viewPager)
         viewPager.adapter = mainPagerAdapter
+        viewModel.navToPermissionRationaleFragmentEvent.observe(viewLifecycleOwner, EventObserver {
+            MainFragmentDirections.actionMainFragmentToPermissionRationaleFragment(it)
+                .also { findNavController().navigate(it) }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

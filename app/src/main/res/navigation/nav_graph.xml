@@ -38,6 +38,13 @@
             app:exitAnim="@anim/fast_fade_out"
             app:popEnterAnim="@anim/fast_fade_in"
             app:popExitAnim="@anim/fast_fade_out" />
+        <action
+            android:id="@+id/action_mainFragment_to_permissionRationaleFragment"
+            app:destination="@id/permissionRationaleFragment"
+            app:enterAnim="@anim/fast_fade_in"
+            app:exitAnim="@anim/fast_fade_out"
+            app:popEnterAnim="@anim/fast_fade_in"
+            app:popExitAnim="@anim/fast_fade_out" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -81,5 +88,14 @@
             android:name="threadName"
             app:argType="string"
             app:nullable="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/permissionRationaleFragment"
+        android:name="io.numbers.mediant.ui.permission_rationale.PermissionRationaleFragment"
+        android:label="@string/permission_rationale_label"
+        tools:layout="@layout/fragment_permission_rationale">
+        <argument
+            android:name="rationale"
+            app:argType="integer" />
     </fragment>
 </navigation>
