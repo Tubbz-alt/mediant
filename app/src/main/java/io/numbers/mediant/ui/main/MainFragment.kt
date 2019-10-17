@@ -60,6 +60,7 @@ class MainFragment : DaggerFragment() {
         viewModel.selectedOptionsItem.value = item.itemId
         when (item.itemId) {
             R.id.menuItemNavToSettings -> findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
+            R.id.menuItemOpenCamera -> viewModel.prepareCamera()
         }
         return true
     }
