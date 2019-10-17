@@ -3,6 +3,7 @@ package io.numbers.mediant.ui.main.thread
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.numbers.mediant.api.textile.TextileService
+import io.numbers.mediant.viewmodel.Event
 import io.textile.textile.BaseTextileEventListener
 import io.textile.textile.FeedItemData
 import javax.inject.Inject
@@ -11,8 +12,9 @@ class ThreadViewModel @Inject constructor(private val textileService: TextileSer
     ViewModel() {
 
     private lateinit var threadId: String
-    var feedList = MutableLiveData<List<FeedItemData>>()
+    val feedList = MutableLiveData<List<FeedItemData>>()
     val isLoading = MutableLiveData(false)
+    val scrollToTopEvent = MutableLiveData<Event<Unit>>()
 
     fun setThreadId(value: String) {
         threadId = value
@@ -28,6 +30,7 @@ class ThreadViewModel @Inject constructor(private val textileService: TextileSer
                     feedList.postValue(textileService.listFeeds(threadId).filter {
                         textileService.feedItemSubtype.contains(it.type)
                     })
+                    scrollToTopEvent.postValue(Event(Unit))
                 }
             }
         })

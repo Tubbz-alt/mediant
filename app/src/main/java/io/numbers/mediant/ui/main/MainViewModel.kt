@@ -3,7 +3,6 @@ package io.numbers.mediant.ui.main
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.numbers.mediant.api.textile.TextileService
-import io.numbers.mediant.data.Tab
 import io.numbers.mediant.util.PermissionManager
 import io.numbers.mediant.util.PermissionRequestType
 import io.numbers.mediant.viewmodel.Event
@@ -11,7 +10,6 @@ import java.io.File
 import javax.inject.Inject
 
 class MainViewModel @Inject constructor(
-    val tabs: List<Tab>,
     private val permissionManager: PermissionManager,
     private val textileService: TextileService
 ) : ViewModel() {

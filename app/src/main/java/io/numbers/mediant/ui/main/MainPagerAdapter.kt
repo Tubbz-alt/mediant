@@ -3,14 +3,13 @@ package io.numbers.mediant.ui.main
 import android.content.Context
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
-import io.numbers.mediant.data.Tab
+import io.numbers.mediant.ui.tab.Tab
 
 class MainPagerAdapter(
     private val tabs: List<Tab>,
     private val context: Context,
     fm: FragmentManager
-) :
-    FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+) : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     override fun getItem(position: Int) = tabs[position].fragment
 

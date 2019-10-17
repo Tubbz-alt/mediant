@@ -3,7 +3,6 @@ package io.numbers.mediant.ui.settings
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.numbers.mediant.R
-import io.numbers.mediant.data.SettingItem
 import javax.inject.Inject
 
 class SettingsViewModel @Inject constructor() : ViewModel() {

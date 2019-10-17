@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.numbers.mediant.R
-import io.numbers.mediant.data.SettingItem
 import io.numbers.mediant.ui.ItemClickListener
 
 class SettingsRecyclerViewAdapter(private val itemClickListener: ItemClickListener) :

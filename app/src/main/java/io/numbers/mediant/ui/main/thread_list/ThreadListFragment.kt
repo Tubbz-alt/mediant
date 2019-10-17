@@ -10,18 +10,19 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
-import dagger.android.support.DaggerFragment
+import androidx.recyclerview.widget.LinearSmoothScroller
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentThreadListBinding
 import io.numbers.mediant.ui.ItemClickListener
 import io.numbers.mediant.ui.ItemMenuClickListener
 import io.numbers.mediant.ui.main.MainFragmentDirections
 import io.numbers.mediant.ui.main.thread_list.thread_creation_dialog.ThreadCreationDialogFragment
+import io.numbers.mediant.ui.tab.TabFragment
 import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import javax.inject.Inject
 
-class ThreadListFragment : DaggerFragment(), ItemClickListener, ItemMenuClickListener,
+class ThreadListFragment : TabFragment(), ItemClickListener, ItemMenuClickListener,
     ThreadCreationDialogFragment.DialogListener {
 
     @Inject
@@ -30,6 +31,8 @@ class ThreadListFragment : DaggerFragment(), ItemClickListener, ItemMenuClickLis
     lateinit var viewModel: ThreadListViewModel
 
     private val adapter = ThreadListRecyclerViewAdapter(this, this)
+
+    private lateinit var binding: FragmentThreadListBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,8 +46,7 @@ class ThreadListFragment : DaggerFragment(), ItemClickListener, ItemMenuClickLis
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val binding: FragmentThreadListBinding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_thread_list, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_thread_list, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
         binding.recyclerView.adapter = adapter
@@ -96,5 +98,12 @@ class ThreadListFragment : DaggerFragment(), ItemClickListener, ItemMenuClickLis
 
     override fun onDialogNegativeClick(dialog: ThreadCreationDialogFragment) {
         dialog.dismiss()
+    }
+
+    override fun smoothScrollToTop() {
+        binding.recyclerView.layoutManager?.startSmoothScroll(object :
+            LinearSmoothScroller(context) {
+            override fun getVerticalSnapPreference() = SNAP_TO_START
+        }.apply { targetPosition = 0 })
     }
 }
