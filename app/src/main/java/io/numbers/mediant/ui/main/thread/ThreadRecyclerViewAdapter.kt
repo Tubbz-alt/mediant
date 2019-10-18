@@ -7,14 +7,18 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.api.textile.hasSameContentsTo
+import io.numbers.mediant.ui.listeners.FeedItemListener
 import io.textile.textile.FeedItemData
 import io.textile.textile.FeedItemType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ThreadRecyclerViewAdapter(private val textileService: TextileService) :
-    RecyclerView.Adapter<ThreadRecyclerViewAdapter.ViewHolder>() {
+class ThreadRecyclerViewAdapter(
+    private val textileService: TextileService,
+    private val listener: FeedItemListener,
+    private val isPersonal: Boolean
+) : RecyclerView.Adapter<ThreadRecyclerViewAdapter.ViewHolder>() {
 
     var data: List<FeedItemData>
         get() = differ.currentList
@@ -37,18 +41,20 @@ class ThreadRecyclerViewAdapter(private val textileService: TextileService) :
     @ExperimentalCoroutinesApi
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return when (feedItemTypeValues[viewType]) {
-            FeedItemType.FILES -> ImageCardViewHolder.from(parent, textileService)
-            FeedItemType.JOIN -> JoinMessageViewHolder.from(parent)
-            else -> throw IllegalStateException("Cannot display the feed item type: ${feedItemTypeValues[viewType]}")
+            FeedItemType.FILES -> ImageCardViewHolder.from(
+                parent, textileService, listener, isPersonal
+            )
+            else -> EventMessageViewHolder.from(parent)
         }
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) =
+        holder.bind(data[position], data[position].type)
 
     abstract class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         val dateFormatter = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
 
-        abstract fun bind(item: FeedItemData)
+        abstract fun bind(item: FeedItemData, type: FeedItemType)
     }
 }

@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearSmoothScroller
@@ -12,12 +13,17 @@ import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.databinding.FragmentThreadBinding
+import io.numbers.mediant.ui.listeners.DialogListener
+import io.numbers.mediant.ui.listeners.FeedItemListener
 import io.numbers.mediant.ui.tab.TabFragment
 import io.numbers.mediant.util.PreferenceHelper
+import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
+import io.textile.textile.FeedItemData
+import timber.log.Timber
 import javax.inject.Inject
 
-open class ThreadFragment : DaggerFragment(), TabFragment {
+open class ThreadFragment : DaggerFragment(), TabFragment, FeedItemListener {
 
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProviderFactory
@@ -51,7 +57,7 @@ open class ThreadFragment : DaggerFragment(), TabFragment {
 
         setThreadIdToViewModel()
 
-        adapter = ThreadRecyclerViewAdapter(textileService)
+        adapter = ThreadRecyclerViewAdapter(textileService, this, viewModel.isPersonal)
         binding.recyclerView.adapter = adapter
         return binding.root
     }
@@ -65,6 +71,31 @@ open class ThreadFragment : DaggerFragment(), TabFragment {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.feedList.observe(viewLifecycleOwner, Observer { adapter.data = it })
+        viewModel.scrollToTopEvent.observe(
+            viewLifecycleOwner, EventObserver { smoothScrollToTop() })
+    }
+
+    override fun onShowProof(feedItemData: FeedItemData) {
+        Timber.d("proof: ${feedItemData.files.date}")
+    }
+
+    override fun onPublish(feedItemData: FeedItemData) {
+        Timber.d("publish: ${feedItemData.files.date}")
+    }
+
+    override fun onDelete(feedItemData: FeedItemData) {
+        val dialogCallback = object : DialogListener {
+            override fun onDialogPositiveClick(dialog: DialogFragment) {
+                viewModel.deleteFile(feedItemData.files)
+                dialog.dismiss()
+            }
+
+            override fun onDialogNegativeClick(dialog: DialogFragment) = dialog.dismiss()
+        }
+        FeedDeletionDialogFragment().apply { listener = dialogCallback }.show(
+            childFragmentManager,
+            FeedDeletionDialogFragment::javaClass.name
+        )
     }
 
     override fun smoothScrollToTop() {

@@ -6,7 +6,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearSmoothScroller
 import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentThreadListBinding
+import io.numbers.mediant.ui.listeners.DialogListener
 import io.numbers.mediant.ui.listeners.ItemClickListener
 import io.numbers.mediant.ui.listeners.ItemMenuClickListener
 import io.numbers.mediant.ui.main.MainFragmentDirections
@@ -23,9 +24,7 @@ import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import javax.inject.Inject
 
-class ThreadListFragment : DaggerFragment(), TabFragment, ItemClickListener,
-    ItemMenuClickListener,
-    ThreadCreationDialogFragment.DialogListener {
+class ThreadListFragment : DaggerFragment(), TabFragment, ItemClickListener, ItemMenuClickListener {
 
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProviderFactory
@@ -58,23 +57,26 @@ class ThreadListFragment : DaggerFragment(), TabFragment, ItemClickListener,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.threadList.observe(viewLifecycleOwner, Observer { adapter.data = it })
-        viewModel.openDialog.observe(viewLifecycleOwner,
-            EventObserver {
-                ThreadCreationDialogFragment().show(
-                    childFragmentManager,
-                    ThreadCreationDialogFragment::javaClass.name
-                )
-            })
+        viewModel.openDialog.observe(
+            viewLifecycleOwner, EventObserver { showThreadCreationDialog() })
     }
 
-    override fun onAttachFragment(childFragment: Fragment) {
-        super.onAttachFragment(childFragment)
-        try {
-            childFragment as ThreadCreationDialogFragment
-            childFragment.listener = this
-        } catch (e: ClassCastException) {
-            throw ClassCastException()
+    private fun showThreadCreationDialog() {
+        val dialogCallback = object : DialogListener {
+            override fun onDialogPositiveClick(dialog: DialogFragment) {
+                val threadName =
+                    (dialog as ThreadCreationDialogFragment).viewModel.threadName.value ?: ""
+                viewModel.addThread(threadName)
+                dialog.dismiss()
+            }
+
+            override fun onDialogNegativeClick(dialog: DialogFragment) = dialog.dismiss()
         }
+
+        ThreadCreationDialogFragment().apply { listener = dialogCallback }.show(
+            childFragmentManager,
+            ThreadCreationDialogFragment::javaClass.name
+        )
     }
 
     override fun onItemClick(position: Int) {
@@ -91,15 +93,6 @@ class ThreadListFragment : DaggerFragment(), TabFragment, ItemClickListener,
             R.id.action_leave_thread -> viewModel.leaveThread(adapter.data[position])
         }
         return true
-    }
-
-    override fun onDialogPositiveClick(dialog: ThreadCreationDialogFragment) {
-        viewModel.addThread(dialog.viewModel.threadName.value ?: "")
-        dialog.dismiss()
-    }
-
-    override fun onDialogNegativeClick(dialog: ThreadCreationDialogFragment) {
-        dialog.dismiss()
     }
 
     override fun smoothScrollToTop() {

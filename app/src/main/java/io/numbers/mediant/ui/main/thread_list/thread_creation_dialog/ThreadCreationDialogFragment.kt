@@ -10,6 +10,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.android.support.DaggerDialogFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.DialogThreadCreationBinding
+import io.numbers.mediant.ui.listeners.DialogListener
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import javax.inject.Inject
 
@@ -47,10 +48,5 @@ class ThreadCreationDialogFragment : DaggerDialogFragment() {
                 .setNegativeButton(R.string.cancel) { _, _ -> listener.onDialogNegativeClick(this) }
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")
-    }
-
-    interface DialogListener {
-        fun onDialogPositiveClick(dialog: ThreadCreationDialogFragment)
-        fun onDialogNegativeClick(dialog: ThreadCreationDialogFragment)
     }
 }

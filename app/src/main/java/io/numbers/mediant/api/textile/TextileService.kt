@@ -32,7 +32,8 @@ class TextileService @Inject constructor(
         list.filter { it.id != preferenceHelper.personalThreadId }
     }
 
-    val feedItemSubtype: EnumSet<FeedItemType> = EnumSet.of(FeedItemType.FILES, FeedItemType.JOIN)
+    private val feedItemSubtype: EnumSet<FeedItemType> =
+        EnumSet.of(FeedItemType.FILES, FeedItemType.JOIN, FeedItemType.IGNORE)
 
     init {
         initNodeStatusLiveDataListeners()
@@ -152,6 +153,9 @@ class TextileService @Inject constructor(
      * Feeds
      */
 
+    fun isSupportedFeedItemType(feedItemData: FeedItemData) =
+        feedItemSubtype.contains(feedItemData.type)
+
     fun listFeeds(threadId: String): ArrayList<FeedItemData> {
         return View.FeedRequest.newBuilder()
             .setThread(threadId)
@@ -214,6 +218,10 @@ class TextileService @Inject constructor(
                     Timber.e(e)
                 }
             })
+    }
+
+    fun ignoreFile(files: View.Files) {
+        textile.ignores.add(files.block)
     }
 
     /**

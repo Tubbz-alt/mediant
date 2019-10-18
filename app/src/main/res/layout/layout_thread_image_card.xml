@@ -40,7 +40,7 @@
             app:layout_constraintTop_toBottomOf="@id/image" />
 
         <Button
-            android:id="@+id/proofButton"
+            android:id="@+id/showProofButton"
             style="@style/IconOnlyCardButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -54,14 +54,17 @@
             style="@style/IconOnlyCardButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             app:icon="@drawable/ic_publish_black_24dp"
-            app:layout_constraintStart_toEndOf="@id/proofButton"
+            app:layout_constraintStart_toEndOf="@id/showProofButton"
             app:layout_constraintTop_toBottomOf="@id/username" />
 
         <Button
+            android:id="@+id/deleteButton"
             style="@style/IconOnlyCardButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             app:icon="@drawable/ic_delete_black_24dp"
             app:layout_constraintStart_toEndOf="@id/publishButton"
             app:layout_constraintTop_toBottomOf="@id/username" />
