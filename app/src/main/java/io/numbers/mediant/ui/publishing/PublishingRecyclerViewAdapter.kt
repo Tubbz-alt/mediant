@@ -3,11 +3,11 @@ package io.numbers.mediant.ui.publishing
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import io.numbers.mediant.R
 import io.numbers.mediant.ui.listeners.ItemClickListener
 import io.textile.pb.Model
@@ -35,28 +35,24 @@ class PublishingRecyclerViewAdapter(private val itemClickListener: ItemClickList
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
-    class ViewHolder(itemView: View, private val itemClickListener: ItemClickListener) :
-        RecyclerView.ViewHolder(itemView), View.OnClickListener {
+    class ViewHolder(
+        itemView: View,
+        private val itemClickListener: ItemClickListener
+    ) : RecyclerView.ViewHolder(itemView) {
 
-        init {
-            itemView.setOnClickListener(this)
-        }
-
-        private val iconImageView: ImageView = itemView.findViewById(R.id.icon)
+        private val publishButton: MaterialButton = itemView.findViewById(R.id.publishButton)
         private val threadNameTextView: TextView = itemView.findViewById(R.id.threadName)
         private val threadIdTextView: TextView = itemView.findViewById(R.id.threadId)
 
         fun bind(item: Model.Thread) {
             threadNameTextView.text = item.name
             threadIdTextView.text = item.id
+            publishButton.setOnClickListener {
+                publishButton.isClickable = false
+                publishButton.setIconResource(R.drawable.ic_done_black_24dp)
+                itemClickListener.onItemClick(adapterPosition)
+            }
         }
-
-        override fun onClick(view: View) {
-            itemView.isClickable = false
-            iconImageView.setImageResource(R.drawable.ic_done_black_24dp)
-            itemClickListener.onItemClick(adapterPosition)
-        }
-
 
         companion object {
             fun from(parent: ViewGroup, itemClickListener: ItemClickListener): ViewHolder {
