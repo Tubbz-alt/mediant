@@ -15,7 +15,6 @@ import io.numbers.mediant.BuildConfig.APPLICATION_ID
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentMainBinding
 import io.numbers.mediant.ui.tab.Tab
-import io.numbers.mediant.ui.tab.TabFragment
 import io.numbers.mediant.util.ActivityRequestCodes
 import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
@@ -76,7 +75,7 @@ class MainFragment : DaggerFragment() {
             override fun onTabSelected(tab: TabLayout.Tab) = Unit
             override fun onTabUnselected(tab: TabLayout.Tab) = Unit
             override fun onTabReselected(tab: TabLayout.Tab) =
-                (tabs[tab.position].fragment as TabFragment).smoothScrollToTop()
+                tabs[tab.position].fragment.smoothScrollToTop()
         })
         activity?.also { mainPagerAdapter = MainPagerAdapter(tabs, it, childFragmentManager) }
             ?: run { throw RuntimeException("Illegal activity") }

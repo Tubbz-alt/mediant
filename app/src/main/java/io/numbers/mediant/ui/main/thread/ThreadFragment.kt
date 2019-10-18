@@ -7,15 +7,17 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearSmoothScroller
 import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.databinding.FragmentThreadBinding
+import io.numbers.mediant.ui.tab.TabFragment
 import io.numbers.mediant.util.PreferenceHelper
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import javax.inject.Inject
 
-open class ThreadFragment : DaggerFragment() {
+open class ThreadFragment : DaggerFragment(), TabFragment {
 
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProviderFactory
@@ -63,5 +65,12 @@ open class ThreadFragment : DaggerFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.feedList.observe(viewLifecycleOwner, Observer { adapter.data = it })
+    }
+
+    override fun smoothScrollToTop() {
+        binding.recyclerView.layoutManager?.startSmoothScroll(object :
+            LinearSmoothScroller(context) {
+            override fun getVerticalSnapPreference() = SNAP_TO_START
+        }.apply { targetPosition = 0 })
     }
 }
