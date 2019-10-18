@@ -3,6 +3,7 @@ package io.numbers.mediant.di
 import android.app.Application
 import dagger.Module
 import dagger.Provides
+import io.numbers.mediant.api.proofmode.ProofModeService
 import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.util.PreferenceHelper
 import io.textile.textile.Textile
@@ -32,4 +33,8 @@ class AppModule {
         preferenceHelper: PreferenceHelper,
         application: Application
     ) = TextileService(Textile.instance(), preferenceHelper, application)
+
+    @Singleton
+    @Provides
+    fun provideProofModeService(application: Application) = ProofModeService(application)
 }

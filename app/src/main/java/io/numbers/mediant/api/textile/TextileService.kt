@@ -168,12 +168,9 @@ class TextileService @Inject constructor(
      * Files
      */
 
-    fun addFile(filePath: String) {
+    fun addFile(filePath: String, caption: String) {
         textile.files.addFiles(
-            filePath,
-            preferenceHelper.personalThreadId,
-            "caption",
-            object : Handlers.BlockHandler {
+            filePath, preferenceHelper.personalThreadId, caption, object : Handlers.BlockHandler {
 
                 override fun onComplete(block: Model.Block) =
                     Timber.i("upload complete: ${block.id}")
