@@ -14,18 +14,21 @@ import kotlinx.coroutines.*
 
 @ExperimentalCoroutinesApi
 class ImageCardViewHolder(itemView: View, private val textileService: TextileService) :
-    ThreadRecyclerViewAdapter.ViewHolder(itemView), CoroutineScope by MainScope() {
+    ThreadRecyclerViewAdapter.ViewHolder(itemView) {
+
+    private var job = Job()
 
     private val imageView: ImageView = itemView.findViewById(R.id.image)
     private val userNameTextView: TextView = itemView.findViewById(R.id.username)
     private val dateTextView: TextView = itemView.findViewById(R.id.date)
 
     override fun bind(item: FeedItemData) {
+        job.cancel()
         userNameTextView.text = item.files.user.name
         dateTextView.text = dateFormatter.format(Util.timestampToDate(item.files.date))
 
         textileService.getImageContent(item.files) {
-            launch(Dispatchers.Main) {
+            job = CoroutineScope(Dispatchers.Main).launch(Dispatchers.Main) {
                 imageView.setImageBitmap(BitmapFactory.decodeByteArray(it, 0, it.size))
             }
         }
