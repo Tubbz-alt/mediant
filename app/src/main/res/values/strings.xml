@@ -25,6 +25,7 @@
     <string name="proof">Proof</string>
     <string name="proof_signature">Proof Signature</string>
     <string name="media_signature">Media Signature</string>
+    <string name="block_hash">Block Hash</string>
 
     <string name="settings">Settings</string>
     <string name="general">General</string>

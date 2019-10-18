@@ -144,5 +144,21 @@
         android:id="@+id/mediaDetailsFragment"
         android:name="io.numbers.mediant.ui.media_details.MediaDetailsFragment"
         android:label="@string/details"
-        tools:layout="@layout/fragment_media_details" />
+        tools:layout="@layout/fragment_media_details">
+        <argument
+            android:name="imageIpfsPath"
+            app:argType="string" />
+        <argument
+            android:name="userName"
+            app:argType="string" />
+        <argument
+            android:name="blockTimestamp"
+            app:argType="string" />
+        <argument
+            android:name="proofSignatureJson"
+            app:argType="string" />
+        <argument
+            android:name="blockHash"
+            app:argType="string" />
+    </fragment>
 </navigation>

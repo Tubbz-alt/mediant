@@ -215,7 +215,7 @@ class TextileService @Inject constructor(
         })
     }
 
-    private fun getFileIpfsPath(files: View.Files): String {
+    fun getFileIpfsPath(files: View.Files): String {
         val fileIndex = getFileIndex(files)
         return "${files.data}/$fileIndex"
     }
