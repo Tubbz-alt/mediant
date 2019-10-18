@@ -15,6 +15,7 @@
     <string name="cancel">Cancel</string>
     <string name="info">Information</string>
     <string name="leave">Leave</string>
+    <string name="publish">Publish</string>
     <string name="deletion_confirmation_title">Delete?</string>
     <string name="deletion_confirmation_positive">Just do it</string>
     <string name="deletion_confirmation_negative">No</string>

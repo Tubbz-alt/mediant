@@ -11,8 +11,6 @@ import io.numbers.mediant.ui.listeners.FeedItemListener
 import io.textile.textile.FeedItemData
 import io.textile.textile.FeedItemType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import java.text.SimpleDateFormat
-import java.util.*
 
 class ThreadRecyclerViewAdapter(
     private val textileService: TextileService,
@@ -52,8 +50,6 @@ class ThreadRecyclerViewAdapter(
         holder.bind(data[position], data[position].type)
 
     abstract class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-        val dateFormatter = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
 
         abstract fun bind(item: FeedItemData, type: FeedItemType)
     }

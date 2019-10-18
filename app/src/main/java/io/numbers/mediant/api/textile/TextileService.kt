@@ -186,15 +186,10 @@ class TextileService @Inject constructor(
     }
 
     fun getImageContent(files: View.Files, minWidth: Long = 500, callback: (ByteArray) -> Unit) {
-        val fileIndex = files.filesList.let {
-            if (it != null && it.size > 0 && it[0].index != 0) it[0].index
-            else 0
-        }
-
         // imageContentForMinWidth usage: (Textile has not documented)
         // https://github.com/textileio/photos/blob/master/App/Components/authoring-input.tsx#L184
         textile.files.imageContentForMinWidth(
-            "${files.data}/$fileIndex", minWidth, object : Handlers.DataHandler {
+            getFileIpfsPath(files), minWidth, object : Handlers.DataHandler {
 
                 override fun onComplete(data: ByteArray, media: String) =
                     if (media == "image/jpeg" || media == "image/png") callback(data)
@@ -207,22 +202,50 @@ class TextileService @Inject constructor(
             })
     }
 
-    fun shareFile(files: View.Files, threadId: String, callback: (Model.Block) -> Unit) {
-        textile.files.shareFiles(
-            files.data, threadId, files.caption, object : Handlers.BlockHandler {
+    fun getImageContent(ipfsPath: String, minWidth: Long = 500, callback: (ByteArray) -> Unit) {
+        // imageContentForMinWidth usage: (Textile has not documented)
+        // https://github.com/textileio/photos/blob/master/App/Components/authoring-input.tsx#L184
+        textile.files.imageContentForMinWidth(ipfsPath, minWidth, object : Handlers.DataHandler {
 
-                override fun onComplete(block: Model.Block) = callback(block)
+            override fun onComplete(data: ByteArray, media: String) =
+                if (media == "image/jpeg" || media == "image/png") callback(data)
+                else Timber.e("Unknown data type: $media")
 
-                override fun onError(e: java.lang.Exception) {
-                    Timber.e("error: share file callback")
-                    Timber.e(e)
-                }
-            })
+            override fun onError(e: java.lang.Exception?) {
+                Timber.e("error: get image content callback")
+                Timber.e(e)
+            }
+        })
     }
 
-    fun ignoreFile(files: View.Files) {
-        textile.ignores.add(files.block)
+    private fun getFileIpfsPath(files: View.Files): String {
+        val fileIndex = getFileIndex(files)
+        return "${files.data}/$fileIndex"
     }
+
+    fun getFileIndex(files: View.Files) = files.filesList.let {
+        if (it != null && it.size > 0 && it[0].index != 0) it[0].index
+        else 0
+    }
+
+    fun shareFile(
+        dataHash: String,
+        caption: String,
+        threadId: String,
+        callback: (Model.Block) -> Unit
+    ) {
+        textile.files.shareFiles(dataHash, threadId, caption, object : Handlers.BlockHandler {
+
+            override fun onComplete(block: Model.Block) = callback(block)
+
+            override fun onError(e: java.lang.Exception) {
+                Timber.e("error: share file callback")
+                Timber.e(e)
+            }
+        })
+    }
+
+    fun ignoreFile(files: View.Files): String = textile.ignores.add(files.block)
 
     /**
      * Utils

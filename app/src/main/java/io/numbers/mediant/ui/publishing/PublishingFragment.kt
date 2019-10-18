@@ -1,4 +1,4 @@
-package io.numbers.mediant.ui.main.publishing
+package io.numbers.mediant.ui.publishing
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -40,6 +40,15 @@ class PublishingFragment : DaggerFragment(), ItemClickListener {
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
         binding.recyclerView.adapter = adapter
+
+        arguments?.let {
+            viewModel.dataHash.value = PublishingFragmentArgs.fromBundle(it).dataHash
+            viewModel.fileIndex.value = PublishingFragmentArgs.fromBundle(it).fileIndex
+            viewModel.username.value = PublishingFragmentArgs.fromBundle(it).username
+            viewModel.date.value = PublishingFragmentArgs.fromBundle(it).date
+            viewModel.caption.value = PublishingFragmentArgs.fromBundle(it).caption
+        }
+
         return binding.root
     }
 
@@ -48,7 +57,5 @@ class PublishingFragment : DaggerFragment(), ItemClickListener {
         viewModel.threadList.observe(viewLifecycleOwner, Observer { adapter.data = it })
     }
 
-    override fun onItemClick(position: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun onItemClick(position: Int) = viewModel.publishFile(adapter.data[position].id)
 }

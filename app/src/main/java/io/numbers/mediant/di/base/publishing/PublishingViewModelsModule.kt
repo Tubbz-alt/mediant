@@ -5,7 +5,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
 import io.numbers.mediant.di.ViewModelKey
-import io.numbers.mediant.ui.main.publishing.PublishingViewModel
+import io.numbers.mediant.ui.publishing.PublishingViewModel
 
 @Suppress("UNUSED")
 @Module

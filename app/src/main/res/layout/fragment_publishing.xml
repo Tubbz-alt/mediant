@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="io.numbers.mediant.ui.main.publishing.PublishingViewModel" />
+            type="io.numbers.mediant.ui.publishing.PublishingViewModel" />
     </data>
 
     <LinearLayout
@@ -30,6 +30,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/image_thumb_height"
                     android:scaleType="centerCrop"
+                    android:src="@{viewModel.imageDrawable}"
                     app:layout_constraintBottom_toTopOf="@id/username"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
@@ -39,7 +40,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/medium_margin"
-                    android:text="@string/placeholder"
+                    android:text="@{viewModel.username}"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/image" />
@@ -49,7 +50,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/medium_margin"
-                    android:text="@string/placeholder"
+                    android:text="@{viewModel.date}"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/image" />
             </androidx.constraintlayout.widget.ConstraintLayout>

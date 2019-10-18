@@ -14,11 +14,11 @@ import io.numbers.mediant.di.base.thread_creation_dialog.ThreadCreationDialogVie
 import io.numbers.mediant.di.base.thread_list.ThreadListViewModelsModule
 import io.numbers.mediant.ui.initialization.InitializationFragment
 import io.numbers.mediant.ui.main.MainFragment
-import io.numbers.mediant.ui.main.publishing.PublishingFragment
 import io.numbers.mediant.ui.main.thread.ThreadFragment
 import io.numbers.mediant.ui.main.thread_list.ThreadListFragment
 import io.numbers.mediant.ui.main.thread_list.thread_creation_dialog.ThreadCreationDialogFragment
 import io.numbers.mediant.ui.permission_rationale.PermissionRationaleFragment
+import io.numbers.mediant.ui.publishing.PublishingFragment
 import io.numbers.mediant.ui.settings.SettingsFragment
 import io.numbers.mediant.ui.settings.textile.TextileSettingsFragment
 

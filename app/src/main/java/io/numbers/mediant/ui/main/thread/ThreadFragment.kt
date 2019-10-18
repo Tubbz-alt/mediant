@@ -8,6 +8,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearSmoothScroller
 import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
@@ -15,8 +16,10 @@ import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.databinding.FragmentThreadBinding
 import io.numbers.mediant.ui.listeners.DialogListener
 import io.numbers.mediant.ui.listeners.FeedItemListener
+import io.numbers.mediant.ui.main.MainFragmentDirections
 import io.numbers.mediant.ui.tab.TabFragment
 import io.numbers.mediant.util.PreferenceHelper
+import io.numbers.mediant.util.timestampToString
 import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import io.textile.textile.FeedItemData
@@ -80,7 +83,15 @@ open class ThreadFragment : DaggerFragment(), TabFragment, FeedItemListener {
     }
 
     override fun onPublish(feedItemData: FeedItemData) {
-        Timber.d("publish: ${feedItemData.files.date}")
+        findNavController().navigate(
+            MainFragmentDirections.actionMainFragmentToPublishingFragment(
+                feedItemData.files.data,
+                textileService.getFileIndex(feedItemData.files),
+                feedItemData.files.user.name,
+                timestampToString(feedItemData.files.date),
+                feedItemData.files.caption
+            )
+        )
     }
 
     override fun onDelete(feedItemData: FeedItemData) {

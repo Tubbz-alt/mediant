@@ -10,9 +10,9 @@ import android.widget.TextView
 import io.numbers.mediant.R
 import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.ui.listeners.FeedItemListener
+import io.numbers.mediant.util.timestampToString
 import io.textile.textile.FeedItemData
 import io.textile.textile.FeedItemType
-import io.textile.textile.Util
 import kotlinx.coroutines.*
 
 @ExperimentalCoroutinesApi
@@ -36,7 +36,7 @@ class ImageCardViewHolder(
         job.cancel()
 
         userNameTextView.text = item.files.user.name
-        dateTextView.text = dateFormatter.format(Util.timestampToDate(item.files.date))
+        dateTextView.text = timestampToString(item.files.date)
         showProofButton.setOnClickListener { listener.onShowProof(item) }
         publishButton.setOnClickListener { listener.onPublish(item) }
         deleteButton.setOnClickListener { listener.onDelete(item) }

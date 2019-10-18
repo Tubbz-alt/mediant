@@ -1,8 +1,9 @@
-package io.numbers.mediant.ui.main.publishing
+package io.numbers.mediant.ui.publishing
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -41,6 +42,7 @@ class PublishingRecyclerViewAdapter(private val itemClickListener: ItemClickList
             itemView.setOnClickListener(this)
         }
 
+        private val iconImageView: ImageView = itemView.findViewById(R.id.icon)
         private val threadNameTextView: TextView = itemView.findViewById(R.id.threadName)
         private val threadIdTextView: TextView = itemView.findViewById(R.id.threadId)
 
@@ -49,7 +51,11 @@ class PublishingRecyclerViewAdapter(private val itemClickListener: ItemClickList
             threadIdTextView.text = item.id
         }
 
-        override fun onClick(view: View) = itemClickListener.onItemClick(adapterPosition)
+        override fun onClick(view: View) {
+            itemView.isClickable = false
+            iconImageView.setImageResource(R.drawable.ic_done_black_24dp)
+            itemClickListener.onItemClick(adapterPosition)
+        }
 
 
         companion object {

@@ -5,9 +5,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import io.numbers.mediant.R
+import io.numbers.mediant.util.timestampToString
 import io.textile.textile.FeedItemData
 import io.textile.textile.FeedItemType
-import io.textile.textile.Util
 
 class EventMessageViewHolder(itemView: View) :
     ThreadRecyclerViewAdapter.ViewHolder(itemView) {
@@ -19,7 +19,7 @@ class EventMessageViewHolder(itemView: View) :
     override fun bind(item: FeedItemData, type: FeedItemType) {
         eventMessageTextView.text = type.name
         userNameTextView.text = item.join.user.name
-        dateTextView.text = dateFormatter.format(Util.timestampToDate(item.join.date))
+        dateTextView.text = timestampToString(item.join.date)
     }
 
     companion object {

@@ -103,7 +103,23 @@
     </fragment>
     <fragment
         android:id="@+id/publishingFragment"
-        android:name="io.numbers.mediant.ui.main.publishing.PublishingFragment"
-        android:label="PublishingFragment"
-        tools:layout="@layout/fragment_publishing" />
+        android:name="io.numbers.mediant.ui.publishing.PublishingFragment"
+        android:label="@string/publish"
+        tools:layout="@layout/fragment_publishing">
+        <argument
+            android:name="dataHash"
+            app:argType="string" />
+        <argument
+            android:name="fileIndex"
+            app:argType="integer" />
+        <argument
+            android:name="username"
+            app:argType="string" />
+        <argument
+            android:name="date"
+            app:argType="string" />
+        <argument
+            android:name="caption"
+            app:argType="string" />
+    </fragment>
 </navigation>
