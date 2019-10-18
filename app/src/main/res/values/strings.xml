@@ -4,7 +4,6 @@
     <string name="placeholder">Placeholder</string>
     <string name="connect_to_ipfs">Connecting to IPFS…</string>
     <string name="create_wallet">Creating Textile wallet…</string>
-    <string name="user_name">User Name</string>
     <string name="camera">Camera</string>
 
     <string name="feeds">Feeds</string>
@@ -19,6 +18,12 @@
     <string name="deletion_confirmation_title">Delete?</string>
     <string name="deletion_confirmation_positive">Just do it</string>
     <string name="deletion_confirmation_negative">No</string>
+
+    <string name="source_user">Source User</string>
+    <string name="block_timestamp">Block Timestamp</string>
+    <string name="proof">Proof</string>
+    <string name="proof_signature">Proof Signature</string>
+    <string name="media_signature">Media Signature</string>
 
     <string name="settings">Settings</string>
     <string name="general">General</string>
