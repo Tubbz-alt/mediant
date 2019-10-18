@@ -7,17 +7,15 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.LinearSmoothScroller
+import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.databinding.FragmentThreadBinding
-import io.numbers.mediant.ui.tab.TabFragment
 import io.numbers.mediant.util.PreferenceHelper
-import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import javax.inject.Inject
 
-class ThreadFragment : TabFragment() {
+open class ThreadFragment : DaggerFragment() {
 
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProviderFactory
@@ -31,7 +29,7 @@ class ThreadFragment : TabFragment() {
     lateinit var textileService: TextileService
 
     private lateinit var adapter: ThreadRecyclerViewAdapter
-    private lateinit var binding: FragmentThreadBinding
+    protected lateinit var binding: FragmentThreadBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,14 +63,5 @@ class ThreadFragment : TabFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.feedList.observe(viewLifecycleOwner, Observer { adapter.data = it })
-        viewModel.scrollToTopEvent.observe(
-            viewLifecycleOwner, EventObserver { smoothScrollToTop() })
-    }
-
-    override fun smoothScrollToTop() {
-        binding.recyclerView.layoutManager?.startSmoothScroll(object :
-            LinearSmoothScroller(context) {
-            override fun getVerticalSnapPreference() = SNAP_TO_START
-        }.apply { targetPosition = 0 })
     }
 }

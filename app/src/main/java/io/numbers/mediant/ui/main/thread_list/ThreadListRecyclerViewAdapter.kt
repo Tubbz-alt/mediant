@@ -9,8 +9,8 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.numbers.mediant.R
-import io.numbers.mediant.ui.ItemClickListener
-import io.numbers.mediant.ui.ItemMenuClickListener
+import io.numbers.mediant.ui.listeners.ItemClickListener
+import io.numbers.mediant.ui.listeners.ItemMenuClickListener
 import io.textile.pb.Model
 
 class ThreadListRecyclerViewAdapter(

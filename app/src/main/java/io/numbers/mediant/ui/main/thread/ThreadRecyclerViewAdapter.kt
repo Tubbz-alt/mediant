@@ -9,6 +9,7 @@ import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.api.textile.hasSameContentsTo
 import io.textile.textile.FeedItemData
 import io.textile.textile.FeedItemType
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,6 +34,7 @@ class ThreadRecyclerViewAdapter(private val textileService: TextileService) :
 
     override fun getItemViewType(position: Int) = data[position].type.ordinal
 
+    @ExperimentalCoroutinesApi
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return when (feedItemTypeValues[viewType]) {
             FeedItemType.FILES -> ImageCardViewHolder.from(parent, textileService)

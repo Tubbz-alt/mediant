@@ -172,7 +172,7 @@ class TextileService @Inject constructor(
             object : Handlers.BlockHandler {
 
                 override fun onComplete(block: Model.Block) =
-                    Timber.d("upload complete: ${block.id}")
+                    Timber.i("upload complete: ${block.id}")
 
                 override fun onError(e: java.lang.Exception) {
                     Timber.e("error: add file callback")
@@ -198,6 +198,19 @@ class TextileService @Inject constructor(
 
                 override fun onError(e: java.lang.Exception?) {
                     Timber.e("error: get image content callback")
+                    Timber.e(e)
+                }
+            })
+    }
+
+    fun shareFile(files: View.Files, threadId: String, callback: (Model.Block) -> Unit) {
+        textile.files.shareFiles(
+            files.data, threadId, files.caption, object : Handlers.BlockHandler {
+
+                override fun onComplete(block: Model.Block) = callback(block)
+
+                override fun onError(e: java.lang.Exception) {
+                    Timber.e("error: share file callback")
                     Timber.e(e)
                 }
             })

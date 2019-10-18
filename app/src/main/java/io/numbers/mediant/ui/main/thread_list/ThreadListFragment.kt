@@ -11,10 +11,11 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearSmoothScroller
+import dagger.android.support.DaggerFragment
 import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentThreadListBinding
-import io.numbers.mediant.ui.ItemClickListener
-import io.numbers.mediant.ui.ItemMenuClickListener
+import io.numbers.mediant.ui.listeners.ItemClickListener
+import io.numbers.mediant.ui.listeners.ItemMenuClickListener
 import io.numbers.mediant.ui.main.MainFragmentDirections
 import io.numbers.mediant.ui.main.thread_list.thread_creation_dialog.ThreadCreationDialogFragment
 import io.numbers.mediant.ui.tab.TabFragment
@@ -22,7 +23,8 @@ import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import javax.inject.Inject
 
-class ThreadListFragment : TabFragment(), ItemClickListener, ItemMenuClickListener,
+class ThreadListFragment : DaggerFragment(), TabFragment, ItemClickListener,
+    ItemMenuClickListener,
     ThreadCreationDialogFragment.DialogListener {
 
     @Inject
