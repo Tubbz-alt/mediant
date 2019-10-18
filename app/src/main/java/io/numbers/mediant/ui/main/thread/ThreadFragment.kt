@@ -23,7 +23,6 @@ import io.numbers.mediant.util.timestampToString
 import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import io.textile.textile.FeedItemData
-import timber.log.Timber
 import javax.inject.Inject
 
 open class ThreadFragment : DaggerFragment(), TabFragment, FeedItemListener {
@@ -79,7 +78,10 @@ open class ThreadFragment : DaggerFragment(), TabFragment, FeedItemListener {
     }
 
     override fun onShowProof(feedItemData: FeedItemData) {
-        Timber.d("proof: ${feedItemData.files.date}")
+        findNavController().navigate(
+            if (viewModel.isPersonal) R.id.action_mainFragment_to_mediaDetailsFragment
+            else R.id.action_threadFragment_to_mediaDetailsFragment
+        )
     }
 
     override fun onPublish(feedItemData: FeedItemData) {

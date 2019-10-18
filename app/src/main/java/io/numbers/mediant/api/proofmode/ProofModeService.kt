@@ -8,12 +8,11 @@ import java.io.File
 import java.io.IOException
 import javax.inject.Inject
 
-class ProofModeService @Inject constructor(private val application: Application) {
+const val proofFileSuffix = ProofMode.PROOF_FILE_TAG
+const val mediaSignatureFileSuffix = ProofMode.OPENPGP_FILE_TAG
+const val proofSignatureFileSuffix = "${ProofMode.PROOF_FILE_TAG}${ProofMode.OPENPGP_FILE_TAG}"
 
-    private val proofFileSuffix = ProofMode.PROOF_FILE_TAG
-    private val mediaSignatureFileSuffix = ProofMode.OPENPGP_FILE_TAG
-    private val proofSignatureFileSuffix =
-        "${ProofMode.PROOF_FILE_TAG}${ProofMode.OPENPGP_FILE_TAG}"
+class ProofModeService @Inject constructor(private val application: Application) {
 
     fun generateProofAndSignatures(filePath: String): ProofSignatureBundle {
         val mediaFileHash =

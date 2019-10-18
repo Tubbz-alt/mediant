@@ -1,115 +1,142 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <data>
+
+        <variable
+            name="viewModel"
+            type="io.numbers.mediant.ui.media_details.MediaDetailsViewModel" />
+    </data>
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/small_padding">
+        android:layout_height="match_parent">
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/imageCardView"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent">
+            android:padding="@dimen/small_padding">
 
-            <ImageView
+            <androidx.cardview.widget.CardView
+                android:id="@+id/imageCardView"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/image_thumb_height"
-                android:scaleType="centerCrop"
-                app:layout_constraintBottom_toTopOf="@id/userName"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="ContentDescription" />
-        </androidx.cardview.widget.CardView>
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/sourceUserTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/medium_margin"
-            android:text="@string/source_user"
-            android:textAppearance="?attr/textAppearanceSubtitle1"
-            app:layout_constraintTop_toBottomOf="@+id/imageCardView" />
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/image_thumb_height"
+                    android:scaleType="centerCrop"
+                    app:layout_constraintBottom_toTopOf="@id/userName"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="ContentDescription" />
+            </androidx.cardview.widget.CardView>
 
-        <TextView
-            android:id="@+id/sourceUser"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/small_margin"
-            android:text="@string/placeholder"
-            app:layout_constraintTop_toBottomOf="@+id/sourceUserTitle" />
+            <TextView
+                android:id="@+id/sourceUserTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/medium_margin"
+                android:text="@string/source_user"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                app:layout_constraintTop_toBottomOf="@+id/imageCardView" />
 
-        <TextView
-            android:id="@+id/blockTimestampTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/medium_margin"
-            android:text="@string/block_timestamp"
-            android:textAppearance="?attr/textAppearanceSubtitle1"
-            app:layout_constraintTop_toBottomOf="@+id/sourceUser" />
+            <TextView
+                android:id="@+id/sourceUser"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/small_margin"
+                android:text="@string/placeholder"
+                app:layout_constraintTop_toBottomOf="@+id/sourceUserTitle" />
 
-        <TextView
-            android:id="@+id/blockTimestamp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/small_margin"
-            android:text="@string/placeholder"
-            app:layout_constraintTop_toBottomOf="@+id/blockTimestampTitle" />
+            <TextView
+                android:id="@+id/blockTimestampTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/medium_margin"
+                android:text="@string/block_timestamp"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                app:layout_constraintTop_toBottomOf="@+id/sourceUser" />
 
-        <TextView
-            android:id="@+id/proofTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/medium_margin"
-            android:text="@string/proof"
-            android:textAppearance="?attr/textAppearanceSubtitle1"
-            app:layout_constraintTop_toBottomOf="@+id/blockTimestamp" />
+            <TextView
+                android:id="@+id/blockTimestamp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/small_margin"
+                android:text="@string/placeholder"
+                app:layout_constraintTop_toBottomOf="@+id/blockTimestampTitle" />
 
-        <TextView
-            android:id="@+id/proof"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/small_margin"
-            android:text="@string/placeholder"
-            app:layout_constraintTop_toBottomOf="@+id/proofTitle" />
+            <TextView
+                android:id="@+id/proofTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/medium_margin"
+                android:text="@string/proof"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                app:layout_constraintTop_toBottomOf="@+id/blockTimestamp" />
 
-        <TextView
-            android:id="@+id/proofSignatureTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/medium_margin"
-            android:text="@string/proof_signature"
-            android:textAppearance="?attr/textAppearanceSubtitle1"
-            app:layout_constraintTop_toBottomOf="@+id/proof" />
+            <TextView
+                android:id="@+id/proof"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/small_margin"
+                android:text="@string/placeholder"
+                app:layout_constraintTop_toBottomOf="@+id/proofTitle" />
 
-        <TextView
-            android:id="@+id/proofSignature"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/small_margin"
-            android:text="@string/placeholder"
-            app:layout_constraintTop_toBottomOf="@+id/proofSignatureTitle" />
+            <TextView
+                android:id="@+id/proofSignatureTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/medium_margin"
+                android:text="@string/proof_signature"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                app:layout_constraintTop_toBottomOf="@+id/proof" />
 
-        <TextView
-            android:id="@+id/mediaSignatureTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/medium_margin"
-            android:text="@string/media_signature"
-            android:textAppearance="?attr/textAppearanceSubtitle1"
-            app:layout_constraintTop_toBottomOf="@+id/proofSignature" />
+            <TextView
+                android:id="@+id/proofSignature"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/small_margin"
+                android:text="@string/placeholder"
+                app:layout_constraintTop_toBottomOf="@+id/proofSignatureTitle" />
 
-        <TextView
-            android:id="@+id/mediaSignature"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/small_margin"
-            android:text="@string/placeholder"
-            app:layout_constraintTop_toBottomOf="@+id/mediaSignatureTitle" />
+            <TextView
+                android:id="@+id/mediaSignatureTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/medium_margin"
+                android:text="@string/media_signature"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                app:layout_constraintTop_toBottomOf="@+id/proofSignature" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:id="@+id/mediaSignature"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/small_margin"
+                android:text="@string/placeholder"
+                app:layout_constraintTop_toBottomOf="@+id/mediaSignatureTitle" />
 
-</ScrollView>
+            <TextView
+                android:id="@+id/blockHashTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/medium_margin"
+                android:text="@string/media_signature"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                app:layout_constraintTop_toBottomOf="@+id/mediaSignature" />
+
+            <TextView
+                android:id="@+id/blockHash"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/small_margin"
+                android:text="@string/placeholder"
+                app:layout_constraintTop_toBottomOf="@+id/blockHashTitle" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+</layout>

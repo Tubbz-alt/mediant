@@ -5,6 +5,7 @@ import dagger.android.ContributesAndroidInjector
 import io.numbers.mediant.di.base.initialization.InitializationViewModelsModule
 import io.numbers.mediant.di.base.main.MainModule
 import io.numbers.mediant.di.base.main.MainViewModelsModule
+import io.numbers.mediant.di.base.media_details.MediaDetailsViewModelsModule
 import io.numbers.mediant.di.base.permission_rationale.PermissionRationaleViewModelsModule
 import io.numbers.mediant.di.base.publishing.PublishingViewModelsModule
 import io.numbers.mediant.di.base.settings.SettingsViewModelsModule
@@ -17,6 +18,7 @@ import io.numbers.mediant.ui.main.MainFragment
 import io.numbers.mediant.ui.main.thread.ThreadFragment
 import io.numbers.mediant.ui.main.thread_list.ThreadListFragment
 import io.numbers.mediant.ui.main.thread_list.thread_creation_dialog.ThreadCreationDialogFragment
+import io.numbers.mediant.ui.media_details.MediaDetailsFragment
 import io.numbers.mediant.ui.permission_rationale.PermissionRationaleFragment
 import io.numbers.mediant.ui.publishing.PublishingFragment
 import io.numbers.mediant.ui.settings.SettingsFragment
@@ -53,11 +55,14 @@ abstract class BaseFragmentBuildersModule {
     @ContributesAndroidInjector(modules = [ThreadCreationDialogViewModelsModule::class])
     abstract fun contributeThreadCreationDialogFragment(): ThreadCreationDialogFragment
 
-    @ContributesAndroidInjector(modules = [PermissionRationaleViewModelsModule::class])
-    abstract fun contributePermissionRationaleFragment(): PermissionRationaleFragment
-
     @ContributesAndroidInjector(modules = [PublishingViewModelsModule::class])
     abstract fun contributePublishingFragment(): PublishingFragment
+
+    @ContributesAndroidInjector(modules = [MediaDetailsViewModelsModule::class])
+    abstract fun contributeMediaDetailsFragment(): MediaDetailsFragment
+
+    @ContributesAndroidInjector(modules = [PermissionRationaleViewModelsModule::class])
+    abstract fun contributePermissionRationaleFragment(): PermissionRationaleFragment
 
     // Add new Fragments as Dagger client here. Dagger will automatically generate
     // XXXFragmentSubcomponents.

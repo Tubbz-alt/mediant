@@ -19,6 +19,7 @@
     <string name="deletion_confirmation_positive">Just do it</string>
     <string name="deletion_confirmation_negative">No</string>
 
+    <string name="details">Details</string>
     <string name="source_user">Source User</string>
     <string name="block_timestamp">Block Timestamp</string>
     <string name="proof">Proof</string>

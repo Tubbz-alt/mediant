@@ -47,7 +47,18 @@
             app:popExitAnim="@anim/fast_fade_out" />
         <action
             android:id="@+id/action_mainFragment_to_publishingFragment"
-            app:destination="@id/publishingFragment" />
+            app:destination="@id/publishingFragment"
+            app:enterAnim="@anim/fast_fade_in"
+            app:exitAnim="@anim/fast_fade_out"
+            app:popEnterAnim="@anim/fast_fade_in"
+            app:popExitAnim="@anim/fast_fade_out" />
+        <action
+            android:id="@+id/action_mainFragment_to_mediaDetailsFragment"
+            app:destination="@id/mediaDetailsFragment"
+            app:enterAnim="@anim/fast_fade_in"
+            app:exitAnim="@anim/fast_fade_out"
+            app:popEnterAnim="@anim/fast_fade_in"
+            app:popExitAnim="@anim/fast_fade_out" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -91,6 +102,13 @@
             android:name="threadName"
             app:argType="string"
             app:nullable="true" />
+        <action
+            android:id="@+id/action_threadFragment_to_mediaDetailsFragment"
+            app:destination="@id/mediaDetailsFragment"
+            app:enterAnim="@anim/fast_fade_in"
+            app:exitAnim="@anim/fast_fade_out"
+            app:popEnterAnim="@anim/fast_fade_in"
+            app:popExitAnim="@anim/fast_fade_out" />
     </fragment>
     <fragment
         android:id="@+id/permissionRationaleFragment"
@@ -122,4 +140,9 @@
             android:name="caption"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/mediaDetailsFragment"
+        android:name="io.numbers.mediant.ui.media_details.MediaDetailsFragment"
+        android:label="@string/details"
+        tools:layout="@layout/fragment_media_details" />
 </navigation>
