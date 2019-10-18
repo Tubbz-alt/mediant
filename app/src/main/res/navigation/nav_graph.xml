@@ -45,6 +45,9 @@
             app:exitAnim="@anim/fast_fade_out"
             app:popEnterAnim="@anim/fast_fade_in"
             app:popExitAnim="@anim/fast_fade_out" />
+        <action
+            android:id="@+id/action_mainFragment_to_publishingFragment"
+            app:destination="@id/publishingFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
@@ -98,4 +101,9 @@
             android:name="rationale"
             app:argType="integer" />
     </fragment>
+    <fragment
+        android:id="@+id/publishingFragment"
+        android:name="io.numbers.mediant.ui.main.publishing.PublishingFragment"
+        android:label="PublishingFragment"
+        tools:layout="@layout/fragment_publishing" />
 </navigation>
