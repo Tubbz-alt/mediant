@@ -84,6 +84,7 @@ open class ThreadFragment : DaggerFragment(), TabFragment, FeedItemListener {
 
     override fun onPublish(feedItemData: FeedItemData) {
         findNavController().navigate(
+            // TODO: use block API after available: https://github.com/textileio/android-textile/issues/15
             MainFragmentDirections.actionMainFragmentToPublishingFragment(
                 feedItemData.files.data,
                 textileService.getFileIndex(feedItemData.files),

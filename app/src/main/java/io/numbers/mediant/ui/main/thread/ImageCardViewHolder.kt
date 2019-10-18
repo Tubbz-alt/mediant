@@ -26,7 +26,7 @@ class ImageCardViewHolder(
     private var job = Job()
 
     private val imageView: ImageView = itemView.findViewById(R.id.image)
-    private val userNameTextView: TextView = itemView.findViewById(R.id.username)
+    private val userNameTextView: TextView = itemView.findViewById(R.id.userName)
     private val dateTextView: TextView = itemView.findViewById(R.id.date)
     private val showProofButton: Button = itemView.findViewById(R.id.showProofButton)
     private val publishButton: Button = itemView.findViewById(R.id.publishButton)

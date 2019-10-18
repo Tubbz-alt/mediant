@@ -6,7 +6,7 @@
     android:layout_margin="@dimen/small_margin">
 
     <TextView
-        android:id="@+id/username"
+        android:id="@+id/userName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/medium_margin"
@@ -23,7 +23,7 @@
         android:layout_marginStart="@dimen/medium_margin"
         android:text="@string/placeholder"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toEndOf="@id/username"
+        app:layout_constraintStart_toEndOf="@id/userName"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView

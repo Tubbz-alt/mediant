@@ -44,7 +44,7 @@ class PublishingFragment : DaggerFragment(), ItemClickListener {
         arguments?.let {
             viewModel.dataHash.value = PublishingFragmentArgs.fromBundle(it).dataHash
             viewModel.fileIndex.value = PublishingFragmentArgs.fromBundle(it).fileIndex
-            viewModel.username.value = PublishingFragmentArgs.fromBundle(it).username
+            viewModel.userName.value = PublishingFragmentArgs.fromBundle(it).userName
             viewModel.date.value = PublishingFragmentArgs.fromBundle(it).date
             viewModel.caption.value = PublishingFragmentArgs.fromBundle(it).caption
         }

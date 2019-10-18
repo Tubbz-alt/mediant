@@ -19,7 +19,7 @@ class PublishingViewModel @Inject constructor(
     val dataHash = MutableLiveData("")
     val fileIndex = MutableLiveData(0)
     val imageDrawable = MediatorLiveData<Drawable>()
-    val username = MutableLiveData("")
+    val userName = MutableLiveData("")
     val date = MutableLiveData("")
     val caption = MutableLiveData("")
     val threadList = textileService.publicThreadList

@@ -13,7 +13,7 @@ class EventMessageViewHolder(itemView: View) :
     ThreadRecyclerViewAdapter.ViewHolder(itemView) {
 
     private val eventMessageTextView: TextView = itemView.findViewById(R.id.eventMessage)
-    private val userNameTextView: TextView = itemView.findViewById(R.id.username)
+    private val userNameTextView: TextView = itemView.findViewById(R.id.userName)
     private val dateTextView: TextView = itemView.findViewById(R.id.date)
 
     override fun bind(item: FeedItemData, type: FeedItemType) {

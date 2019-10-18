@@ -20,7 +20,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/image_thumb_height"
                 android:scaleType="centerCrop"
-                app:layout_constraintBottom_toTopOf="@id/username"
+                app:layout_constraintBottom_toTopOf="@id/userName"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:ignore="ContentDescription" />
         </androidx.cardview.widget.CardView>

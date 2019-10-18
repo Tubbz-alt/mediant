@@ -113,7 +113,7 @@
             android:name="fileIndex"
             app:argType="integer" />
         <argument
-            android:name="username"
+            android:name="userName"
             app:argType="string" />
         <argument
             android:name="date"
