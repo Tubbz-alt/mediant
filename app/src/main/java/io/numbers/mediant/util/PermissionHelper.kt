@@ -5,23 +5,26 @@ import android.content.pm.PackageManager
 import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import io.numbers.mediant.R
 import io.numbers.mediant.ui.BaseActivity
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 
-class PermissionManager @Inject constructor(private val baseActivity: BaseActivity) {
+class PermissionManager @ExperimentalCoroutinesApi @Inject constructor(
+    private val baseActivity: BaseActivity
+) {
 
     fun hasPermissions(permissionRequestType: PermissionRequestType) =
         permissionRequestType.value.permissions.all {
             ContextCompat.checkSelfPermission(baseActivity, it) == PackageManager.PERMISSION_GRANTED
         }
 
-    fun askPermissions(permissionRequestType: PermissionRequestType): Boolean {
+    fun askPermissions(permissionRequestType: PermissionRequestType, fragment: Fragment): Boolean {
         permissionRequestType.value.permissions.forEach {
             if (ActivityCompat.shouldShowRequestPermissionRationale(baseActivity, it)) return false
         }
-        ActivityCompat.requestPermissions(
-            baseActivity,
+        fragment.requestPermissions(
             permissionRequestType.value.permissions,
             permissionRequestType.value.code
         )

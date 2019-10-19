@@ -2,9 +2,11 @@ package io.numbers.mediant.ui.main
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.*
+import androidx.annotation.StringRes
 import androidx.core.content.FileProvider
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
@@ -16,7 +18,8 @@ import io.numbers.mediant.R
 import io.numbers.mediant.databinding.FragmentMainBinding
 import io.numbers.mediant.ui.tab.Tab
 import io.numbers.mediant.util.ActivityRequestCodes
-import io.numbers.mediant.viewmodel.EventObserver
+import io.numbers.mediant.util.PermissionManager
+import io.numbers.mediant.util.PermissionRequestType
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import kotlinx.android.synthetic.main.fragment_main.*
 import javax.inject.Inject
@@ -30,6 +33,9 @@ class MainFragment : DaggerFragment() {
 
     @Inject
     lateinit var tabs: List<Tab>
+
+    @Inject
+    lateinit var permissionManager: PermissionManager
 
     private lateinit var mainPagerAdapter: MainPagerAdapter
 
@@ -57,16 +63,6 @@ class MainFragment : DaggerFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         initViewPager()
-
-        viewModel.openCameraEvent.observe(viewLifecycleOwner, EventObserver {
-            dispatchTakePhotoIntent()
-        })
-        viewModel.navToPermissionRationaleFragmentEvent.observe(
-            viewLifecycleOwner,
-            EventObserver { rationale ->
-                MainFragmentDirections.actionMainFragmentToPermissionRationaleFragment(rationale)
-                    .also { findNavController().navigate(it) }
-            })
     }
 
     private fun initViewPager() {
@@ -92,15 +88,38 @@ class MainFragment : DaggerFragment() {
         viewModel.selectedOptionsItem.value = item.itemId
         when (item.itemId) {
             R.id.menuItemNavToSettings -> findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
-            R.id.menuItemOpenCamera -> viewModel.prepareCamera()
+            R.id.menuItemOpenCamera -> prepareCamera()
         }
         return true
+    }
+
+    private fun prepareCamera() {
+        if (permissionManager.hasPermissions(PermissionRequestType.PROOFMODE)) {
+            dispatchTakePhotoIntent()
+        } else if (!permissionManager.askPermissions(PermissionRequestType.PROOFMODE, this)) {
+            navigateToPermissionRationaleFragment(PermissionRequestType.PROOFMODE.value.rationale)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
             ActivityRequestCodes.CAMERA.value -> if (resultCode == Activity.RESULT_OK) viewModel.uploadPhoto()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            PermissionRequestType.PROOFMODE.value.code -> {
+                if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                    dispatchTakePhotoIntent()
+                } else navigateToPermissionRationaleFragment(PermissionRequestType.PROOFMODE.value.rationale)
+            }
         }
     }
 
@@ -120,5 +139,8 @@ class MainFragment : DaggerFragment() {
         }
     }
 
-
+    private fun navigateToPermissionRationaleFragment(@StringRes rationale: Int) {
+        MainFragmentDirections.actionMainFragmentToPermissionRationaleFragment(rationale)
+            .also { findNavController().navigate(it) }
+    }
 }
