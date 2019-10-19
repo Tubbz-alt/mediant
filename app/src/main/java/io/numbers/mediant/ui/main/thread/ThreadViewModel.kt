@@ -4,11 +4,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.numbers.mediant.api.textile.TextileService
 import io.numbers.mediant.util.PreferenceHelper
-import io.numbers.mediant.viewmodel.Event
 import io.textile.pb.View
 import io.textile.textile.BaseTextileEventListener
 import io.textile.textile.FeedItemData
-import io.textile.textile.FeedItemType
 import javax.inject.Inject
 
 class ThreadViewModel @Inject constructor(
@@ -21,7 +19,6 @@ class ThreadViewModel @Inject constructor(
         get() = preferenceHelper.personalThreadId == threadId
     val feedList = MutableLiveData<List<FeedItemData>>()
     val isLoading = MutableLiveData(false)
-    val scrollToTopEvent = MutableLiveData<Event<Unit>>()
 
     fun setThreadId(value: String) {
         threadId = value
@@ -39,10 +36,6 @@ class ThreadViewModel @Inject constructor(
                     feedList.postValue(textileService.listFeeds(threadId).filter {
                         textileService.isSupportedFeedItemType(it)
                     })
-
-                    if (feedItemData.type != FeedItemType.IGNORE) {
-                        scrollToTopEvent.postValue(Event(Unit))
-                    }
                 }
             }
         })

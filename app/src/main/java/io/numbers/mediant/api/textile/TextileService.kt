@@ -1,6 +1,7 @@
 package io.numbers.mediant.api.textile
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
@@ -18,6 +19,7 @@ private const val TEXTILE_FOLDER_NAME = "textile"
 // TODO: implement infinite recycler view to reduce this limit
 private const val REQUEST_LIMIT = 999
 
+// TODO: replace Timber.e with throw (handle exception by showing snackbar)
 class TextileService @Inject constructor(
     private val textile: Textile,
     private val preferenceHelper: PreferenceHelper,
@@ -243,6 +245,29 @@ class TextileService @Inject constructor(
     }
 
     fun ignoreFile(files: View.Files): String = textile.ignores.add(files.block)
+
+    /**
+     * Invites
+     */
+
+    fun acceptExternalInvite(uri: Uri) {
+        val uriWithoutFragment = Uri.parse(uri.toString().replaceFirst('#', '?'))
+        safelyInvokeIfNodeOnline {
+            val inviteId = uriWithoutFragment.getQueryParameter("id")
+            val inviteKey = uriWithoutFragment.getQueryParameter("key")
+            if (inviteId.isNullOrEmpty() || inviteKey.isNullOrEmpty()) {
+                Timber.e("Cannot parse invite link. ID: $inviteId, Key: $inviteKey")
+            } else acceptExternalInvite(inviteId, inviteKey)
+        }
+    }
+
+    private fun acceptExternalInvite(inviteId: String, key: String): String {
+        Timber.i("Accepting external invitation: $inviteId with key $key")
+        val blockHash = textile.invites.acceptExternal(inviteId, key)
+        if (blockHash.isEmpty()) Timber.i("Already joined the thread.")
+        else Timber.i("Invite successful: $blockHash")
+        return blockHash
+    }
 
     /**
      * Utils

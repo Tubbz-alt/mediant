@@ -20,7 +20,6 @@ import io.numbers.mediant.ui.main.MainFragmentDirections
 import io.numbers.mediant.ui.tab.TabFragment
 import io.numbers.mediant.util.PreferenceHelper
 import io.numbers.mediant.util.timestampToString
-import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import io.textile.textile.FeedItemData
 import javax.inject.Inject
@@ -73,8 +72,6 @@ open class ThreadFragment : DaggerFragment(), TabFragment, FeedItemListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.feedList.observe(viewLifecycleOwner, Observer { adapter.data = it })
-        viewModel.scrollToTopEvent.observe(
-            viewLifecycleOwner, EventObserver { smoothScrollToTop() })
     }
 
     override fun onShowProof(feedItemData: FeedItemData) {
