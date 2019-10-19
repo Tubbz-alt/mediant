@@ -35,7 +35,6 @@ class MainFragment : DaggerFragment() {
     lateinit var viewModelProviderFactory: ViewModelProviderFactory
 
     lateinit var viewModel: MainViewModel
-    private lateinit var binding: FragmentMainBinding
 
     @Inject
     lateinit var tabs: List<Tab>
@@ -58,7 +57,8 @@ class MainFragment : DaggerFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
+        val binding: FragmentMainBinding =
+            DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
         return binding.root
@@ -149,8 +149,8 @@ class MainFragment : DaggerFragment() {
             .also { findNavController().navigate(it) }
     }
 
-    private fun showSnackBar(snackbarArgs: SnackbarArgs) {
-        val snackbar = Snackbar.make(binding.root, snackbarArgs.message, snackbarArgs.duration)
+    private fun showSnackBar(snackbarArgs: SnackbarArgs) = view?.let {
+        val snackbar = Snackbar.make(it, snackbarArgs.message, snackbarArgs.duration)
         snackbar.setAction(R.string.dismiss) { snackbar.dismiss() }
         snackbar.show()
     }

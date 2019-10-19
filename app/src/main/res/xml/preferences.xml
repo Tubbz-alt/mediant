@@ -15,4 +15,18 @@
         app:title="@string/personal_thread_id"
         app:useSimpleSummaryProvider="true" />
 
+    <EditTextPreference
+        app:icon="@drawable/ic_vpn_key_black_24dp"
+        app:key="@string/key_proofmode_pgp_password"
+        app:selectable="false"
+        app:title="@string/proofmode_pgp_password"
+        app:useSimpleSummaryProvider="true" />
+
+    <EditTextPreference
+        app:icon="@drawable/ic_vpn_key_black_24dp"
+        app:key="@string/key_proofmode_pgp_public_key"
+        app:selectable="false"
+        app:title="@string/proofmode_pgp_public_key"
+        app:useSimpleSummaryProvider="true" />
+
 </PreferenceScreen>

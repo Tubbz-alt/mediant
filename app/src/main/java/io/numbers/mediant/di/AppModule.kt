@@ -36,5 +36,8 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideProofModeService(application: Application) = ProofModeService(application)
+    fun provideProofModeService(
+        application: Application,
+        preferenceHelper: PreferenceHelper
+    ) = ProofModeService(application)
 }

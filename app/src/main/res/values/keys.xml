@@ -2,4 +2,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="key_wallet_recovery_phrase">walletRecoveryPhrase</string>
     <string name="key_personal_thread_id">personalThreadId</string>
+    <string name="key_proofmode_pgp_password">proofModePgpPassword</string>
+    <string name="key_proofmode_pgp_public_key">proofModePgpPublicKey</string>
 </resources>
