@@ -5,20 +5,22 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import io.numbers.mediant.api.proofmode.ProofModeService
 import io.numbers.mediant.api.textile.TextileService
+import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
 
+@ExperimentalCoroutinesApi
 class MainViewModel @Inject constructor(
     private val textileService: TextileService,
     private val proofModeService: ProofModeService
-) : ViewModel() {
+) : ViewModel(), CoroutineScope by MainScope() {
 
     val selectedOptionsItem = MutableLiveData<@androidx.annotation.IdRes Int>()
     private lateinit var currentPhotoPath: String
 
-    fun uploadPhoto() {
+    fun uploadPhoto() = launch(Dispatchers.IO) {
         try {
             val proofSignatureBundle = proofModeService.generateProofAndSignatures(currentPhotoPath)
             val proofSignatureBundleJson = Gson().toJson(proofSignatureBundle)
@@ -33,4 +35,9 @@ class MainViewModel @Inject constructor(
         File.createTempFile("JPEG_${System.currentTimeMillis()}", ".jpg", directory).apply {
             currentPhotoPath = absolutePath
         }
+
+    override fun onCleared() {
+        super.onCleared()
+        cancel()
+    }
 }
