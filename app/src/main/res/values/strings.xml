@@ -45,6 +45,7 @@
     <string name="personal_thread_id">Personal Thread ID</string>
     <string name="proofmode_pgp_password">ProofMode PGP Password</string>
     <string name="proofmode_pgp_public_key">ProofMode PGP Public Key</string>
+    <string name="sign_with_zion">Sign with Zion</string>
 
     <string name="permission_rationale_label">Permission Denied</string>
     <string name="proofmode_permissions_rationale">MediAnt requires permissions to save the proof (including GPS info) and signature of the pictures you take into device\'s storage. Go to settings to turn on the permissions of this APP.</string>

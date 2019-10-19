@@ -5,6 +5,7 @@ import dagger.Module
 import dagger.Provides
 import io.numbers.mediant.api.proofmode.ProofModeService
 import io.numbers.mediant.api.textile.TextileService
+import io.numbers.mediant.api.zion.ZionService
 import io.numbers.mediant.util.PreferenceHelper
 import io.textile.textile.Textile
 import javax.inject.Singleton
@@ -36,8 +37,12 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideProofModeService(
+    fun provideProofModeService(application: Application) = ProofModeService(application)
+
+    @Singleton
+    @Provides
+    fun provideZionService(
         application: Application,
         preferenceHelper: PreferenceHelper
-    ) = ProofModeService(application)
+    ) = ZionService(application, preferenceHelper)
 }

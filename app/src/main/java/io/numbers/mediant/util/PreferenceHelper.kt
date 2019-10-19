@@ -18,6 +18,8 @@ class PreferenceHelper @Inject constructor(application: Application) {
         application.applicationContext.resources.getString(R.string.key_proofmode_pgp_password)
     private val preferenceKeyProofModePgpPublicKey =
         application.applicationContext.resources.getString(R.string.key_proofmode_pgp_public_key)
+    private val preferenceKeySignWithZion =
+        application.applicationContext.resources.getString(R.string.key_sign_with_zion)
 
     var personalThreadId: String?
         get() = sharedPreferences.getString(preferenceKeyPersonalId, null)
@@ -27,6 +29,9 @@ class PreferenceHelper @Inject constructor(application: Application) {
         set(value) = sharedPreferences.edit().putString(
             preferenceKeyWalletRecoveryPhrase, value
         ).apply()
+    var signWithZion: String?
+        get() = sharedPreferences.getString(preferenceKeySignWithZion, null)
+        set(value) = sharedPreferences.edit().putString(preferenceKeySignWithZion, value).apply()
 
     init {
         sharedPreferences.edit().putString(

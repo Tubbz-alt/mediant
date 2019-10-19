@@ -8,6 +8,7 @@ import com.google.gson.Gson
 import io.numbers.mediant.R
 import io.numbers.mediant.api.proofmode.ProofModeService
 import io.numbers.mediant.api.textile.TextileService
+import io.numbers.mediant.api.zion.ZionService
 import io.numbers.mediant.util.SnackbarArgs
 import io.numbers.mediant.viewmodel.Event
 import io.textile.pb.Model
@@ -18,9 +19,10 @@ import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 class MainViewModel @Inject constructor(
+    private val application: Application,
     private val textileService: TextileService,
     private val proofModeService: ProofModeService,
-    private val application: Application
+    private val zionService: ZionService
 ) : ViewModel(), CoroutineScope by MainScope() {
 
     val selectedOptionsItem = MutableLiveData<@androidx.annotation.IdRes Int>()

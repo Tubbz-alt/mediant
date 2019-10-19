@@ -29,4 +29,10 @@
         app:title="@string/proofmode_pgp_public_key"
         app:useSimpleSummaryProvider="true" />
 
+    <SwitchPreferenceCompat
+        app:icon="@drawable/ic_memory_black_24dp"
+        app:key="@string/key_sign_with_zion"
+        app:selectable="false"
+        app:title="@string/sign_with_zion" />
+
 </PreferenceScreen>
