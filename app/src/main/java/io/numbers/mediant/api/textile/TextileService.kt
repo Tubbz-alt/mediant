@@ -170,19 +170,8 @@ class TextileService @Inject constructor(
      * Files
      */
 
-    fun addFile(filePath: String, caption: String) {
-        textile.files.addFiles(
-            filePath, preferenceHelper.personalThreadId, caption, object : Handlers.BlockHandler {
-
-                override fun onComplete(block: Model.Block) =
-                    Timber.i("upload complete: ${block.id}")
-
-                override fun onError(e: java.lang.Exception) {
-                    Timber.e("error: add file callback")
-                    Timber.e(e)
-                }
-            })
-    }
+    fun addFile(filePath: String, caption: String, callback: Handlers.BlockHandler) =
+        textile.files.addFiles(filePath, preferenceHelper.personalThreadId, caption, callback)
 
     fun getImageContent(files: View.Files, minWidth: Long = 500, callback: (ByteArray) -> Unit) {
         // imageContentForMinWidth usage: (Textile has not documented)
@@ -194,7 +183,7 @@ class TextileService @Inject constructor(
                     if (media == "image/jpeg" || media == "image/png") callback(data)
                     else Timber.e("Unknown data type: $media")
 
-                override fun onError(e: java.lang.Exception?) {
+                override fun onError(e: Exception) {
                     Timber.e("error: get image content callback")
                     Timber.e(e)
                 }

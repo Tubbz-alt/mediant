@@ -1,33 +1,60 @@
 package io.numbers.mediant.ui.main
 
+import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
+import io.numbers.mediant.R
 import io.numbers.mediant.api.proofmode.ProofModeService
 import io.numbers.mediant.api.textile.TextileService
+import io.numbers.mediant.util.SnackbarArgs
+import io.numbers.mediant.viewmodel.Event
+import io.textile.pb.Model
+import io.textile.textile.Handlers
 import kotlinx.coroutines.*
-import timber.log.Timber
 import java.io.File
-import java.io.IOException
 import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 class MainViewModel @Inject constructor(
     private val textileService: TextileService,
-    private val proofModeService: ProofModeService
+    private val proofModeService: ProofModeService,
+    private val application: Application
 ) : ViewModel(), CoroutineScope by MainScope() {
 
     val selectedOptionsItem = MutableLiveData<@androidx.annotation.IdRes Int>()
+    val showSnackbar = MutableLiveData<Event<SnackbarArgs>>()
     private lateinit var currentPhotoPath: String
 
     fun uploadPhoto() = launch(Dispatchers.IO) {
-        try {
+        generateProofBundleJson()?.also {
+            textileService.addFile(currentPhotoPath, it, object : Handlers.BlockHandler {
+                override fun onComplete(block: Model.Block?) = showSnackbar.postValue(
+                    Event(SnackbarArgs(application.resources.getString(R.string.media_uploaded_message)))
+                )
+
+                override fun onError(e: Exception) = showSnackbar.postValue(Event(SnackbarArgs(e)))
+            })
+        }
+    }
+
+    private fun generateProofBundleJson(): String? {
+        val snackbarArgs = SnackbarArgs(
+            application.resources.getString(R.string.proof_generating_message),
+            Snackbar.LENGTH_INDEFINITE
+        )
+        showSnackbar.postValue(Event(snackbarArgs))
+        return try {
             val proofSignatureBundle = proofModeService.generateProofAndSignatures(currentPhotoPath)
             val proofSignatureBundleJson = Gson().toJson(proofSignatureBundle)
-            Timber.i(proofSignatureBundleJson)
-            textileService.addFile(currentPhotoPath, proofSignatureBundleJson)
-        } catch (e: IOException) {
-            Timber.e(e)
+            showSnackbar.postValue(
+                Event(SnackbarArgs(application.resources.getString(R.string.proof_generated_message)))
+            )
+            proofSignatureBundleJson
+        } catch (e: Exception) {
+            showSnackbar.postValue(Event(SnackbarArgs(e)))
+            null
         }
     }
 

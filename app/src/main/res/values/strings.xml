@@ -5,9 +5,14 @@
     <string name="connect_to_ipfs">Connecting to IPFS…</string>
     <string name="create_wallet">Creating Textile wallet…</string>
     <string name="camera">Camera</string>
+    <string name="dismiss">Dismiss</string>
 
     <string name="feeds">Feeds</string>
     <string name="storage">Storage</string>
+    <string name="proof_generating_message">Generating proof and signatures…</string>
+    <string name="proof_generated_message">Successfully generated proof and signatures</string>
+    <string name="media_uploaded_message">Successfully uploaded media via Textile</string>
+
     <string name="create_thread">Create Thread</string>
     <string name="thread_name">Thread Name</string>
     <string name="create">Create</string>

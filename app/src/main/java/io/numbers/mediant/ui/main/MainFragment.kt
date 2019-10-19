@@ -11,6 +11,7 @@ import androidx.core.content.FileProvider
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import dagger.android.support.DaggerFragment
 import io.numbers.mediant.BuildConfig.APPLICATION_ID
@@ -20,16 +21,21 @@ import io.numbers.mediant.ui.tab.Tab
 import io.numbers.mediant.util.ActivityRequestCodes
 import io.numbers.mediant.util.PermissionManager
 import io.numbers.mediant.util.PermissionRequestType
+import io.numbers.mediant.util.SnackbarArgs
+import io.numbers.mediant.viewmodel.EventObserver
 import io.numbers.mediant.viewmodel.ViewModelProviderFactory
 import kotlinx.android.synthetic.main.fragment_main.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 
+@ExperimentalCoroutinesApi
 class MainFragment : DaggerFragment() {
 
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProviderFactory
 
     lateinit var viewModel: MainViewModel
+    private lateinit var binding: FragmentMainBinding
 
     @Inject
     lateinit var tabs: List<Tab>
@@ -52,8 +58,7 @@ class MainFragment : DaggerFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val binding: FragmentMainBinding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
         return binding.root
@@ -61,8 +66,8 @@ class MainFragment : DaggerFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         initViewPager()
+        viewModel.showSnackbar.observe(viewLifecycleOwner, EventObserver { showSnackBar(it) })
     }
 
     private fun initViewPager() {
@@ -142,5 +147,11 @@ class MainFragment : DaggerFragment() {
     private fun navigateToPermissionRationaleFragment(@StringRes rationale: Int) {
         MainFragmentDirections.actionMainFragmentToPermissionRationaleFragment(rationale)
             .also { findNavController().navigate(it) }
+    }
+
+    private fun showSnackBar(snackbarArgs: SnackbarArgs) {
+        val snackbar = Snackbar.make(binding.root, snackbarArgs.message, snackbarArgs.duration)
+        snackbar.setAction(R.string.dismiss) { snackbar.dismiss() }
+        snackbar.show()
     }
 }
